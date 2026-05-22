@@ -5,157 +5,112 @@ import { motion, useInView } from 'framer-motion'
 
 const steps = [
   {
-    number: '01',
+    n: '01',
     title: 'Choose a Competition',
-    description: 'Browse our curated selection of luxury prizes — from timepieces to cash and beyond. Each competition is handpicked for excellence.',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="14" cy="14" r="13" stroke="#b76e79" strokeWidth="1" />
-        <path d="M9 14 L13 18 L19 10" stroke="#b76e79" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    body: 'Browse our curated selection of luxury prizes — from timepieces to cash and beyond. Every competition is handpicked.',
   },
   {
-    number: '02',
+    n: '02',
     title: 'Select Your Tickets',
-    description: 'Choose how many tickets you wish to purchase. More tickets increases your chances — each entry is unique and securely logged.',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect x="5" y="8" width="18" height="12" rx="0" stroke="#b76e79" strokeWidth="1" />
-        <path d="M9 14 H19 M14 10 V18" stroke="#b76e79" strokeWidth="1.5" strokeLinecap="round" />
-      </svg>
-    ),
+    body: 'Choose how many tickets you want. More tickets means more chances. Each entry is unique and securely logged.',
   },
   {
-    number: '03',
+    n: '03',
     title: 'Complete Payment',
-    description: 'Secure checkout powered by Stripe. We accept all major cards, Apple Pay and Google Pay. Your entry is confirmed instantly.',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <rect x="4" y="8" width="20" height="14" rx="0" stroke="#b76e79" strokeWidth="1" />
-        <path d="M4 13 H24" stroke="#b76e79" strokeWidth="1.5" />
-        <rect x="8" y="17" width="6" height="2" fill="#b76e79" />
-      </svg>
-    ),
+    body: 'Secure checkout via Stripe. All major cards, Apple Pay and Google Pay accepted. Entry confirmed instantly.',
   },
   {
-    number: '04',
+    n: '04',
     title: 'Watch the Draw',
-    description: 'All draws are conducted live and recorded for full transparency. Winners are notified immediately and prizes dispatched within 7 days.',
-    icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-        <circle cx="14" cy="14" r="9" stroke="#b76e79" strokeWidth="1" />
-        <path d="M11 10 L20 14 L11 18 Z" fill="#b76e79" />
-      </svg>
-    ),
+    body: 'All draws are conducted live and recorded for full transparency. Winners notified immediately. Prizes dispatched within 48 hours.',
   },
 ]
 
 export default function HowItWorks() {
   const ref = useRef<HTMLDivElement>(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const inView = useInView(ref, { once: true, margin: '-80px' })
 
   return (
-    <section
+    <div
       ref={ref}
-      style={{
-        padding: '6rem 2rem',
-        maxWidth: '1280px',
-        margin: '0 auto',
-      }}
+      style={{ maxWidth: '1440px', margin: '0 auto', padding: 'clamp(4rem, 8vw, 8rem) clamp(1.5rem, 4vw, 5rem)' }}
     >
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+        animate={inView ? { opacity: 1, y: 0 } : {}}
         transition={{ duration: 0.7 }}
-        style={{ textAlign: 'center', marginBottom: '4rem' }}
+        style={{ marginBottom: 'clamp(3rem, 6vw, 5rem)' }}
       >
-        <p
-          style={{
-            fontSize: '0.75rem',
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: '#b76e79',
-            marginBottom: '0.75rem',
-          }}
-        >
-          The Process
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginBottom: '1.25rem' }}>
+          <div style={{ width: '24px', height: '1px', background: '#b76e79' }} />
+          <span style={{ fontSize: '0.5625rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#b76e79' }}>The Process</span>
+        </div>
         <h2
           style={{
             fontFamily: 'var(--font-cormorant)',
-            fontSize: 'clamp(2rem, 4vw, 3rem)',
-            fontWeight: 600,
-            color: '#1c1a18',
-            lineHeight: 1.1,
+            fontSize: 'clamp(2.75rem, 5vw, 4.5rem)',
+            fontWeight: 300,
+            lineHeight: 0.95,
+            letterSpacing: '-0.02em',
+            color: '#141210',
           }}
         >
-          How It Works
+          How It<br /><span style={{ fontStyle: 'italic' }}>Works</span>
         </h2>
       </motion.div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-          gap: '0',
-          position: 'relative',
-        }}
-      >
+      {/* Steps — horizontal strip with top number, dividing lines */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0', borderTop: '1px solid #e2d0c0' }}>
         {steps.map((step, i) => (
           <motion.div
-            key={step.number}
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            transition={{ duration: 0.6, delay: i * 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
+            key={step.n}
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.65, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
             style={{
-              padding: '2.5rem 2rem',
-              borderRight: i < steps.length - 1 ? '1px solid #e8d8cc' : 'none',
+              padding: 'clamp(2rem, 3vw, 3rem) clamp(1.25rem, 2vw, 2.5rem)',
+              borderRight: i < steps.length - 1 ? '1px solid #e2d0c0' : 'none',
               position: 'relative',
             }}
           >
-            {/* Step number */}
-            <div style={{ marginBottom: '1.5rem' }}>
-              <span
-                style={{
-                  fontFamily: 'var(--font-cormorant)',
-                  fontSize: '3.5rem',
-                  fontWeight: 300,
-                  color: '#e8d8cc',
-                  lineHeight: 1,
-                  display: 'block',
-                }}
-              >
-                {step.number}
-              </span>
-              <div style={{ marginTop: '-0.5rem' }}>
-                {step.icon}
-              </div>
-            </div>
+            {/* Number — huge, light, decorative */}
+            <p
+              style={{
+                fontFamily: 'var(--font-cormorant)',
+                fontSize: 'clamp(4rem, 6vw, 7rem)',
+                fontWeight: 300,
+                lineHeight: 1,
+                color: '#e8d8cc',
+                letterSpacing: '-0.03em',
+                marginBottom: '1.5rem',
+                userSelect: 'none',
+              }}
+            >
+              {step.n}
+            </p>
+
+            {/* Rose dot accent */}
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#b76e79', marginBottom: '1.25rem' }} />
 
             <h3
               style={{
                 fontFamily: 'var(--font-cormorant)',
-                fontSize: '1.375rem',
-                fontWeight: 600,
-                color: '#1c1a18',
-                marginBottom: '0.75rem',
+                fontSize: 'clamp(1.25rem, 2vw, 1.625rem)',
+                fontWeight: 500,
+                color: '#141210',
+                lineHeight: 1.2,
+                marginBottom: '0.875rem',
               }}
             >
               {step.title}
             </h3>
-            <p
-              style={{
-                fontSize: '0.875rem',
-                lineHeight: 1.75,
-                color: '#5c524a',
-              }}
-            >
-              {step.description}
-            </p>
+            <p style={{ fontSize: '0.8125rem', lineHeight: 1.75, color: '#4a423c' }}>{step.body}</p>
           </motion.div>
         ))}
       </div>
-    </section>
+
+      <style>{`@media (max-width: 768px) { .how-grid { grid-template-columns: 1fr 1fr !important; } }`}</style>
+    </div>
   )
 }

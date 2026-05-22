@@ -6,174 +6,126 @@ import { formatCurrency } from '@/lib/utils'
 import CountdownTimer from './CountdownTimer'
 
 interface Competition {
-  id: string
-  slug: string
-  title: string
-  subtitle?: string | null
-  prizeValue: number
-  ticketPrice: number
-  maxTickets: number
-  ticketsSold: number
-  images: string
-  drawDate?: string | null
-  status: string
-  featured: boolean
+  id: string; slug: string; title: string; subtitle?: string | null
+  prizeValue: number; ticketPrice: number; maxTickets: number
+  ticketsSold: number; images: string; drawDate?: string | null
+  status: string; featured: boolean
 }
 
-interface CompetitionCardProps {
-  competition: Competition
-  index?: number
-}
-
-export default function CompetitionCard({ competition, index = 0 }: CompetitionCardProps) {
-  const images = (() => {
-    try {
-      return JSON.parse(competition.images) as string[]
-    } catch {
-      return []
-    }
-  })()
-
+export default function CompetitionCard({ competition, index = 0 }: { competition: Competition; index?: number }) {
+  const images = (() => { try { return JSON.parse(competition.images) as string[] } catch { return [] } })()
   const heroImage = images[0] || null
   const remaining = competition.maxTickets - competition.ticketsSold
-  const percentSold = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
+  const percentSold = Math.min(100, Math.round((competition.ticketsSold / competition.maxTickets) * 100))
+  const urgency = remaining < competition.maxTickets * 0.15
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 40 }}
+    <motion.article
+      initial={{ opacity: 0, y: 32 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.1 }}
-      whileHover={{ y: -6 }}
-      style={{
-        backgroundColor: 'var(--card, #fffcf9)',
-        border: '1px solid #e8d8cc',
-        overflow: 'hidden',
-        transition: 'box-shadow 0.4s ease',
-        cursor: 'default',
-      }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 20px 60px rgba(183, 110, 121, 0.18)'
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = 'none'
-      }}
+      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.12 }}
+      style={{ background: 'white', position: 'relative', overflow: 'hidden' }}
     >
       {/* Image */}
-      <div style={{ position: 'relative', height: '240px', overflow: 'hidden' }}>
+      <Link href={`/competitions/${competition.slug}`} style={{ display: 'block', position: 'relative', overflow: 'hidden', height: '280px' }}>
         {heroImage ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <motion.img
+            whileHover={{ scale: 1.04 }}
+            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
             src={heroImage}
             alt={competition.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
         ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(135deg, #f0e3d3 0%, #e8d8cc 40%, #d4c4b8 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.4 }}>
-              <circle cx="30" cy="30" r="28" stroke="#b76e79" strokeWidth="1" />
-              <path d="M20 30 L25 25 L30 32 L35 24 L40 30" stroke="#b76e79" strokeWidth="1.5" fill="none" />
+          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #ede0cf 0%, #ddd0c0 60%, #c8b8a8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style={{ opacity: 0.3 }}>
+              <circle cx="32" cy="32" r="28" stroke="#8a4f58" strokeWidth="1.5" />
+              <path d="M22 32 L27 26 L32 34 L37 23 L42 32" stroke="#8a4f58" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
             </svg>
           </div>
         )}
-        {/* Prize badge */}
+        {/* Overlay gradient at bottom */}
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)' }} />
+
+        {/* Prize value */}
         <div
           style={{
             position: 'absolute',
-            top: '1rem',
-            right: '1rem',
-            backgroundColor: '#b76e79',
+            bottom: '1rem',
+            left: '1.25rem',
             color: 'white',
-            padding: '0.4rem 0.875rem',
-            fontSize: '0.75rem',
+            fontFamily: 'var(--font-cormorant)',
+            fontSize: '1.625rem',
             fontWeight: 600,
-            letterSpacing: '0.05em',
+            lineHeight: 1,
+            textShadow: '0 1px 4px rgba(0,0,0,0.3)',
           }}
         >
           {formatCurrency(competition.prizeValue)}
         </div>
-        {competition.featured && (
+
+        {urgency && (
           <div
             style={{
               position: 'absolute',
               top: '1rem',
-              left: '1rem',
-              backgroundColor: '#1c1a18',
-              color: '#d4959e',
-              padding: '0.3rem 0.75rem',
-              fontSize: '0.65rem',
-              letterSpacing: '0.12em',
+              right: '1rem',
+              background: '#b76e79',
+              color: 'white',
+              fontSize: '0.5625rem',
+              fontWeight: 600,
+              letterSpacing: '0.14em',
               textTransform: 'uppercase',
-              fontWeight: 500,
+              padding: '0.35rem 0.7rem',
             }}
           >
-            Featured
+            Almost Gone
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Content */}
-      <div style={{ padding: '1.5rem' }}>
-        <h3
-          style={{
-            fontFamily: 'var(--font-cormorant)',
-            fontSize: '1.5rem',
-            fontWeight: 600,
-            color: '#1c1a18',
-            lineHeight: 1.2,
-            marginBottom: '0.375rem',
-          }}
-        >
-          {competition.title}
-        </h3>
+      <div style={{ padding: '1.5rem 1.5rem 1.75rem' }}>
+        <Link href={`/competitions/${competition.slug}`} style={{ textDecoration: 'none' }}>
+          <h3
+            style={{
+              fontFamily: 'var(--font-cormorant)',
+              fontSize: '1.625rem',
+              fontWeight: 500,
+              color: '#141210',
+              lineHeight: 1.15,
+              marginBottom: '0.25rem',
+              transition: 'color 0.2s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#b76e79')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#141210')}
+          >
+            {competition.title}
+          </h3>
+        </Link>
         {competition.subtitle && (
-          <p style={{ fontSize: '0.85rem', color: '#9a8878', marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.8125rem', color: '#8a7f76', marginBottom: '1.25rem', lineHeight: 1.5 }}>
             {competition.subtitle}
           </p>
         )}
 
-        {/* Ticket info */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-          <div>
-            <p style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a8878' }}>
-              Ticket Price
-            </p>
-            <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.35rem', fontWeight: 600, color: '#b76e79' }}>
-              {formatCurrency(competition.ticketPrice)}
-            </p>
+        {/* Progress */}
+        <div style={{ marginBottom: '1.125rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.6875rem', letterSpacing: '0.08em', color: '#8a7f76' }}>
+              {remaining.toLocaleString()} tickets remaining
+            </span>
+            <span style={{ fontSize: '0.6875rem', color: percentSold > 80 ? '#b76e79' : '#8a7f76', fontWeight: percentSold > 80 ? 600 : 400 }}>
+              {percentSold}% sold
+            </span>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a8878' }}>
-              Tickets Left
-            </p>
-            <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.35rem', fontWeight: 600, color: '#1c1a18' }}>
-              {remaining.toLocaleString()}
-            </p>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-            <span style={{ fontSize: '0.7rem', color: '#9a8878' }}>{percentSold}% sold</span>
-            <span style={{ fontSize: '0.7rem', color: '#9a8878' }}>{competition.maxTickets.toLocaleString()} total</span>
-          </div>
-          <div style={{ height: '3px', backgroundColor: '#e8d8cc', borderRadius: '1px', overflow: 'hidden' }}>
-            <div
-              style={{
-                height: '100%',
-                width: `${percentSold}%`,
-                background: 'linear-gradient(90deg, #b76e79, #d4959e)',
-                transition: 'width 0.6s ease',
-              }}
+          <div style={{ height: '2px', background: '#e2d0c0', overflow: 'hidden' }}>
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${percentSold}%` }}
+              transition={{ duration: 1, delay: index * 0.12 + 0.3, ease: 'easeOut' }}
+              style={{ height: '100%', background: percentSold > 80 ? '#b76e79' : '#c8a898' }}
             />
           </div>
         </div>
@@ -181,22 +133,23 @@ export default function CompetitionCard({ competition, index = 0 }: CompetitionC
         {/* Countdown */}
         {competition.drawDate && (
           <div style={{ marginBottom: '1.25rem' }}>
-            <p style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a8878', marginBottom: '0.5rem' }}>
-              Draw closes in
-            </p>
-            <CountdownTimer drawDate={competition.drawDate} />
+            <CountdownTimer drawDate={competition.drawDate} compact />
           </div>
         )}
 
-        {/* CTA */}
-        <Link
-          href={`/competitions/${competition.slug}`}
-          className="btn-primary"
-          style={{ width: '100%', textAlign: 'center', display: 'block' }}
-        >
-          Enter Now
-        </Link>
+        {/* Footer row */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.125rem', borderTop: '1px solid #e2d0c0' }}>
+          <div>
+            <p style={{ fontSize: '0.5625rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8a7f76', marginBottom: '0.2rem' }}>Per ticket</p>
+            <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: '#141210', lineHeight: 1 }}>
+              {formatCurrency(competition.ticketPrice)}
+            </p>
+          </div>
+          <Link href={`/competitions/${competition.slug}`} className="btn-rg" style={{ padding: '0.625rem 1.5rem', fontSize: '0.625rem' }}>
+            Enter Now
+          </Link>
+        </div>
       </div>
-    </motion.div>
+    </motion.article>
   )
 }
