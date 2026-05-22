@@ -105,29 +105,34 @@ export default function Navbar() {
         .iv-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           transition: background .35s, box-shadow .35s, border-color .35s;
-          border-bottom: 1px solid transparent;
+          border-bottom: 1px solid rgba(255,255,255,.12);
+          background: rgba(12,11,10,.45);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
         }
         .iv-nav--solid {
-          background: rgba(255,255,255,.96);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
+          background: rgba(255,255,255,.97);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           border-color: var(--border);
           box-shadow: 0 1px 0 var(--border);
         }
         .iv-nav__inner {
           max-width: 1440px; margin: 0 auto;
-          padding: 0 2.5rem; height: 72px;
+          padding: 0 2.5rem; height: 68px;
           display: flex; align-items: center; justify-content: space-between;
           gap: 1.5rem;
         }
         .iv-nav__logo {
           display: flex; align-items: center; gap: .625rem;
-          text-decoration: none; flex-shrink: 0; color: var(--ink);
+          text-decoration: none; flex-shrink: 0; color: #fff;
+          transition: color .3s;
         }
+        .iv-nav--solid .iv-nav__logo { color: var(--ink); }
         .iv-nav__logo span {
           font-family: var(--font-inter, sans-serif);
           font-size: .625rem; font-weight: 600; letter-spacing: .25em;
-          color: var(--ink);
+          color: inherit;
         }
         .iv-nav__links {
           display: flex; align-items: center; gap: 2.25rem;
@@ -135,20 +140,22 @@ export default function Navbar() {
         }
         .iv-nav__link {
           font-size: .6875rem; font-weight: 400; letter-spacing: .1em;
-          text-transform: uppercase; color: var(--ink2); text-decoration: none;
+          text-transform: uppercase; color: rgba(255,255,255,.8); text-decoration: none;
           transition: color .2s;
         }
-        .iv-nav__link:hover { color: var(--rg); }
+        .iv-nav--solid .iv-nav__link { color: var(--ink2); }
+        .iv-nav__link:hover { color: var(--rg) !important; }
         .iv-nav__right { display: flex; align-items: center; gap: 1.25rem; }
         .iv-nav__burger {
           display: none; flex-direction: column; gap: 6px;
           background: none; border: none; cursor: pointer; padding: .5rem; width: 36px;
         }
         .iv-nav__burger span {
-          display: block; width: 22px; height: 1.5px; background: var(--ink);
-          transition: transform .25s, opacity .25s;
+          display: block; width: 22px; height: 1.5px; background: rgba(255,255,255,.9);
+          transition: transform .25s, opacity .25s, background .3s;
           transform-origin: center;
         }
+        .iv-nav--solid .iv-nav__burger span { background: var(--ink); }
         .iv-nav__burger span.open:nth-child(1) { transform: rotate(45deg) translate(3px, 6px); }
         .iv-nav__burger span.open:nth-child(2) { transform: rotate(-45deg) translate(3px, -6px); }
 
