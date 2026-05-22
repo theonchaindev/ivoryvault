@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tickets Ticket[]
+  winners Winner[]
+}
+
+model Competition {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  subtitle    String?
+  description String
+  prizeValue  Float
+  ticketPrice Float
+  maxTickets  Int
+  ticketsSold Int       @default(0)
+  images      String
+  drawDate    DateTime?
+  status      String    @default("draft")
+  featured    Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tickets Ticket[]
+  winner  Winner?
+}
+
+model Ticket {
+  id              String      @id @default(cuid())
+  userId          String
+  competitionId   String
+  quantity        Int
+  stripePaymentId String?
+  purchasedAt     DateTime    @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
+}
+
+model Winner {
+  id            String      @id @default(cuid())
+  competitionId String      @unique
+  userId        String
+  ticketNumber  Int?
+  drawnAt       DateTime    @default(now())
+  announced     Boolean     @default(false)
+  prizeTitle    String?
+  prizeValue    Float?
+  image         String?
+
+  competition Competition @relation(fields: [competitionId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  createdAt DateTime @default(now())
+}
