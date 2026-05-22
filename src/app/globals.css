@@ -1,165 +1,88 @@
 @import "tailwindcss";
 
 :root {
-  --champagne: #faf5ee;
-  --champagne-dark: #ede0cf;
-  --card: #ffffff;
-  --rose-gold: #b76e79;
-  --rose-gold-light: #cc8f99;
-  --rose-gold-dark: #8a4f58;
-  --ink: #141210;
-  --ink-muted: #4a423c;
-  --ink-faint: #8a7f76;
-  --border: #e2d0c0;
-  --border-strong: #c8b4a0;
+  --white:   #ffffff;
+  --off:     #f7f4f0;
+  --border:  #e8e2da;
+  --ink:     #0c0b0a;
+  --ink2:    #3a3530;
+  --ink3:    #7a726a;
+  --rg:      #b8687a;
+  --rg-dark: #8a4a56;
+  --rg-pale: #f2e8ea;
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html {
-  scroll-behavior: smooth;
-  font-size: 16px;
-}
+html { scroll-behavior: smooth; }
 
 body {
-  background-color: var(--champagne);
+  background: var(--white);
   color: var(--ink);
+  font-family: var(--font-inter, 'Inter', system-ui, sans-serif);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-family: var(--font-inter), 'Inter', system-ui, sans-serif;
   overflow-x: hidden;
 }
 
-/* ─── TYPOGRAPHY ──────────────────────────────── */
+/* ─── TYPOGRAPHY ──────────────────────────────────── */
 
-.serif {
-  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+.f-serif {
+  font-family: var(--font-cormorant, 'Cormorant Garamond', Georgia, serif);
 }
 
-.display {
-  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
-  font-weight: 300;
-  line-height: 0.92;
-  letter-spacing: -0.02em;
-}
+/* ─── BUTTONS ─────────────────────────────────────── */
 
-/* Rose gold gradient text */
-.text-rg {
-  background: linear-gradient(120deg, #c9848e 0%, #b76e79 45%, #c89aa0 80%, #9a5a64 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ─── BUTTONS ─────────────────────────────────── */
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2.25rem;
-  background: var(--ink);
-  color: #faf5ee;
-  font-family: var(--font-inter), sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+.btn-dark {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .875rem 2rem;
+  background: var(--ink); color: #fff;
+  font-size: .6875rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background .2s, transform .15s;
   white-space: nowrap;
 }
-
-.btn-primary:hover {
-  background: #2a2420;
-  transform: translateY(-1px);
-}
+.btn-dark:hover { background: var(--ink2); transform: translateY(-1px); }
 
 .btn-rg {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2.25rem;
-  background: var(--rose-gold);
-  color: white;
-  font-family: var(--font-inter), sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .875rem 2rem;
+  background: var(--rg); color: #fff;
+  font-size: .6875rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: background .2s, transform .15s;
   white-space: nowrap;
 }
+.btn-rg:hover { background: var(--rg-dark); transform: translateY(-1px); }
 
-.btn-rg:hover {
-  background: var(--rose-gold-dark);
-  transform: translateY(-1px);
-}
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  padding: 0.875rem 2.25rem;
-  background: transparent;
-  color: var(--ink);
-  font-family: var(--font-inter), sans-serif;
-  font-size: 0.6875rem;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  text-decoration: none;
-  border: 1px solid var(--border-strong);
-  cursor: pointer;
-  transition: all 0.2s ease;
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  padding: .875rem 2rem;
+  background: transparent; color: var(--ink);
+  font-size: .6875rem; font-weight: 400; letter-spacing: .12em; text-transform: uppercase;
+  text-decoration: none; border: 1px solid var(--border); cursor: pointer;
+  transition: border-color .2s, background .2s, color .2s;
   white-space: nowrap;
 }
+.btn-ghost:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
 
-.btn-outline:hover {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--champagne);
-}
+/* Keep old aliases so other pages don't break */
+.btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .875rem 2rem; background: var(--ink); color: #fff; font-size: .6875rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; border: none; cursor: pointer; transition: background .2s; white-space: nowrap; }
+.btn-primary:hover { background: var(--ink2); }
+.btn-outline { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: .875rem 2rem; background: transparent; color: var(--ink); font-size: .6875rem; font-weight: 400; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; border: 1px solid var(--border); cursor: pointer; transition: all .2s; white-space: nowrap; }
+.btn-outline:hover { border-color: var(--ink); background: var(--ink); color: #fff; }
 
-/* ─── INPUTS ──────────────────────────────────── */
+/* ─── INPUTS ──────────────────────────────────────── */
 
 .iv-input {
-  width: 100%;
-  padding: 0.9375rem 1.125rem;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 0;
-  font-family: var(--font-inter), sans-serif;
-  font-size: 0.9375rem;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s ease;
-  appearance: none;
+  width: 100%; padding: .9375rem 1.125rem;
+  background: #fff; border: 1px solid var(--border); border-radius: 0;
+  font-family: inherit; font-size: .9375rem; color: var(--ink);
+  outline: none; transition: border-color .2s;
 }
+.iv-input:focus { border-color: var(--rg); }
+.iv-input::placeholder { color: var(--ink3); font-size: .875rem; }
 
-.iv-input:focus {
-  border-color: var(--rose-gold);
-}
-
-.iv-input::placeholder {
-  color: var(--ink-faint);
-  font-size: 0.875rem;
-}
-
-/* ─── SCROLLBAR ───────────────────────────────── */
-
+/* ─── SCROLLBAR ───────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--champagne); }
-::-webkit-scrollbar-thumb { background: var(--border-strong); }
+::-webkit-scrollbar-track { background: var(--off); }
+::-webkit-scrollbar-thumb { background: var(--border); }

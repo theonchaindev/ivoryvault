@@ -4,54 +4,48 @@ import { useState, useEffect } from 'react'
 import { getTimeRemaining } from '@/lib/utils'
 
 export default function CountdownTimer({ drawDate, compact = false }: { drawDate: string; compact?: boolean }) {
-  const [time, setTime] = useState(() => getTimeRemaining(drawDate))
+  const [t, setT] = useState(() => getTimeRemaining(drawDate))
 
   useEffect(() => {
-    const id = setInterval(() => setTime(getTimeRemaining(drawDate)), 1000)
+    const id = setInterval(() => setT(getTimeRemaining(drawDate)), 1000)
     return () => clearInterval(id)
   }, [drawDate])
 
-  if (time.total <= 0) {
-    return <span style={{ fontSize: '0.6875rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#b76e79' }}>Draw Complete</span>
+  if (t.total <= 0) {
+    return <span style={{ fontSize: '.6875rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--rg)' }}>Draw Complete</span>
   }
 
   const units = [
-    { value: time.days, label: 'D' },
-    { value: time.hours, label: 'H' },
-    { value: time.minutes, label: 'M' },
-    { value: time.seconds, label: 'S' },
+    { v: t.days, l: 'D' },
+    { v: t.hours, l: 'H' },
+    { v: t.minutes, l: 'M' },
+    { v: t.seconds, l: 'S' },
   ]
 
   if (compact) {
     return (
-      <div style={{ display: 'flex', gap: '0.375rem', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.5625rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8a7f76', marginRight: '0.25rem' }}>Draw in</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.25rem', flexWrap: 'wrap' }}>
+        <span style={{ fontSize: '.5625rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', marginRight: '.25rem' }}>Closes in</span>
         {units.map((u, i) => (
-          <div key={u.label} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem' }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: '1px' }}>
-              <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.125rem', fontWeight: 500, color: '#141210', lineHeight: 1 }}>
-                {String(u.value).padStart(2, '0')}
-              </span>
-              <span style={{ fontSize: '0.5rem', letterSpacing: '0.08em', color: '#8a7f76', textTransform: 'uppercase' }}>{u.label}</span>
-            </div>
-            {i < units.length - 1 && <span style={{ color: '#c8b4a0', fontSize: '0.75rem' }}>·</span>}
-          </div>
+          <span key={u.l} style={{ display: 'flex', alignItems: 'baseline', gap: '1px' }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.125rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1 }}>{String(u.v).padStart(2, '0')}</span>
+            <span style={{ fontSize: '.5rem', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{u.l}</span>
+            {i < units.length - 1 && <span style={{ color: 'var(--border)', marginLeft: '.25rem' }}>·</span>}
+          </span>
         ))}
       </div>
     )
   }
 
   return (
-    <div style={{ display: 'flex', gap: '0.625rem', alignItems: 'stretch' }}>
+    <div style={{ display: 'flex', gap: '.5rem' }}>
       {units.map((u, i) => (
-        <div key={u.label} style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'white', border: '1px solid #e2d0c0', padding: '0.625rem 0.875rem', minWidth: '56px' }}>
-            <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.75rem', fontWeight: 500, color: '#141210', lineHeight: 1 }}>
-              {String(u.value).padStart(2, '0')}
-            </span>
-            <span style={{ fontSize: '0.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: '#8a7f76', marginTop: '3px' }}>{u.label}</span>
+        <div key={u.l} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--off)', border: '1px solid var(--border)', padding: '.625rem .875rem', minWidth: '54px' }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 400, color: 'var(--ink)', lineHeight: 1 }}>{String(u.v).padStart(2, '0')}</span>
+            <span style={{ fontSize: '.5rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink3)', marginTop: '3px' }}>{u.l}</span>
           </div>
-          {i < units.length - 1 && <span style={{ color: '#c8b4a0', fontSize: '1rem', alignSelf: 'center' }}>:</span>}
+          {i < units.length - 1 && <span style={{ color: 'var(--border)', fontSize: '.875rem' }}>:</span>}
         </div>
       ))}
     </div>

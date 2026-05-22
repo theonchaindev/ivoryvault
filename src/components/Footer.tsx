@@ -1,84 +1,93 @@
 import Link from 'next/link'
 
-const col1 = [
-  { href: '/competitions', label: 'All Competitions' },
-  { href: '/competitions?category=watches', label: 'Watches & Jewellery' },
-  { href: '/competitions?category=cash', label: 'Cash Prizes' },
-  { href: '/competitions?category=electronics', label: 'Electronics' },
-  { href: '/winners', label: 'Past Winners' },
-]
-const col2 = [
-  { href: '/how-it-works', label: 'How It Works' },
-  { href: '/contact', label: 'Contact Us' },
-  { href: '/free-entry', label: 'Free Entry Route' },
-  { href: '/terms', label: 'Terms & Conditions' },
-]
-
 export default function Footer() {
+  const year = new Date().getFullYear()
+
   return (
-    <footer style={{ backgroundColor: '#0e0c0a', color: '#faf5ee' }}>
-      <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 0%, #b76e79 30%, #cc8f99 50%, #b76e79 70%, transparent 100%)' }} />
+    <footer className="site-footer">
+      <div className="site-footer__inner">
 
-      <div style={{ maxWidth: '1440px', margin: '0 auto', padding: 'clamp(3rem, 6vw, 5rem) clamp(1.5rem, 4vw, 5rem)' }}>
-        <div className="footer-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: '3rem', marginBottom: '3.5rem' }}>
-
-          {/* Brand */}
-          <div>
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 500, letterSpacing: '0.2em', color: '#faf5ee', textTransform: 'uppercase' }}>Ivory</span>
-                <span style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 300, letterSpacing: '0.2em', color: '#b76e79', textTransform: 'uppercase' }}>Vault</span>
+        {/* Top row */}
+        <div className="site-footer__top">
+          <div className="site-footer__brand">
+            <div className="site-footer__logo">
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <rect x=".75" y=".75" width="16.5" height="16.5" stroke="rgba(255,255,255,.4)" strokeWidth=".75"/>
+                <path d="M5 5.5 L9 12.5 L13 5.5" stroke="rgba(255,255,255,.7)" strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div className="site-footer__logo-text">
+                <span>IVORY</span>
+                <span className="rg">VAULT</span>
               </div>
-              <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1rem', fontStyle: 'italic', color: 'rgba(250,245,238,0.4)', lineHeight: 1.5 }}>
-                Where luxury meets chance
-              </p>
             </div>
-            <p style={{ fontSize: '0.8125rem', lineHeight: 1.8, color: 'rgba(250,245,238,0.35)', maxWidth: '340px' }}>
-              Premium prize competitions for watches, cash & electronics. Fully transparent draws, UK regulated, no purchase necessary to enter.
-            </p>
-            <div style={{ marginTop: '2rem', display: 'inline-flex', alignItems: 'center', gap: '0.625rem', padding: '0.625rem 1rem', border: '1px solid rgba(183,110,121,0.3)' }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#b76e79', flexShrink: 0 }} />
-              <span style={{ fontSize: '0.5625rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#b76e79' }}>UK Competition Law Compliant</span>
+            <p className="site-footer__tagline">Where luxury meets chance</p>
+            <p className="site-footer__desc">Premium prize competitions for watches, cash & electronics. UK regulated, fully transparent draws.</p>
+            <div className="site-footer__badge">
+              <span className="site-footer__badge-dot" />
+              UK Competition Law Compliant
             </div>
           </div>
 
-          {/* Competitions */}
-          <div>
-            <p style={{ fontSize: '0.5625rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(250,245,238,0.35)', marginBottom: '1.5rem' }}>Competitions</p>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              {col1.map(l => (
-                <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Company */}
-          <div>
-            <p style={{ fontSize: '0.5625rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(250,245,238,0.35)', marginBottom: '1.5rem' }}>Company</p>
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
-              {col2.map(l => (
-                <Link key={l.href} href={l.href} className="footer-link">{l.label}</Link>
-              ))}
-            </nav>
+          <div className="site-footer__cols">
+            <div>
+              <p className="site-footer__col-head">Competitions</p>
+              <nav className="site-footer__nav">
+                {[
+                  ['/competitions', 'All Competitions'],
+                  ['/competitions?category=watches', 'Watches & Jewellery'],
+                  ['/competitions?category=cash', 'Cash Prizes'],
+                  ['/competitions?category=electronics', 'Electronics'],
+                  ['/winners', 'Past Winners'],
+                ].map(([href, label]) => (
+                  <Link key={href} href={href} className="site-footer__link">{label}</Link>
+                ))}
+              </nav>
+            </div>
+            <div>
+              <p className="site-footer__col-head">Company</p>
+              <nav className="site-footer__nav">
+                {[
+                  ['/how-it-works', 'How It Works'],
+                  ['/contact', 'Contact Us'],
+                  ['/free-entry', 'Free Entry Route'],
+                  ['/terms', 'Terms & Conditions'],
+                  ['/free-entry', 'Privacy Policy'],
+                ].map(([href, label]) => (
+                  <Link key={label} href={href} className="site-footer__link">{label}</Link>
+                ))}
+              </nav>
+            </div>
           </div>
         </div>
 
-        {/* Bottom */}
-        <div style={{ borderTop: '1px solid rgba(250,245,238,0.07)', paddingTop: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <p style={{ fontSize: '0.6875rem', color: 'rgba(250,245,238,0.25)', letterSpacing: '0.04em' }}>
-            © {new Date().getFullYear()} Ivory Vault Ltd. All rights reserved.
-          </p>
-          <p style={{ fontSize: '0.6875rem', color: 'rgba(250,245,238,0.25)' }}>
-            18+ only · Must be UK resident ·{' '}
-            <Link href="/free-entry" style={{ color: 'rgba(183,110,121,0.7)', textDecoration: 'none' }}>Free entry available</Link>
-          </p>
+        {/* Bottom bar */}
+        <div className="site-footer__bottom">
+          <p>© {year} Ivory Vault Ltd. All rights reserved.</p>
+          <p>18+ only · UK residents · <Link href="/free-entry" className="site-footer__free">Free entry available</Link></p>
         </div>
       </div>
 
       <style>{`
-        .footer-link { font-size: 0.8125rem; color: rgba(250,245,238,0.55); text-decoration: none; transition: color 0.2s; }
-        .footer-link:hover { color: #faf5ee; }
-        @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr !important; } }
+        .site-footer { background: #0a0908; color: #fff; border-top: 1px solid rgba(255,255,255,.06); }
+        .site-footer__inner { max-width: 1440px; margin: 0 auto; padding: clamp(3rem,6vw,5rem) clamp(1.5rem,4vw,5rem) 2rem; }
+        .site-footer__top { display: grid; grid-template-columns: 1.75fr 1fr; gap: 4rem; margin-bottom: 3rem; }
+        .site-footer__brand { display: flex; flex-direction: column; gap: .875rem; }
+        .site-footer__logo { display: flex; align-items: center; gap: .625rem; margin-bottom: .25rem; }
+        .site-footer__logo-text { display: flex; gap: .375rem; font-size: .5625rem; font-weight: 600; letter-spacing: .28em; }
+        .site-footer__logo-text .rg { color: var(--rg,#b8687a); }
+        .site-footer__tagline { font-family: var(--font-cormorant,serif); font-style: italic; font-size: 1rem; color: rgba(255,255,255,.35); }
+        .site-footer__desc { font-size: .8125rem; line-height: 1.75; color: rgba(255,255,255,.3); max-width: 360px; }
+        .site-footer__badge { display: inline-flex; align-items: center; gap: .5rem; border: 1px solid rgba(184,104,122,.3); padding: .5rem .875rem; font-size: .5625rem; letter-spacing: .16em; text-transform: uppercase; color: var(--rg,#b8687a); width: fit-content; }
+        .site-footer__badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rg,#b8687a); flex-shrink: 0; }
+        .site-footer__cols { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .site-footer__col-head { font-size: .5rem; letter-spacing: .22em; text-transform: uppercase; color: rgba(255,255,255,.25); margin-bottom: 1.25rem; }
+        .site-footer__nav { display: flex; flex-direction: column; gap: .75rem; }
+        .site-footer__link { font-size: .8125rem; color: rgba(255,255,255,.45); text-decoration: none; transition: color .2s; }
+        .site-footer__link:hover { color: #fff; }
+        .site-footer__bottom { border-top: 1px solid rgba(255,255,255,.06); padding-top: 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .6875rem; color: rgba(255,255,255,.2); }
+        .site-footer__free { color: rgba(184,104,122,.6); text-decoration: none; transition: color .2s; }
+        .site-footer__free:hover { color: var(--rg,#b8687a); }
+        @media (max-width: 768px) { .site-footer__top { grid-template-columns: 1fr; gap: 2.5rem; } .site-footer__cols { grid-template-columns: 1fr 1fr; } }
       `}</style>
     </footer>
   )

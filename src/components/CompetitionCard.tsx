@@ -1,155 +1,100 @@
 'use client'
 
-import { motion } from 'framer-motion'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { formatCurrency } from '@/lib/utils'
 import CountdownTimer from './CountdownTimer'
 
-interface Competition {
+interface Comp {
   id: string; slug: string; title: string; subtitle?: string | null
   prizeValue: number; ticketPrice: number; maxTickets: number
   ticketsSold: number; images: string; drawDate?: string | null
   status: string; featured: boolean
 }
 
-export default function CompetitionCard({ competition, index = 0 }: { competition: Competition; index?: number }) {
-  const images = (() => { try { return JSON.parse(competition.images) as string[] } catch { return [] } })()
-  const heroImage = images[0] || null
-  const remaining = competition.maxTickets - competition.ticketsSold
-  const percentSold = Math.min(100, Math.round((competition.ticketsSold / competition.maxTickets) * 100))
-  const urgency = remaining < competition.maxTickets * 0.15
+export default function CompetitionCard({ competition: c, index = 0 }: { competition: Comp; index?: number }) {
+  const imgs = (() => { try { return JSON.parse(c.images) as string[] } catch { return [] } })()
+  const img = imgs[0]
+  const pct = Math.min(100, Math.round((c.ticketsSold / c.maxTickets) * 100))
+  const left = c.maxTickets - c.ticketsSold
+  const hot = pct >= 80
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 32 }}
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.7, ease: [0.25, 0.46, 0.45, 0.94], delay: index * 0.12 }}
-      style={{ background: 'white', position: 'relative', overflow: 'hidden' }}
+      transition={{ duration: .55, ease: [.25, .46, .45, .94], delay: index * .08 }}
+      className="comp-card"
     >
       {/* Image */}
-      <Link href={`/competitions/${competition.slug}`} style={{ display: 'block', position: 'relative', overflow: 'hidden', height: '280px' }}>
-        {heroImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <motion.img
-            whileHover={{ scale: 1.04 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
-            src={heroImage}
-            alt={competition.title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #ede0cf 0%, #ddd0c0 60%, #c8b8a8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="64" height="64" viewBox="0 0 64 64" fill="none" style={{ opacity: 0.3 }}>
-              <circle cx="32" cy="32" r="28" stroke="#8a4f58" strokeWidth="1.5" />
-              <path d="M22 32 L27 26 L32 34 L37 23 L42 32" stroke="#8a4f58" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
-          </div>
-        )}
-        {/* Overlay gradient at bottom */}
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '80px', background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 100%)' }} />
-
-        {/* Prize value */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '1rem',
-            left: '1.25rem',
-            color: 'white',
-            fontFamily: 'var(--font-cormorant)',
-            fontSize: '1.625rem',
-            fontWeight: 600,
-            lineHeight: 1,
-            textShadow: '0 1px 4px rgba(0,0,0,0.3)',
-          }}
-        >
-          {formatCurrency(competition.prizeValue)}
-        </div>
-
-        {urgency && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '1rem',
-              right: '1rem',
-              background: '#b76e79',
-              color: 'white',
-              fontSize: '0.5625rem',
-              fontWeight: 600,
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              padding: '0.35rem 0.7rem',
-            }}
-          >
-            Almost Gone
-          </div>
-        )}
+      <Link href={`/competitions/${c.slug}`} className="comp-card__img-wrap">
+        {img
+          ? <motion.img whileHover={{ scale: 1.05 }} transition={{ duration: .6, ease: [.25,.46,.45,.94] }} src={img} alt={c.title} className="comp-card__img" />
+          : <div className="comp-card__img-placeholder"><svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="#b8687a" strokeWidth="1"/><path d="M15 24l6-8 6 10 5-7 6 5" stroke="#b8687a" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg></div>
+        }
+        {/* Dark scrim at bottom */}
+        <div className="comp-card__scrim" />
+        {/* Prize value over image */}
+        <div className="comp-card__prize">{formatCurrency(c.prizeValue)}</div>
+        {hot && <div className="comp-card__badge">Selling Fast</div>}
       </Link>
 
-      {/* Content */}
-      <div style={{ padding: '1.5rem 1.5rem 1.75rem' }}>
-        <Link href={`/competitions/${competition.slug}`} style={{ textDecoration: 'none' }}>
-          <h3
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              fontSize: '1.625rem',
-              fontWeight: 500,
-              color: '#141210',
-              lineHeight: 1.15,
-              marginBottom: '0.25rem',
-              transition: 'color 0.2s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.color = '#b76e79')}
-            onMouseLeave={e => (e.currentTarget.style.color = '#141210')}
-          >
-            {competition.title}
-          </h3>
+      {/* Body */}
+      <div className="comp-card__body">
+        <Link href={`/competitions/${c.slug}`} style={{ textDecoration: 'none' }}>
+          <h3 className="comp-card__title">{c.title}</h3>
         </Link>
-        {competition.subtitle && (
-          <p style={{ fontSize: '0.8125rem', color: '#8a7f76', marginBottom: '1.25rem', lineHeight: 1.5 }}>
-            {competition.subtitle}
-          </p>
-        )}
+        {c.subtitle && <p className="comp-card__sub">{c.subtitle}</p>}
 
         {/* Progress */}
-        <div style={{ marginBottom: '1.125rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.6875rem', letterSpacing: '0.08em', color: '#8a7f76' }}>
-              {remaining.toLocaleString()} tickets remaining
-            </span>
-            <span style={{ fontSize: '0.6875rem', color: percentSold > 80 ? '#b76e79' : '#8a7f76', fontWeight: percentSold > 80 ? 600 : 400 }}>
-              {percentSold}% sold
-            </span>
-          </div>
-          <div style={{ height: '2px', background: '#e2d0c0', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${percentSold}%` }}
-              transition={{ duration: 1, delay: index * 0.12 + 0.3, ease: 'easeOut' }}
-              style={{ height: '100%', background: percentSold > 80 ? '#b76e79' : '#c8a898' }}
-            />
-          </div>
+        <div className="comp-card__progress-row">
+          <span className="comp-card__left">{left.toLocaleString()} tickets left</span>
+          <span className={`comp-card__pct ${hot ? 'hot' : ''}`}>{pct}%</span>
         </div>
+        <div className="comp-card__track"><div className={`comp-card__fill ${hot ? 'hot' : ''}`} style={{ width: `${pct}%` }} /></div>
 
-        {/* Countdown */}
-        {competition.drawDate && (
-          <div style={{ marginBottom: '1.25rem' }}>
-            <CountdownTimer drawDate={competition.drawDate} compact />
+        {c.drawDate && (
+          <div className="comp-card__timer">
+            <CountdownTimer drawDate={c.drawDate} compact />
           </div>
         )}
 
-        {/* Footer row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '1.125rem', borderTop: '1px solid #e2d0c0' }}>
+        {/* Footer */}
+        <div className="comp-card__foot">
           <div>
-            <p style={{ fontSize: '0.5625rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8a7f76', marginBottom: '0.2rem' }}>Per ticket</p>
-            <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: '#141210', lineHeight: 1 }}>
-              {formatCurrency(competition.ticketPrice)}
-            </p>
+            <p className="comp-card__price-label">Per ticket</p>
+            <p className="comp-card__price">{formatCurrency(c.ticketPrice)}</p>
           </div>
-          <Link href={`/competitions/${competition.slug}`} className="btn-rg" style={{ padding: '0.625rem 1.5rem', fontSize: '0.625rem' }}>
-            Enter Now
-          </Link>
+          <Link href={`/competitions/${c.slug}`} className="btn-rg comp-card__cta">Enter Now →</Link>
         </div>
       </div>
-    </motion.article>
+
+      <style>{`
+        .comp-card { background: #fff; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .35s, transform .35s; }
+        .comp-card:hover { box-shadow: 0 16px 48px rgba(12,11,10,.1); transform: translateY(-3px); }
+        .comp-card__img-wrap { display: block; position: relative; height: 260px; overflow: hidden; flex-shrink: 0; }
+        .comp-card__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .comp-card__img-placeholder { width: 100%; height: 100%; background: linear-gradient(145deg,#f0e8e0,#e4d8cc); display: flex; align-items: center; justify-content: center; }
+        .comp-card__scrim { position: absolute; bottom: 0; left: 0; right: 0; height: 100px; background: linear-gradient(to top, rgba(12,11,10,.7) 0%, transparent 100%); pointer-events: none; }
+        .comp-card__prize { position: absolute; bottom: 1rem; left: 1.25rem; font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 500; color: #fff; line-height: 1; text-shadow: 0 1px 6px rgba(0,0,0,.3); }
+        .comp-card__badge { position: absolute; top: 1rem; right: 1rem; background: var(--rg); color: #fff; font-size: .5625rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; padding: .3rem .75rem; }
+        .comp-card__body { padding: 1.375rem 1.5rem 1.75rem; flex: 1; display: flex; flex-direction: column; }
+        .comp-card__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); line-height: 1.15; margin-bottom: .25rem; transition: color .2s; }
+        .comp-card__title:hover { color: var(--rg); }
+        .comp-card__sub { font-size: .8125rem; color: var(--ink3); margin-bottom: 1.125rem; line-height: 1.5; }
+        .comp-card__progress-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .4rem; margin-top: auto; padding-top: 1rem; }
+        .comp-card__left { font-size: .6875rem; color: var(--ink3); }
+        .comp-card__pct { font-size: .6875rem; color: var(--ink3); }
+        .comp-card__pct.hot { color: var(--rg); font-weight: 600; }
+        .comp-card__track { height: 2px; background: var(--border); overflow: hidden; margin-bottom: 1rem; }
+        .comp-card__fill { height: 100%; background: var(--ink2); transition: width .6s ease; }
+        .comp-card__fill.hot { background: var(--rg); }
+        .comp-card__timer { margin-bottom: 1rem; }
+        .comp-card__foot { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .comp-card__price-label { font-size: .5625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); margin-bottom: .15rem; }
+        .comp-card__price { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); line-height: 1; }
+        .comp-card__cta { padding: .625rem 1.375rem; font-size: .625rem; }
+      `}</style>
+    </motion.div>
   )
 }
