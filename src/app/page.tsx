@@ -23,7 +23,7 @@ async function getData() {
         take: 4,
         include: {
           user: { select: { name: true } },
-          competition: { select: { title: true, prizeValue: true } },
+          competition: { select: { title: true, prizeValue: true, images: true, slug: true, ticketsSold: true, maxTickets: true } },
         },
       }),
     ])

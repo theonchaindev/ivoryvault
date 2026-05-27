@@ -3,7 +3,15 @@
 import { useState, useEffect } from 'react'
 import { getTimeRemaining } from '@/lib/utils'
 
-export default function CountdownTimer({ drawDate, compact = false }: { drawDate: string; compact?: boolean }) {
+export default function CountdownTimer({
+  drawDate,
+  compact = false,
+  variant = 'dark',
+}: {
+  drawDate: string
+  compact?: boolean
+  variant?: 'dark' | 'light'
+}) {
   const [t, setT] = useState(() => getTimeRemaining(drawDate))
 
   useEffect(() => {
@@ -11,8 +19,14 @@ export default function CountdownTimer({ drawDate, compact = false }: { drawDate
     return () => clearInterval(id)
   }, [drawDate])
 
+  const light = variant === 'light'
+
   if (t.total <= 0) {
-    return <span style={{ fontSize: '.6875rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--rg)' }}>Draw Complete</span>
+    return (
+      <span style={{ fontSize: '.6875rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--rg)' }}>
+        Draw Complete
+      </span>
+    )
   }
 
   const units = [
@@ -24,13 +38,36 @@ export default function CountdownTimer({ drawDate, compact = false }: { drawDate
 
   if (compact) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '.25rem', flexWrap: 'wrap' }}>
-        <span style={{ fontSize: '.5625rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', marginRight: '.25rem' }}>Closes in</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '.375rem', flexWrap: 'wrap' }}>
+        <span style={{
+          fontSize: '.5rem', letterSpacing: '.14em', textTransform: 'uppercase',
+          color: light ? 'rgba(255,255,255,.55)' : 'var(--ink3)',
+          marginRight: '.125rem',
+        }}>
+          Closes in
+        </span>
         {units.map((u, i) => (
           <span key={u.l} style={{ display: 'flex', alignItems: 'baseline', gap: '1px' }}>
-            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.125rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1 }}>{String(u.v).padStart(2, '0')}</span>
-            <span style={{ fontSize: '.5rem', color: 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>{u.l}</span>
-            {i < units.length - 1 && <span style={{ color: 'var(--border)', marginLeft: '.25rem' }}>·</span>}
+            <span style={{
+              fontFamily: 'var(--font-cormorant,serif)',
+              fontSize: light ? '1.25rem' : '1.125rem',
+              fontWeight: 600,
+              color: light ? '#fff' : 'var(--ink)',
+              lineHeight: 1,
+            }}>
+              {String(u.v).padStart(2, '0')}
+            </span>
+            <span style={{
+              fontSize: '.5rem',
+              color: light ? 'rgba(255,255,255,.5)' : 'var(--ink3)',
+              textTransform: 'uppercase',
+              letterSpacing: '.06em',
+            }}>
+              {u.l}
+            </span>
+            {i < units.length - 1 && (
+              <span style={{ color: light ? 'rgba(255,255,255,.25)' : 'var(--border)', marginLeft: '.25rem' }}>·</span>
+            )}
           </span>
         ))}
       </div>
@@ -41,11 +78,28 @@ export default function CountdownTimer({ drawDate, compact = false }: { drawDate
     <div style={{ display: 'flex', gap: '.5rem' }}>
       {units.map((u, i) => (
         <div key={u.l} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--off)', border: '1px solid var(--border)', padding: '.625rem .875rem', minWidth: '54px' }}>
-            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 400, color: 'var(--ink)', lineHeight: 1 }}>{String(u.v).padStart(2, '0')}</span>
-            <span style={{ fontSize: '.5rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink3)', marginTop: '3px' }}>{u.l}</span>
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            background: light ? 'rgba(255,255,255,.12)' : 'var(--off)',
+            border: `1px solid ${light ? 'rgba(255,255,255,.2)' : 'var(--border)'}`,
+            padding: '.625rem .875rem', minWidth: '54px',
+          }}>
+            <span style={{
+              fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem',
+              fontWeight: 400, color: light ? '#fff' : 'var(--ink)', lineHeight: 1,
+            }}>
+              {String(u.v).padStart(2, '0')}
+            </span>
+            <span style={{
+              fontSize: '.5rem', letterSpacing: '.14em', textTransform: 'uppercase',
+              color: light ? 'rgba(255,255,255,.5)' : 'var(--ink3)', marginTop: '3px',
+            }}>
+              {u.l}
+            </span>
           </div>
-          {i < units.length - 1 && <span style={{ color: 'var(--border)', fontSize: '.875rem' }}>:</span>}
+          {i < units.length - 1 && (
+            <span style={{ color: light ? 'rgba(255,255,255,.3)' : 'var(--border)', fontSize: '.875rem' }}>:</span>
+          )}
         </div>
       ))}
     </div>

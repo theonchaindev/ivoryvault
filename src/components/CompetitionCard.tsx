@@ -68,7 +68,7 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
         <div className="cc__body">
           {c.drawDate && (
             <div className="cc__timer">
-              <CountdownTimer drawDate={c.drawDate} compact />
+              <CountdownTimer drawDate={c.drawDate} compact variant="light" />
             </div>
           )}
           <h3 className="cc__title">{c.title}</h3>

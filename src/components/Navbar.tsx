@@ -187,6 +187,17 @@ export default function Navbar() {
           background: rgba(12,11,10,.45); z-index: 199;
         }
 
+        /* Sign out / ghost btn on dark navbar */
+        .iv-nav:not(.iv-nav--solid) .btn-ghost {
+          border-color: rgba(255,255,255,.3);
+          color: rgba(255,255,255,.85);
+        }
+        .iv-nav:not(.iv-nav--solid) .btn-ghost:hover {
+          border-color: rgba(255,255,255,.7);
+          background: rgba(255,255,255,.12);
+          color: #fff;
+        }
+
         @media (max-width: 900px) {
           .iv-nav__links, .iv-nav__right { display: none !important; }
           .iv-nav__burger { display: flex !important; }
