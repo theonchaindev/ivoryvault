@@ -60,7 +60,7 @@ export default async function WinnersPage() {
       <style>{`
         .wpage { background: var(--off); min-height: calc(100vh - 68px); }
         .wpage__grid-wrap { max-width: 1280px; margin: 0 auto; padding: 4rem 2rem 6rem; }
-        .wpage__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .wpage__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
         .wpage__empty { text-align: center; padding: 5rem 2rem; }
         .wpage__empty-text { font-family: var(--font-cormorant,serif); font-size: 1.5rem; color: var(--ink3); margin-bottom: .5rem; }
         .wpage__empty-sub { font-size: .875rem; color: var(--ink3); }

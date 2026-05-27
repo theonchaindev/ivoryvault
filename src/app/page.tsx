@@ -6,6 +6,7 @@ import CompetitionCard from '@/components/CompetitionCard'
 import AnimatedSection from '@/components/AnimatedSection'
 import HomeHero from '@/components/HomeHero'
 import StatsCounter from '@/components/StatsCounter'
+import WinnerCard from '@/components/WinnerCard'
 import { formatCurrency } from '@/lib/utils'
 
 async function getData() {
@@ -38,19 +39,19 @@ function parseImgs(raw: string): string[] {
 
 export default async function Home() {
   const { comps, winners } = await getData()
-  const hero = comps[0] ?? null
-  const heroImg = hero ? (parseImgs(hero.images)[0] ?? null) : null
-  const rest = comps.slice(1)
+  const heroComps = comps.map(c => ({
+    slug: c.slug, title: c.title, subtitle: c.subtitle ?? null,
+    prizeValue: c.prizeValue, ticketPrice: c.ticketPrice,
+    maxTickets: c.maxTickets, ticketsSold: c.ticketsSold,
+    heroImg: parseImgs(c.images)[0] ?? null,
+  }))
+  const rest = comps.slice(0, 6)
 
   return (
     <>
       <Navbar />
 
-      <HomeHero hero={hero ? {
-        slug: hero.slug, title: hero.title, subtitle: hero.subtitle ?? null,
-        prizeValue: hero.prizeValue, ticketPrice: hero.ticketPrice,
-        maxTickets: hero.maxTickets, ticketsSold: hero.ticketsSold,
-      } : null} heroImg={heroImg} />
+      <HomeHero comps={heroComps} />
 
       {/* ═══════════════════════════════════════════════════════════
           LIVE COMPETITIONS GRID
@@ -156,19 +157,18 @@ export default async function Home() {
               </div>
             </AnimatedSection>
             <div className="winners-grid">
-              {winners.map((w, i) => {
-                const name = (() => { const p = w.user.name.trim().split(' '); return p.length > 1 ? `${p[0]} ${p[p.length-1][0]}.` : p[0] })()
-                return (
-                  <AnimatedSection key={w.id} delay={i * .07}>
-                    <div className="winner-card">
-                      <div className="winner-card__star">★</div>
-                      <p className="winner-card__name">{name}</p>
-                      <p className="winner-card__prize">{w.prizeTitle || w.competition.title}</p>
-                      <p className="winner-card__val">{formatCurrency(w.prizeValue ?? w.competition.prizeValue)}</p>
-                    </div>
-                  </AnimatedSection>
-                )
-              })}
+              {winners.map((w, i) => (
+                <WinnerCard
+                  key={w.id}
+                  index={i}
+                  winner={{
+                    ...w,
+                    drawnAt: w.drawnAt.toISOString(),
+                    prizeTitle: w.prizeTitle ?? null,
+                    prizeValue: w.prizeValue ?? null,
+                  }}
+                />
+              ))}
             </div>
           </div>
         </section>
@@ -201,8 +201,7 @@ export default async function Home() {
 
         /* ─── COMPETITIONS SECTION ─────────────── */
         .comps-section { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); }
-        .comps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); }
-        .comps-grid > * { background: var(--off); }
+        .comps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         @media (max-width: 1100px) { .comps-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px)  { .comps-grid { grid-template-columns: 1fr; } }
         .empty-state { padding: 4rem; text-align: center; font-size: .9375rem; color: var(--ink3); border: 1px dashed var(--border); }
@@ -230,12 +229,7 @@ export default async function Home() {
 
         /* ─── WINNERS ──────────────────────────── */
         .winners-section { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); border-top: 1px solid var(--border); }
-        .winners-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); margin-top: clamp(2rem,4vw,3rem); }
-        .winner-card { background: #fff; padding: 2.25rem; }
-        .winner-card__star { font-size: .875rem; color: var(--rg); margin-bottom: 1rem; }
-        .winner-card__name { font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 400; color: var(--ink); line-height: 1.1; margin-bottom: .375rem; }
-        .winner-card__prize { font-size: .8125rem; color: var(--ink3); margin-bottom: 1.25rem; line-height: 1.5; }
-        .winner-card__val { font-family: var(--font-cormorant,serif); font-size: 1.25rem; font-weight: 500; color: var(--rg); padding-top: 1rem; border-top: 1px solid var(--border); }
+        .winners-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; margin-top: clamp(2rem,4vw,3rem); }
         @media (max-width: 900px) { .winners-grid { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 480px) { .winners-grid { grid-template-columns: 1fr; } }
 
