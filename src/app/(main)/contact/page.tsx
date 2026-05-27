@@ -1,23 +1,34 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
+
+const ease = [0.22, 1, 0.36, 1] as const
+const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
+
+const INFO = [
+  { icon: '✉', label: 'Email', value: 'hello@ivoryvault.co.uk' },
+  { icon: '⏱', label: 'Response Time', value: 'Within 24 hours' },
+  { icon: '📍', label: 'Location', value: 'United Kingdom' },
+]
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm(p => ({ ...p, [k]: e.target.value }))
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setStatus('loading')
-
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-
       if (res.ok) {
         setStatus('success')
         setForm({ name: '', email: '', subject: '', message: '' })
@@ -33,168 +44,173 @@ export default function ContactPage() {
   }
 
   return (
-    <div style={{ backgroundColor: '#fdf6ef', minHeight: 'calc(100vh - 72px)' }}>
-      {/* Header */}
-      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid #e8d8cc', backgroundColor: '#fffcf9' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b76e79', marginBottom: '0.75rem' }}>
+    <div className="cp">
+      {/* Hero */}
+      <section className="cp__hero">
+        <div className="cp__inner">
+          <motion.p className="cp__label" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease, delay: 0.1 }}>
             Get in Touch
-          </p>
-          <h1
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-              fontWeight: 600,
-              color: '#1c1a18',
-            }}
-          >
+          </motion.p>
+          <motion.h1 className="cp__title" initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.75, ease, delay: 0.2 }}>
             Contact Us
-          </h1>
+          </motion.h1>
         </div>
-      </div>
+      </section>
 
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '4rem 2rem 6rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.5fr)', gap: '5rem', alignItems: 'start' }}>
+      {/* Content */}
+      <div className="cp__body">
+        <div className="cp__grid">
           {/* Info */}
-          <div>
-            <h2
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                fontSize: '1.75rem',
-                fontWeight: 600,
-                color: '#1c1a18',
-                marginBottom: '1.5rem',
-              }}
-            >
-              We&apos;d love to hear from you
-            </h2>
-            <p style={{ fontSize: '0.9rem', color: '#5c524a', lineHeight: 1.8, marginBottom: '2.5rem' }}>
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease, delay: 0.3 }}
+          >
+            <h2 className="cp__info-title">We&apos;d love to hear from you</h2>
+            <p className="cp__info-body">
               Whether you have a question about a competition, need help with your account, or just want to say hello — our team is here to help.
             </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {[
-                {
-                  icon: '✉',
-                  label: 'Email',
-                  value: 'hello@ivoryvault.co.uk',
-                },
-                {
-                  icon: '⏱',
-                  label: 'Response Time',
-                  value: 'Within 24 hours',
-                },
-                {
-                  icon: '📍',
-                  label: 'Location',
-                  value: 'United Kingdom',
-                },
-              ].map(item => (
-                <div key={item.label} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-                  <span style={{ fontSize: '1.25rem', marginTop: '2px' }}>{item.icon}</span>
+            <div className="cp__contacts">
+              {INFO.map((item, i) => (
+                <motion.div
+                  key={item.label}
+                  className="cp__contact-item"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, ease, delay: 0.4 + i * 0.1 }}
+                >
+                  <span className="cp__contact-icon">{item.icon}</span>
                   <div>
-                    <p style={{ fontSize: '0.7rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a8878', marginBottom: '0.25rem' }}>
-                      {item.label}
-                    </p>
-                    <p style={{ fontSize: '0.9rem', color: '#1c1a18' }}>{item.value}</p>
+                    <p className="cp__contact-label">{item.label}</p>
+                    <p className="cp__contact-val">{item.value}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Form */}
-          <div style={{ backgroundColor: '#fffcf9', border: '1px solid #e8d8cc', padding: '2.5rem' }}>
-            {status === 'success' ? (
-              <div style={{ textAlign: 'center', padding: '2rem' }}>
-                <div style={{ width: '48px', height: '48px', border: '1px solid #b76e79', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', color: '#b76e79', fontSize: '1.5rem' }}>
-                  ✓
-                </div>
-                <h3 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', color: '#1c1a18', marginBottom: '0.5rem' }}>
-                  Message Sent
-                </h3>
-                <p style={{ color: '#9a8878', fontSize: '0.9rem' }}>
-                  Thank you for reaching out. We&apos;ll be in touch within 24 hours.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      className="iv-input"
-                      placeholder="Your name"
-                      value={form.name}
-                      onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      className="iv-input"
-                      placeholder="your@email.com"
-                      value={form.email}
-                      onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                      required
-                    />
-                  </div>
-                </div>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.7, ease, delay: 0.35 }}
+          >
+            <div className="cp__form-card">
+              <AnimatePresence mode="wait">
+                {status === 'success' ? (
+                  <motion.div
+                    key="success"
+                    className="cp__success"
+                    initial={{ opacity: 0, scale: 0.92 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.92 }}
+                    transition={{ duration: 0.45, ease }}
+                  >
+                    <motion.div
+                      className="cp__success-icon"
+                      initial={{ scale: 0, rotate: -20 }}
+                      animate={{ scale: 1, rotate: 0 }}
+                      transition={{ type: 'spring', stiffness: 250, damping: 18, delay: 0.15 }}
+                    >
+                      ✓
+                    </motion.div>
+                    <h3 className="cp__success-title">Message Sent</h3>
+                    <p className="cp__success-sub">Thank you for reaching out. We&apos;ll be in touch within 24 hours.</p>
+                  </motion.div>
+                ) : (
+                  <motion.form
+                    key="form"
+                    onSubmit={handleSubmit}
+                    className="cp__form"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="cp__form-2col">
+                      <div>
+                        <label className="cp__field-label">Name</label>
+                        <input type="text" className="iv-input" placeholder="Your name" value={form.name} onChange={set('name')} required />
+                      </div>
+                      <div>
+                        <label className="cp__field-label">Email</label>
+                        <input type="email" className="iv-input" placeholder="your@email.com" value={form.email} onChange={set('email')} required />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="cp__field-label">Subject</label>
+                      <input type="text" className="iv-input" placeholder="What is this about?" value={form.subject} onChange={set('subject')} />
+                    </div>
+                    <div>
+                      <label className="cp__field-label">Message</label>
+                      <textarea className="iv-input" placeholder="Your message..." rows={6} value={form.message} onChange={set('message')} required style={{ resize: 'vertical' }} />
+                    </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    className="iv-input"
-                    placeholder="What is this about?"
-                    value={form.subject}
-                    onChange={e => setForm(p => ({ ...p, subject: e.target.value }))}
-                  />
-                </div>
+                    <AnimatePresence>
+                      {status === 'error' && (
+                        <motion.div
+                          className="cp__error"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {errorMsg}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>
-                    Message
-                  </label>
-                  <textarea
-                    className="iv-input"
-                    placeholder="Your message..."
-                    rows={6}
-                    value={form.message}
-                    onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
-                    required
-                    style={{ resize: 'vertical' }}
-                  />
-                </div>
-
-                {status === 'error' && (
-                  <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(183,110,121,0.08)', border: '1px solid rgba(183,110,121,0.2)', color: '#8a4f58', fontSize: '0.85rem' }}>
-                    {errorMsg}
-                  </div>
+                    <motion.button
+                      type="submit"
+                      className="btn-primary cp__submit"
+                      disabled={status === 'loading'}
+                      whileHover={status !== 'loading' ? { scale: 1.02 } : {}}
+                      whileTap={status !== 'loading' ? { scale: 0.98 } : {}}
+                      transition={spring}
+                      style={{ opacity: status === 'loading' ? 0.7 : 1 }}
+                    >
+                      {status === 'loading' ? (
+                        <span className="cp__spinner-row"><span className="cp__spinner" /> Sending...</span>
+                      ) : 'Send Message'}
+                    </motion.button>
+                  </motion.form>
                 )}
-
-                <button
-                  type="submit"
-                  className="btn-primary"
-                  disabled={status === 'loading'}
-                  style={{ opacity: status === 'loading' ? 0.7 : 1 }}
-                >
-                  {status === 'loading' ? 'Sending...' : 'Send Message'}
-                </button>
-              </form>
-            )}
-          </div>
+              </AnimatePresence>
+            </div>
+          </motion.div>
         </div>
       </div>
+
+      <style>{`
+        .cp { background: var(--off); min-height: calc(100vh - 68px); }
+        .cp__hero { background: #fff; border-bottom: 1px solid var(--border); padding: clamp(5rem,8vw,8rem) 2rem clamp(3rem,5vw,4rem); }
+        .cp__inner { max-width: 1280px; margin: 0 auto; }
+        .cp__label { font-size: .5875rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .875rem; }
+        .cp__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; }
+        .cp__body { max-width: 1280px; margin: 0 auto; padding: clamp(3rem,6vw,5rem) 2rem clamp(4rem,8vw,7rem); }
+        .cp__grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap: clamp(3rem,5vw,5rem); align-items: start; }
+        .cp__info-title { font-family: var(--font-cormorant,serif); font-size: clamp(1.5rem,3vw,2rem); font-weight: 400; color: var(--ink); margin-bottom: 1.25rem; }
+        .cp__info-body { font-size: .9rem; color: var(--ink2); line-height: 1.8; margin-bottom: 2.5rem; }
+        .cp__contacts { display: flex; flex-direction: column; gap: 1.75rem; }
+        .cp__contact-item { display: flex; gap: 1rem; align-items: flex-start; }
+        .cp__contact-icon { font-size: 1.25rem; margin-top: 2px; flex-shrink: 0; }
+        .cp__contact-label { font-size: .625rem; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); margin-bottom: .2rem; }
+        .cp__contact-val { font-size: .9375rem; color: var(--ink); }
+        .cp__form-card { background: #fff; border: 1px solid var(--border); padding: 2.5rem; }
+        .cp__form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .cp__form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .cp__field-label { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); margin-bottom: .5rem; }
+        .cp__error { padding: .75rem 1rem; background: rgba(184,104,122,.08); border: 1px solid rgba(184,104,122,.2); color: #8a4f58; font-size: .85rem; overflow: hidden; }
+        .cp__submit { width: 100%; }
+        .cp__spinner-row { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+        .cp__spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: cp-spin .6s linear infinite; }
+        @keyframes cp-spin { to { transform: rotate(360deg); } }
+        .cp__success { padding: 2rem; text-align: center; }
+        .cp__success-icon { width: 52px; height: 52px; border: 1px solid var(--rg); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; color: var(--rg); font-size: 1.5rem; }
+        .cp__success-title { font-family: var(--font-cormorant,serif); font-size: 1.625rem; color: var(--ink); margin-bottom: .5rem; }
+        .cp__success-sub { font-size: .875rem; color: var(--ink3); line-height: 1.6; }
+        @media (max-width: 800px) { .cp__grid { grid-template-columns: 1fr; } .cp__form-2col { grid-template-columns: 1fr; } }
+      `}</style>
     </div>
   )
 }

@@ -3,6 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'motion/react'
+
+const ease = [0.22, 1, 0.36, 1] as const
+const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
+
+const fields = [
+  { id: 'name', label: 'Full Name', type: 'text', placeholder: 'Your name', key: 'name' as const },
+  { id: 'email', label: 'Email Address', type: 'email', placeholder: 'your@email.com', key: 'email' as const },
+  { id: 'password', label: 'Password', type: 'password', placeholder: 'Min. 8 characters', key: 'password' as const },
+  { id: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat your password', key: 'confirm' as const },
+]
 
 export default function SignupPage() {
   const router = useRouter()
@@ -13,17 +24,8 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-
-    if (form.password !== form.confirm) {
-      setError('Passwords do not match')
-      return
-    }
-
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters')
-      return
-    }
-
+    if (form.password !== form.confirm) { setError('Passwords do not match'); return }
+    if (form.password.length < 8) { setError('Password must be at least 8 characters'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/signup', {
@@ -31,16 +33,9 @@ export default function SignupPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
       })
-
       const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'Signup failed')
-        return
-      }
-
-      router.push('/')
-      router.refresh()
+      if (!res.ok) { setError(data.error || 'Signup failed'); return }
+      router.push('/'); router.refresh()
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -49,205 +44,129 @@ export default function SignupPage() {
   }
 
   return (
-    <div
-      style={{
-        flex: 1,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '3rem 1.5rem',
-        minHeight: 'calc(100vh - 72px)',
-        backgroundColor: '#fdf6ef',
-      }}
-    >
-      <div style={{ width: '100%', maxWidth: '440px' }}>
+    <div className="auth-page">
+      <motion.div
+        className="auth-wrap"
+        initial={{ opacity: 0, y: 32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.75, ease }}
+      >
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <span
-              style={{
-                fontFamily: 'var(--font-cormorant)',
-                fontSize: '1.75rem',
-                fontWeight: 600,
-                letterSpacing: '0.15em',
-                color: '#1c1a18',
-              }}
-            >
-              IVORY VAULT
-            </span>
-          </Link>
-          <div
-            style={{
-              height: '1px',
-              width: '80px',
-              margin: '6px auto 0',
-              background: 'linear-gradient(90deg, transparent, #b76e79, transparent)',
-            }}
-          />
-          <p
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              fontSize: '1.1rem',
-              fontStyle: 'italic',
-              color: '#9a8878',
-              marginTop: '0.75rem',
-            }}
-          >
-            Join the vault
-          </p>
-        </div>
+        <motion.div
+          className="auth-logo"
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0.1 }}
+        >
+          <Link href="/" className="auth-logo__link">IVORY VAULT</Link>
+          <div className="auth-logo__rule" />
+          <p className="auth-logo__tagline">Join the vault</p>
+        </motion.div>
 
         {/* Card */}
-        <div style={{ backgroundColor: '#fffcf9', border: '1px solid #e8d8cc', padding: '2.5rem' }}>
-          <h1
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              fontSize: '1.875rem',
-              fontWeight: 600,
-              color: '#1c1a18',
-              marginBottom: '0.375rem',
-            }}
-          >
-            Create Account
-          </h1>
-          <p style={{ fontSize: '0.85rem', color: '#9a8878', marginBottom: '2rem' }}>
-            Join thousands entering for luxury prizes
-          </p>
+        <motion.div
+          className="auth-card"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+        >
+          <h1 className="auth-h1">Create Account</h1>
+          <p className="auth-sub">Join thousands entering for luxury prizes</p>
 
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: '#5c524a',
-                  marginBottom: '0.5rem',
-                }}
+          <form onSubmit={handleSubmit} className="auth-form">
+            {fields.map((field, i) => (
+              <motion.div
+                key={field.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease, delay: 0.35 + i * 0.07 }}
               >
-                Full Name
-              </label>
-              <input
-                type="text"
-                className="iv-input"
-                placeholder="Your name"
-                value={form.name}
-                onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
-                required
-              />
-            </div>
+                <label htmlFor={field.id} className="auth-label">{field.label}</label>
+                <input
+                  id={field.id}
+                  type={field.type}
+                  className="iv-input"
+                  placeholder={field.placeholder}
+                  value={form[field.key]}
+                  onChange={e => setForm(p => ({ ...p, [field.key]: e.target.value }))}
+                  required={field.key !== 'confirm'}
+                />
+              </motion.div>
+            ))}
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: '#5c524a',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                className="iv-input"
-                placeholder="your@email.com"
-                value={form.email}
-                onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                required
-              />
-            </div>
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  className="auth-error"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: '#5c524a',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Password
-              </label>
-              <input
-                type="password"
-                className="iv-input"
-                placeholder="Min. 8 characters"
-                value={form.password}
-                onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                required
-              />
-            </div>
-
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  color: '#5c524a',
-                  marginBottom: '0.5rem',
-                }}
-              >
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                className="iv-input"
-                placeholder="Repeat your password"
-                value={form.confirm}
-                onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))}
-                required
-              />
-            </div>
-
-            {error && (
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  backgroundColor: 'rgba(183,110,121,0.08)',
-                  border: '1px solid rgba(183,110,121,0.2)',
-                  color: '#8a4f58',
-                  fontSize: '0.85rem',
-                }}
-              >
-                {error}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="btn-primary"
-              disabled={loading}
-              style={{ width: '100%', marginTop: '0.5rem', opacity: loading ? 0.7 : 1 }}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease, delay: 0.7 }}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-
-            <p style={{ fontSize: '0.75rem', color: '#9a8878', textAlign: 'center' }}>
-              By signing up you agree to our{' '}
-              <Link href="/terms" style={{ color: '#b76e79', textDecoration: 'none' }}>
-                Terms & Conditions
-              </Link>
-            </p>
+              <motion.button
+                type="submit"
+                className="btn-primary auth-btn"
+                disabled={loading}
+                whileHover={!loading ? { scale: 1.02 } : {}}
+                whileTap={!loading ? { scale: 0.98 } : {}}
+                transition={spring}
+                style={{ opacity: loading ? 0.7 : 1, transitionProperty: 'opacity' }}
+              >
+                {loading ? (
+                  <span className="auth-spinner-row"><span className="auth-spinner" /> Creating Account...</span>
+                ) : 'Create Account'}
+              </motion.button>
+              <p className="auth-terms">
+                By signing up you agree to our{' '}
+                <Link href="/terms" className="auth-terms-link">Terms & Conditions</Link>
+              </p>
+            </motion.div>
           </form>
 
-          <div style={{ borderTop: '1px solid #e8d8cc', marginTop: '2rem', paddingTop: '1.5rem', textAlign: 'center' }}>
-            <p style={{ fontSize: '0.85rem', color: '#9a8878' }}>
+          <div className="auth-divider">
+            <p className="auth-foot-text">
               Already have an account?{' '}
-              <Link href="/login" style={{ color: '#b76e79', textDecoration: 'none', fontWeight: 500 }}>
-                Sign in
-              </Link>
+              <Link href="/login" className="auth-foot-link">Sign in</Link>
             </p>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
+
+      <style>{`
+        .auth-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; min-height: calc(100vh - 68px); background: var(--off); }
+        .auth-wrap { width: 100%; max-width: 440px; }
+        .auth-logo { text-align: center; margin-bottom: 2.5rem; }
+        .auth-logo__link { font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 400; letter-spacing: .2em; color: var(--ink); text-decoration: none; }
+        .auth-logo__rule { height: 1px; width: 80px; margin: .5rem auto 0; background: linear-gradient(90deg, transparent, var(--rg), transparent); }
+        .auth-logo__tagline { font-family: var(--font-cormorant,serif); font-size: 1.0625rem; font-style: italic; color: var(--ink3); margin-top: .75rem; }
+        .auth-card { background: #fff; border: 1px solid var(--border); padding: 2.5rem; }
+        .auth-h1 { font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 400; color: var(--ink); margin-bottom: .375rem; }
+        .auth-sub { font-size: .85rem; color: var(--ink3); margin-bottom: 2rem; }
+        .auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .auth-label { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); margin-bottom: .5rem; }
+        .auth-error { padding: .75rem 1rem; background: rgba(184,104,122,.08); border: 1px solid rgba(184,104,122,.2); color: #8a4f58; font-size: .85rem; overflow: hidden; }
+        .auth-btn { width: 100%; }
+        .auth-terms { font-size: .75rem; color: var(--ink3); text-align: center; margin-top: .875rem; }
+        .auth-terms-link { color: var(--rg); text-decoration: none; }
+        .auth-terms-link:hover { text-decoration: underline; }
+        .auth-spinner-row { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+        .auth-spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: auth-spin .6s linear infinite; }
+        @keyframes auth-spin { to { transform: rotate(360deg); } }
+        .auth-divider { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1.5rem; text-align: center; }
+        .auth-foot-text { font-size: .85rem; color: var(--ink3); }
+        .auth-foot-link { color: var(--rg); text-decoration: none; font-weight: 500; }
+        .auth-foot-link:hover { text-decoration: underline; }
+      `}</style>
     </div>
   )
 }

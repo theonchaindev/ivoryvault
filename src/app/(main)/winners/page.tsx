@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import WinnerCard from '@/components/WinnerCard'
-import AnimatedSection from '@/components/AnimatedSection'
+import WinnersHero from './WinnersHero'
 
 export const metadata = {
   title: 'Winners — Ivory Vault',
@@ -24,87 +24,48 @@ async function getWinners() {
 
 export default async function WinnersPage() {
   const winners = await getWinners()
+  const total = winners.reduce((s, w) => s + (w.prizeValue ?? w.competition.prizeValue), 0)
 
   return (
-    <div style={{ backgroundColor: '#fdf6ef', minHeight: 'calc(100vh - 72px)' }}>
-      {/* Header */}
-      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid #e8d8cc', backgroundColor: '#fffcf9' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p
-            style={{
-              fontSize: '0.75rem',
-              letterSpacing: '0.2em',
-              textTransform: 'uppercase',
-              color: '#b76e79',
-              marginBottom: '0.75rem',
-            }}
-          >
-            Success Stories
-          </p>
-          <h1
-            style={{
-              fontFamily: 'var(--font-cormorant)',
-              fontSize: 'clamp(2.5rem, 5vw, 4rem)',
-              fontWeight: 600,
-              color: '#1c1a18',
-              lineHeight: 1.1,
-            }}
-          >
-            Our Winners
-          </h1>
-          <p
-            style={{
-              fontSize: '1.1rem',
-              color: '#5c524a',
-              marginTop: '0.75rem',
-              fontFamily: 'var(--font-cormorant)',
-              fontStyle: 'italic',
-            }}
-          >
-            Real people. Real prizes. Every draw is transparent and verified.
-          </p>
-        </div>
-      </div>
+    <div className="wpage">
+      <WinnersHero count={winners.length} total={total} />
 
-      {/* Winners grid */}
-      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '4rem 2rem 6rem' }}>
+      <div className="wpage__grid-wrap">
         {winners.length > 0 ? (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: '1.5rem',
-            }}
-          >
-            {winners.map((winner, i) => (
-              <AnimatedSection key={winner.id} delay={i * 0.05}>
-                <WinnerCard
-                  winner={{
-                    ...winner,
-                    drawnAt: winner.drawnAt.toISOString(),
-                    prizeTitle: winner.prizeTitle ?? null,
-                    prizeValue: winner.prizeValue ?? null,
-                  }}
-                />
-              </AnimatedSection>
+          <div className="wpage__grid">
+            {winners.map((w, i) => (
+              <WinnerCard
+                key={w.id}
+                index={i}
+                winner={{
+                  ...w,
+                  drawnAt: w.drawnAt.toISOString(),
+                  prizeTitle: w.prizeTitle ?? null,
+                  prizeValue: w.prizeValue ?? null,
+                }}
+              />
             ))}
           </div>
         ) : (
-          <AnimatedSection>
-            <div style={{ textAlign: 'center', padding: '5rem 2rem' }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ margin: '0 auto 1.5rem', display: 'block', opacity: 0.3 }}>
-                <path d="M30 5 L37 20 L54 22 L42 34 L45 51 L30 43 L15 51 L18 34 L6 22 L23 20 Z" stroke="#b76e79" strokeWidth="1.5" fill="none" />
-              </svg>
-              <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', color: '#9a8878' }}>
-                Winners will be announced here
-              </p>
-              <p style={{ fontSize: '0.85rem', color: '#9a8878', marginTop: '0.5rem' }}>
-                Be the first — enter a live competition today.
-              </p>
-            </div>
-          </AnimatedSection>
+          <div className="wpage__empty">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none" style={{ margin: '0 auto 1.5rem', display: 'block', opacity: .25 }}>
+              <path d="M28 4 L34 19 L51 21 L39 32 L42 49 L28 41 L14 49 L17 32 L5 21 L22 19 Z" stroke="#b8687a" strokeWidth="1.5" fill="none" />
+            </svg>
+            <p className="wpage__empty-text">Winners will be announced here</p>
+            <p className="wpage__empty-sub">Be the first — enter a live competition today.</p>
+          </div>
         )}
       </div>
+
+      <style>{`
+        .wpage { background: var(--off); min-height: calc(100vh - 68px); }
+        .wpage__grid-wrap { max-width: 1280px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+        .wpage__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .wpage__empty { text-align: center; padding: 5rem 2rem; }
+        .wpage__empty-text { font-family: var(--font-cormorant,serif); font-size: 1.5rem; color: var(--ink3); margin-bottom: .5rem; }
+        .wpage__empty-sub { font-size: .875rem; color: var(--ink3); }
+        @media (max-width: 640px) { .wpage__grid { grid-template-columns: 1fr; } }
+      `}</style>
     </div>
   )
 }
