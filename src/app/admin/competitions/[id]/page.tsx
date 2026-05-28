@@ -17,38 +17,37 @@ export default function EditCompetitionPage() {
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
 
-  const [form, setForm] = useState({
-    title: '', subtitle: '', description: '',
-    prizeValue: '', ticketPrice: '', maxTickets: '',
-    drawDate: '', status: 'active', featured: false, sortOrder: '0',
-  })
+  const [title, setTitle] = useState('')
+  const [subtitle, setSubtitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [prizeValue, setPrizeValue] = useState('')
+  const [ticketPrice, setTicketPrice] = useState('')
+  const [maxTickets, setMaxTickets] = useState('')
+  const [drawDate, setDrawDate] = useState('')
+  const [status, setStatus] = useState('active')
+  const [featured, setFeatured] = useState(false)
+  const [sortOrder, setSortOrder] = useState('0')
+
   const [images, setImages] = useState<string[]>([])
   const [urlInput, setUrlInput] = useState('')
-
   const [showLibrary, setShowLibrary] = useState(false)
   const [library, setLibrary] = useState<MediaImage[]>([])
   const [libraryLoading, setLibraryLoading] = useState(false)
 
-  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
-    setForm(p => ({ ...p, [k]: v }))
-
   useEffect(() => {
     fetch(`/api/admin/competitions/${id}`)
       .then(r => r.json())
-      .then((data: { competition: { title: string; subtitle?: string; description: string; prizeValue: number; ticketPrice: number; maxTickets: number; images: string; drawDate?: string; status: string; featured: boolean; sortOrder: number } }) => {
-        const c = data.competition
-        setForm({
-          title: c.title,
-          subtitle: c.subtitle || '',
-          description: c.description,
-          prizeValue: String(c.prizeValue),
-          ticketPrice: String(c.ticketPrice),
-          maxTickets: String(c.maxTickets),
-          drawDate: c.drawDate ? new Date(c.drawDate).toISOString().slice(0, 16) : '',
-          status: c.status,
-          featured: c.featured,
-          sortOrder: String(c.sortOrder),
-        })
+      .then(({ competition: c }: { competition: { title: string; subtitle?: string; description: string; prizeValue: number; ticketPrice: number; maxTickets: number; images: string; drawDate?: string; status: string; featured: boolean; sortOrder: number } }) => {
+        setTitle(c.title)
+        setSubtitle(c.subtitle || '')
+        setDescription(c.description)
+        setPrizeValue(String(c.prizeValue))
+        setTicketPrice(String(c.ticketPrice))
+        setMaxTickets(String(c.maxTickets))
+        setDrawDate(c.drawDate ? new Date(c.drawDate).toISOString().slice(0, 16) : '')
+        setStatus(c.status)
+        setFeatured(c.featured)
+        setSortOrder(String(c.sortOrder))
         try { setImages(JSON.parse(c.images)) } catch { setImages([]) }
       })
       .catch(() => setError('Failed to load competition'))
@@ -85,8 +84,8 @@ export default function EditCompetitionPage() {
 
   const removeImage = (url: string) => setImages(p => p.filter(u => u !== url))
   const moveImage = (i: number, dir: -1 | 1) => {
-    const next = [...images]
-    ;[next[i], next[i + dir]] = [next[i + dir], next[i]]
+    const next = [...images];
+    [next[i], next[i + dir]] = [next[i + dir], next[i]]
     setImages(next)
   }
   const selectFromLibrary = (url: string) => {
@@ -100,7 +99,7 @@ export default function EditCompetitionPage() {
       const res = await fetch(`/api/admin/competitions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, images: JSON.stringify(images) }),
+        body: JSON.stringify({ title, subtitle, description, prizeValue, ticketPrice, maxTickets, drawDate, status, featured, sortOrder, images: JSON.stringify(images) }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Failed to update'); return }
@@ -110,13 +109,6 @@ export default function EditCompetitionPage() {
 
   if (loading) return <div style={{ padding: '2rem', color: '#9a8878' }}>Loading...</div>
 
-  const F = ({ label, k, type = 'text', ...rest }: { label: string; k: keyof typeof form; type?: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
-    <div>
-      <label className="field-label">{label}</label>
-      <input type={type} className="iv-input" value={form[k] as string} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))} {...rest} />
-    </div>
-  )
-
   return (
     <div className="nc-page">
       <div className="nc-header">
@@ -125,22 +117,38 @@ export default function EditCompetitionPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="nc-form">
+
         <section className="nc-card">
           <h2 className="nc-section-title">Details</h2>
-          <F label="Title *" k="title" required />
-          <F label="Subtitle" k="subtitle" />
+          <div>
+            <label className="field-label">Title *</label>
+            <input className="iv-input" required value={title} onChange={e => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label className="field-label">Subtitle</label>
+            <input className="iv-input" value={subtitle} onChange={e => setSubtitle(e.target.value)} />
+          </div>
           <div>
             <label className="field-label">Description *</label>
-            <textarea className="iv-input" rows={5} required value={form.description} onChange={e => set('description', e.target.value)} style={{ resize: 'vertical' }} />
+            <textarea className="iv-input" rows={5} required value={description} onChange={e => setDescription(e.target.value)} style={{ resize: 'vertical' }} />
           </div>
         </section>
 
         <section className="nc-card">
           <h2 className="nc-section-title">Pricing & Tickets</h2>
           <div className="nc-3col">
-            <F label="Prize Value (£) *" k="prizeValue" type="number" required min="0" step="0.01" />
-            <F label="Ticket Price (£) *" k="ticketPrice" type="number" required min="0.01" step="0.01" />
-            <F label="Max Tickets *" k="maxTickets" type="number" required min="1" />
+            <div>
+              <label className="field-label">Prize Value (£) *</label>
+              <input type="number" className="iv-input" required min="0" step="0.01" value={prizeValue} onChange={e => setPrizeValue(e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label">Ticket Price (£) *</label>
+              <input type="number" className="iv-input" required min="0.01" step="0.01" value={ticketPrice} onChange={e => setTicketPrice(e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label">Max Tickets *</label>
+              <input type="number" className="iv-input" required min="1" value={maxTickets} onChange={e => setMaxTickets(e.target.value)} />
+            </div>
           </div>
         </section>
 
@@ -151,9 +159,7 @@ export default function EditCompetitionPage() {
           <div className="nc-upload-row">
             <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
               <button type="button" className="nc-upload-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                {uploading ? <span className="nc-spinner" /> : (
-                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 5l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                )}
+                {uploading ? <span className="nc-spinner" /> : <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 5l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>}
                 {uploading ? 'Uploading...' : 'Upload from device'}
               </button>
               <button type="button" className="nc-upload-btn nc-library-btn" onClick={() => setShowLibrary(s => !s)}>
@@ -181,7 +187,7 @@ export default function EditCompetitionPage() {
               {libraryLoading ? (
                 <div style={{ padding: '2rem', textAlign: 'center' }}><span className="nc-spinner" style={{ margin: '0 auto', display: 'block', width: 20, height: 20 }} /></div>
               ) : library.length === 0 ? (
-                <p className="nc-library__empty">No images yet. Upload one above.</p>
+                <p className="nc-library__empty">No images uploaded yet.</p>
               ) : (
                 <div className="nc-library__grid">
                   {library.map(img => (
@@ -217,13 +223,19 @@ export default function EditCompetitionPage() {
         <section className="nc-card">
           <h2 className="nc-section-title">Settings</h2>
           <div className="nc-2col">
-            <F label="Draw Date" k="drawDate" type="datetime-local" />
-            <F label="Sort Order" k="sortOrder" type="number" min="0" />
+            <div>
+              <label className="field-label">Draw Date</label>
+              <input type="datetime-local" className="iv-input" value={drawDate} onChange={e => setDrawDate(e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label">Sort Order</label>
+              <input type="number" className="iv-input" min="0" value={sortOrder} onChange={e => setSortOrder(e.target.value)} />
+            </div>
           </div>
           <div className="nc-2col">
             <div>
               <label className="field-label">Status</label>
-              <select className="iv-input" value={form.status} onChange={e => set('status', e.target.value)}>
+              <select className="iv-input" value={status} onChange={e => setStatus(e.target.value)}>
                 <option value="active">Active — live on site</option>
                 <option value="draft">Draft — hidden from site</option>
                 <option value="completed">Completed</option>
@@ -232,7 +244,7 @@ export default function EditCompetitionPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
               <label className="field-label">Options</label>
               <label className="nc-check">
-                <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} />
+                <input type="checkbox" checked={featured} onChange={e => setFeatured(e.target.checked)} />
                 <span>Featured on homepage</span>
               </label>
             </div>

@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
       use_filename: false,
       unique_filename: true,
       overwrite: false,
-      transformation: [{ quality: 'auto', fetch_format: 'auto' }],
     })
 
     return NextResponse.json({ url: result.secure_url, publicId: result.public_id })
