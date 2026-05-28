@@ -1,50 +1,41 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 
-interface Competition {
-  id: string
-  title: string
-  subtitle?: string
-  description: string
-  prizeValue: number
-  ticketPrice: number
-  maxTickets: number
-  images: string
-  drawDate?: string
-  status: string
-  featured: boolean
-  sortOrder: number
-}
+interface MediaImage { url: string; publicId: string; size: number; createdAt: string }
 
 export default function EditCompetitionPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploading, setUploading] = useState(false)
+
   const [form, setForm] = useState({
-    title: '',
-    subtitle: '',
-    description: '',
-    prizeValue: '',
-    ticketPrice: '',
-    maxTickets: '',
-    images: '[]',
-    drawDate: '',
-    status: 'draft',
-    featured: false,
-    sortOrder: '0',
+    title: '', subtitle: '', description: '',
+    prizeValue: '', ticketPrice: '', maxTickets: '',
+    drawDate: '', status: 'active', featured: false, sortOrder: '0',
   })
+  const [images, setImages] = useState<string[]>([])
+  const [urlInput, setUrlInput] = useState('')
+
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [library, setLibrary] = useState<MediaImage[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
+    setForm(p => ({ ...p, [k]: v }))
 
   useEffect(() => {
     fetch(`/api/admin/competitions/${id}`)
       .then(r => r.json())
-      .then((data: { competition: Competition }) => {
+      .then((data: { competition: { title: string; subtitle?: string; description: string; prizeValue: number; ticketPrice: number; maxTickets: number; images: string; drawDate?: string; status: string; featured: boolean; sortOrder: number } }) => {
         const c = data.competition
         setForm({
           title: c.title,
@@ -53,136 +44,260 @@ export default function EditCompetitionPage() {
           prizeValue: String(c.prizeValue),
           ticketPrice: String(c.ticketPrice),
           maxTickets: String(c.maxTickets),
-          images: c.images,
           drawDate: c.drawDate ? new Date(c.drawDate).toISOString().slice(0, 16) : '',
           status: c.status,
           featured: c.featured,
           sortOrder: String(c.sortOrder),
         })
+        try { setImages(JSON.parse(c.images)) } catch { setImages([]) }
       })
       .catch(() => setError('Failed to load competition'))
       .finally(() => setLoading(false))
   }, [id])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-    setError('')
+  const loadLibrary = useCallback(async () => {
+    setLibraryLoading(true)
+    try {
+      const res = await fetch('/api/admin/media')
+      if (res.ok) setLibrary((await res.json()).images ?? [])
+    } finally { setLibraryLoading(false) }
+  }, [])
 
+  useEffect(() => { if (showLibrary) loadLibrary() }, [showLibrary, loadLibrary])
+
+  const addUrl = () => {
+    const u = urlInput.trim()
+    if (u && !images.includes(u)) setImages(p => [...p, u])
+    setUrlInput('')
+  }
+
+  const uploadFile = async (file: File) => {
+    setUploading(true); setError('')
+    try {
+      const fd = new FormData(); fd.append('file', file)
+      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error || 'Upload failed'); return }
+      setImages(p => [...p, data.url])
+      if (showLibrary) loadLibrary()
+    } catch { setError('Upload failed') } finally { setUploading(false) }
+  }
+
+  const removeImage = (url: string) => setImages(p => p.filter(u => u !== url))
+  const moveImage = (i: number, dir: -1 | 1) => {
+    const next = [...images]
+    ;[next[i], next[i + dir]] = [next[i + dir], next[i]]
+    setImages(next)
+  }
+  const selectFromLibrary = (url: string) => {
+    if (!images.includes(url)) setImages(p => [...p, url])
+    setShowLibrary(false)
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault(); setSaving(true); setError('')
     try {
       const res = await fetch(`/api/admin/competitions/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, images: JSON.stringify(images) }),
       })
-
       const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || 'Failed to update')
-        return
-      }
-
-      router.push('/admin/competitions')
-      router.refresh()
-    } catch {
-      setError('Something went wrong')
-    } finally {
-      setSaving(false)
-    }
+      if (!res.ok) { setError(data.error || 'Failed to update'); return }
+      router.push('/admin/competitions'); router.refresh()
+    } catch { setError('Something went wrong') } finally { setSaving(false) }
   }
 
-  if (loading) {
-    return <div style={{ padding: '2rem', color: '#9a8878' }}>Loading...</div>
-  }
+  if (loading) return <div style={{ padding: '2rem', color: '#9a8878' }}>Loading...</div>
+
+  const F = ({ label, k, type = 'text', ...rest }: { label: string; k: keyof typeof form; type?: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
+    <div>
+      <label className="field-label">{label}</label>
+      <input type={type} className="iv-input" value={form[k] as string} onChange={e => setForm(p => ({ ...p, [k]: e.target.value }))} {...rest} />
+    </div>
+  )
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <Link href="/admin/competitions" style={{ color: '#9a8878', textDecoration: 'none', fontSize: '0.875rem' }}>
-          ← Back
-        </Link>
-        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: '#1c1a18' }}>
-          Edit Competition
-        </h1>
+    <div className="nc-page">
+      <div className="nc-header">
+        <Link href="/admin/competitions" className="nc-back">← Back</Link>
+        <h1 className="nc-title">Edit Competition</h1>
       </div>
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: '700px' }}>
-        <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.25rem', fontWeight: 600, color: '#1c1a18' }}>Details</h2>
+      <form onSubmit={handleSubmit} className="nc-form">
+        <section className="nc-card">
+          <h2 className="nc-section-title">Details</h2>
+          <F label="Title *" k="title" required />
+          <F label="Subtitle" k="subtitle" />
           <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Title *</label>
-            <input type="text" className="iv-input" required value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} />
+            <label className="field-label">Description *</label>
+            <textarea className="iv-input" rows={5} required value={form.description} onChange={e => set('description', e.target.value)} style={{ resize: 'vertical' }} />
           </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Subtitle</label>
-            <input type="text" className="iv-input" value={form.subtitle} onChange={e => setForm(p => ({ ...p, subtitle: e.target.value }))} />
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Description *</label>
-            <textarea className="iv-input" rows={5} required value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} style={{ resize: 'vertical' }} />
-          </div>
-        </div>
+        </section>
 
-        <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.25rem', fontWeight: 600, color: '#1c1a18' }}>Pricing & Tickets</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.25rem' }}>
-            {['prizeValue', 'ticketPrice', 'maxTickets'].map(key => (
-              <div key={key}>
-                <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>
-                  {key === 'prizeValue' ? 'Prize Value (£)' : key === 'ticketPrice' ? 'Ticket Price (£)' : 'Max Tickets'}
-                </label>
-                <input
-                  type="number"
-                  className="iv-input"
-                  value={form[key as keyof typeof form] as string}
-                  onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
-                  min="0"
-                  step={key === 'maxTickets' ? '1' : '0.01'}
-                />
-              </div>
-            ))}
+        <section className="nc-card">
+          <h2 className="nc-section-title">Pricing & Tickets</h2>
+          <div className="nc-3col">
+            <F label="Prize Value (£) *" k="prizeValue" type="number" required min="0" step="0.01" />
+            <F label="Ticket Price (£) *" k="ticketPrice" type="number" required min="0.01" step="0.01" />
+            <F label="Max Tickets *" k="maxTickets" type="number" required min="1" />
           </div>
-        </div>
+        </section>
 
-        <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.25rem', fontWeight: 600, color: '#1c1a18' }}>Settings</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Draw Date</label>
-              <input type="datetime-local" className="iv-input" value={form.drawDate} onChange={e => setForm(p => ({ ...p, drawDate: e.target.value }))} />
+        <section className="nc-card">
+          <h2 className="nc-section-title">Images</h2>
+          <p className="nc-hint">First image is the hero. Use arrows to reorder.</p>
+
+          <div className="nc-upload-row">
+            <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
+              <button type="button" className="nc-upload-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                {uploading ? <span className="nc-spinner" /> : (
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 5l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                )}
+                {uploading ? 'Uploading...' : 'Upload from device'}
+              </button>
+              <button type="button" className="nc-upload-btn nc-library-btn" onClick={() => setShowLibrary(s => !s)}>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/></svg>
+                {showLibrary ? 'Hide library' : 'Media library'}
+              </button>
             </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.625rem' }}>
+              <span className="nc-hint">or paste URL:</span>
+              <div className="nc-url-row" style={{ flex: 1 }}>
+                <input type="url" className="iv-input" placeholder="https://example.com/image.jpg" value={urlInput} onChange={e => setUrlInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addUrl())} style={{ flex: 1 }} />
+                <button type="button" className="nc-add-url" onClick={addUrl}>Add</button>
+              </div>
+            </div>
+          </div>
+
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = '' }} />
+
+          {showLibrary && (
+            <div className="nc-library">
+              <div className="nc-library__head">
+                <p className="nc-library__title">Media Library</p>
+                <button type="button" className="nc-library__refresh" onClick={loadLibrary}>↻ Refresh</button>
+              </div>
+              {libraryLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center' }}><span className="nc-spinner" style={{ margin: '0 auto', display: 'block', width: 20, height: 20 }} /></div>
+              ) : library.length === 0 ? (
+                <p className="nc-library__empty">No images yet. Upload one above.</p>
+              ) : (
+                <div className="nc-library__grid">
+                  {library.map(img => (
+                    <button key={img.publicId} type="button" className={`nc-library__item${images.includes(img.url) ? ' selected' : ''}`} onClick={() => selectFromLibrary(img.url)}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt="" className="nc-library__img" />
+                      {images.includes(img.url) && <span className="nc-library__check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {images.length > 0 && (
+            <div className="nc-img-grid">
+              {images.map((url, i) => (
+                <div key={url} className="nc-img-item">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt="" className="nc-img-preview" />
+                  {i === 0 && <span className="nc-img-badge">Hero</span>}
+                  <div className="nc-img-actions">
+                    <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0}>‹</button>
+                    <button type="button" onClick={() => moveImage(i, 1)} disabled={i === images.length - 1}>›</button>
+                    <button type="button" onClick={() => removeImage(url)} className="nc-img-remove">✕</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="nc-card">
+          <h2 className="nc-section-title">Settings</h2>
+          <div className="nc-2col">
+            <F label="Draw Date" k="drawDate" type="datetime-local" />
+            <F label="Sort Order" k="sortOrder" type="number" min="0" />
+          </div>
+          <div className="nc-2col">
             <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Status</label>
-              <select className="iv-input" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
-                <option value="draft">Draft</option>
-                <option value="active">Active</option>
+              <label className="field-label">Status</label>
+              <select className="iv-input" value={form.status} onChange={e => set('status', e.target.value)}>
+                <option value="active">Active — live on site</option>
+                <option value="draft">Draft — hidden from site</option>
                 <option value="completed">Completed</option>
               </select>
             </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem' }}>
+              <label className="field-label">Options</label>
+              <label className="nc-check">
+                <input type="checkbox" checked={form.featured} onChange={e => set('featured', e.target.checked)} />
+                <span>Featured on homepage</span>
+              </label>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <input type="checkbox" id="featured" checked={form.featured} onChange={e => setForm(p => ({ ...p, featured: e.target.checked }))} style={{ width: '16px', height: '16px', accentColor: '#b76e79' }} />
-            <label htmlFor="featured" style={{ fontSize: '0.875rem', color: '#5c524a' }}>Featured competition</label>
-          </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#5c524a', marginBottom: '0.5rem' }}>Images (JSON)</label>
-            <input type="text" className="iv-input" value={form.images} onChange={e => setForm(p => ({ ...p, images: e.target.value }))} placeholder='["https://..."]' />
-          </div>
-        </div>
+        </section>
 
-        {error && (
-          <div style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(183,110,121,0.08)', border: '1px solid rgba(183,110,121,0.2)', color: '#8a4f58', fontSize: '0.85rem', marginBottom: '1rem' }}>
-            {error}
-          </div>
-        )}
+        {error && <div className="nc-error">{error}</div>}
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button type="submit" className="btn-primary" disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
+        <div className="nc-actions">
+          <button type="submit" className="btn-dark" disabled={saving} style={{ opacity: saving ? .65 : 1 }}>
             {saving ? 'Saving...' : 'Save Changes'}
           </button>
-          <Link href="/admin/competitions" className="btn-outline">Cancel</Link>
+          <Link href="/admin/competitions" className="btn-ghost">Cancel</Link>
         </div>
       </form>
+
+      <style>{`
+        .nc-page { max-width: 820px; }
+        .nc-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; }
+        .nc-back { font-size: .8125rem; color: var(--ink3,#7a726a); text-decoration: none; transition: color .2s; }
+        .nc-back:hover { color: var(--rg,#b8687a); }
+        .nc-title { font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 400; color: var(--ink,#0c0b0a); }
+        .nc-form { display: flex; flex-direction: column; gap: 1.25rem; }
+        .nc-card { background: #fff; border: 1px solid var(--border,#e8e2da); padding: 1.75rem; display: flex; flex-direction: column; gap: 1.25rem; }
+        .nc-section-title { font-family: var(--font-cormorant,serif); font-size: 1.125rem; font-weight: 500; color: var(--ink,#0c0b0a); padding-bottom: .875rem; border-bottom: 1px solid var(--border,#e8e2da); }
+        .field-label { display: block; font-size: .6875rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2,#3a3530); margin-bottom: .5rem; }
+        .nc-hint { font-size: .8125rem; color: var(--ink3,#7a726a); }
+        .nc-3col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .nc-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 600px) { .nc-3col,.nc-2col { grid-template-columns: 1fr; } }
+        .nc-upload-row { display: flex; flex-direction: column; gap: .875rem; }
+        .nc-upload-btn { display: inline-flex; align-items: center; gap: .5rem; padding: .75rem 1.25rem; background: var(--off,#f7f4f0); border: 1px dashed var(--border,#e8e2da); cursor: pointer; font-size: .6875rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2,#3a3530); transition: border-color .2s, background .2s, color .2s; }
+        .nc-upload-btn:hover:not(:disabled) { border-color: var(--rg,#b8687a); background: #fdf0f2; color: var(--rg,#b8687a); }
+        .nc-upload-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .nc-library-btn { border-style: solid; }
+        .nc-url-row { display: flex; gap: .625rem; }
+        .nc-add-url { padding: 0 1.25rem; background: var(--ink,#0c0b0a); color: #fff; border: none; cursor: pointer; font-size: .625rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; transition: background .2s; }
+        .nc-add-url:hover { background: #2a2420; }
+        .nc-spinner { width: 14px; height: 14px; border: 1.5px solid rgba(0,0,0,.15); border-top-color: var(--ink,#0c0b0a); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .nc-library { border: 1px solid var(--border,#e8e2da); background: var(--off,#f7f4f0); padding: 1.25rem; }
+        .nc-library__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .nc-library__title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2,#3a3530); }
+        .nc-library__refresh { font-size: .6875rem; color: var(--rg,#b8687a); background: none; border: none; cursor: pointer; text-decoration: underline; }
+        .nc-library__empty { font-size: .875rem; color: var(--ink3,#7a726a); text-align: center; padding: 2rem 0; }
+        .nc-library__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: .5rem; max-height: 320px; overflow-y: auto; }
+        .nc-library__item { position: relative; aspect-ratio: 1; overflow: hidden; border: 2px solid transparent; cursor: pointer; padding: 0; background: none; transition: border-color .15s; }
+        .nc-library__item:hover, .nc-library__item.selected { border-color: var(--rg,#b8687a); }
+        .nc-library__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nc-library__check { position: absolute; top: .25rem; right: .25rem; width: 18px; height: 18px; background: var(--rg,#b8687a); color: #fff; border-radius: 50%; font-size: .6rem; display: flex; align-items: center; justify-content: center; }
+        .nc-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
+        .nc-img-item { position: relative; aspect-ratio: 4/3; border: 1px solid var(--border,#e8e2da); overflow: hidden; }
+        .nc-img-preview { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nc-img-badge { position: absolute; top: .375rem; left: .375rem; background: var(--rg,#b8687a); color: #fff; font-size: .5rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: .2rem .5rem; }
+        .nc-img-actions { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(12,11,10,.7); display: flex; justify-content: center; gap: .25rem; padding: .375rem; opacity: 0; transition: opacity .2s; }
+        .nc-img-item:hover .nc-img-actions { opacity: 1; }
+        .nc-img-actions button { background: rgba(255,255,255,.15); border: none; color: #fff; width: 26px; height: 26px; cursor: pointer; font-size: .875rem; border-radius: 2px; transition: background .15s; display: flex; align-items: center; justify-content: center; }
+        .nc-img-actions button:hover:not(:disabled) { background: rgba(255,255,255,.3); }
+        .nc-img-actions button:disabled { opacity: .3; cursor: not-allowed; }
+        .nc-img-remove:hover:not(:disabled) { background: rgba(184,104,122,.6) !important; }
+        .nc-check { display: flex; align-items: center; gap: .625rem; cursor: pointer; font-size: .875rem; color: var(--ink2,#3a3530); }
+        .nc-check input { width: 15px; height: 15px; accent-color: var(--rg,#b8687a); cursor: pointer; }
+        .nc-error { padding: .875rem 1rem; background: #fdf0f2; border: 1px solid rgba(184,104,122,.25); color: #8a4a56; font-size: .875rem; }
+        .nc-actions { display: flex; gap: 1rem; padding-top: .5rem; }
+      `}</style>
     </div>
   )
 }

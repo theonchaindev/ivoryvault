@@ -1,10 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
 import { requireAdmin } from '@/lib/auth'
+import { v2 as cloudinary } from 'cloudinary'
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export async function POST(request: NextRequest) {
   try {
     await requireAdmin()
+
+    if (!process.env.CLOUDINARY_CLOUD_NAME) {
+      return NextResponse.json(
+        { error: 'Image upload not configured — add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET to your Vercel environment variables.' },
+        { status: 503 },
+      )
+    }
 
     const form = await request.formData()
     const file = form.get('file') as File | null
@@ -13,23 +26,24 @@ export async function POST(request: NextRequest) {
 
     const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/avif']
     if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: 'Only JPEG, PNG, WebP or AVIF images allowed' }, { status: 400 })
+      return NextResponse.json({ error: 'Only JPEG, PNG, WebP or AVIF allowed' }, { status: 400 })
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'File too large — max 10 MB' }, { status: 400 })
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large — max 8 MB' }, { status: 400 })
-    }
+    const buf = Buffer.from(await file.arrayBuffer())
+    const dataUri = `data:${file.type};base64,${buf.toString('base64')}`
 
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const name = `competitions/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: 'ivoryvault',
+      use_filename: false,
+      unique_filename: true,
+      overwrite: false,
+      transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+    })
 
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return NextResponse.json({ error: 'Image upload not configured — paste a URL instead, or add BLOB_READ_WRITE_TOKEN in Vercel Storage settings.' }, { status: 503 })
-    }
-
-    const blob = await put(name, file, { access: 'public' })
-
-    return NextResponse.json({ url: blob.url })
+    return NextResponse.json({ url: result.secure_url, publicId: result.public_id })
   } catch (err) {
     const e = err as Error
     if (e.message === 'Unauthorized' || e.message === 'Forbidden') {

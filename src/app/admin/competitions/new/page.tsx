@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
@@ -10,6 +10,10 @@ interface FormState {
   drawDate: string; status: string; featured: boolean; sortOrder: string
 }
 
+interface MediaImage {
+  url: string; publicId: string; size: number; createdAt: string
+}
+
 export default function NewCompetitionPage() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -17,13 +21,35 @@ export default function NewCompetitionPage() {
   const [form, setForm] = useState<FormState>({
     title: '', subtitle: '', description: '',
     prizeValue: '', ticketPrice: '', maxTickets: '',
-    drawDate: '', status: 'draft', featured: false, sortOrder: '0',
+    drawDate: '', status: 'active', featured: false, sortOrder: '0',
   })
   const [images, setImages] = useState<string[]>([])
   const [urlInput, setUrlInput] = useState('')
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+
+  /* ── Media library ── */
+  const [showLibrary, setShowLibrary] = useState(false)
+  const [library, setLibrary] = useState<MediaImage[]>([])
+  const [libraryLoading, setLibraryLoading] = useState(false)
+
+  const loadLibrary = useCallback(async () => {
+    setLibraryLoading(true)
+    try {
+      const res = await fetch('/api/admin/media')
+      if (res.ok) {
+        const data = await res.json()
+        setLibrary(data.images ?? [])
+      }
+    } finally {
+      setLibraryLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (showLibrary) loadLibrary()
+  }, [showLibrary, loadLibrary])
 
   const set = (k: keyof FormState, v: string | boolean) =>
     setForm(p => ({ ...p, [k]: v }))
@@ -45,6 +71,8 @@ export default function NewCompetitionPage() {
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Upload failed'); return }
       setImages(p => [...p, data.url])
+      // refresh library so new image appears
+      if (showLibrary) loadLibrary()
     } catch {
       setError('Upload failed — check your connection')
     } finally {
@@ -57,6 +85,11 @@ export default function NewCompetitionPage() {
     const next = [...images]
     ;[next[i], next[i + dir]] = [next[i + dir], next[i]]
     setImages(next)
+  }
+
+  const selectFromLibrary = (url: string) => {
+    if (!images.includes(url)) setImages(p => [...p, url])
+    setShowLibrary(false)
   }
 
   /* ── Submit ── */
@@ -80,7 +113,6 @@ export default function NewCompetitionPage() {
     }
   }
 
-  /* ── Field helper ── */
   const F = ({ label, k, type = 'text', ...rest }: { label: string; k: keyof FormState; type?: string } & React.InputHTMLAttributes<HTMLInputElement>) => (
     <div>
       <label className="field-label">{label}</label>
@@ -90,7 +122,6 @@ export default function NewCompetitionPage() {
 
   return (
     <div className="nc-page">
-      {/* Header */}
       <div className="nc-header">
         <Link href="/admin/competitions" className="nc-back">← Back</Link>
         <h1 className="nc-title">New Competition</h1>
@@ -122,36 +153,78 @@ export default function NewCompetitionPage() {
         {/* ── IMAGES ── */}
         <section className="nc-card">
           <h2 className="nc-section-title">Images</h2>
-          <p className="nc-hint">First image is the hero. Drag to reorder (use arrows below).</p>
+          <p className="nc-hint">First image is the hero. Use the arrows to reorder.</p>
 
-          {/* Upload button */}
           <div className="nc-upload-row">
-            <button type="button" className="nc-upload-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
-              {uploading ? (
-                <span className="nc-spinner" />
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 5l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              )}
-              {uploading ? 'Uploading...' : 'Upload Image'}
-            </button>
-            <span className="nc-hint">or paste a URL:</span>
-            <div className="nc-url-row">
-              <input
-                type="url"
-                className="iv-input"
-                placeholder="https://example.com/image.jpg"
-                value={urlInput}
-                onChange={e => setUrlInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addUrl())}
-                style={{ flex: 1 }}
-              />
-              <button type="button" className="nc-add-url" onClick={addUrl}>Add</button>
+            {/* Upload from device */}
+            <div style={{ display: 'flex', gap: '.75rem', flexWrap: 'wrap' }}>
+              <button type="button" className="nc-upload-btn" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                {uploading ? <span className="nc-spinner" /> : (
+                  <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v9M4 5l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><path d="M2 13h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                )}
+                {uploading ? 'Uploading...' : 'Upload from device'}
+              </button>
+
+              <button type="button" className="nc-upload-btn nc-library-btn" onClick={() => setShowLibrary(s => !s)}>
+                <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/><rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" strokeWidth="1.4"/></svg>
+                {showLibrary ? 'Hide library' : 'Media library'}
+              </button>
+            </div>
+
+            {/* Paste URL */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.625rem' }}>
+              <span className="nc-hint">or paste URL:</span>
+              <div className="nc-url-row" style={{ flex: 1 }}>
+                <input
+                  type="url"
+                  className="iv-input"
+                  placeholder="https://example.com/image.jpg"
+                  value={urlInput}
+                  onChange={e => setUrlInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addUrl())}
+                  style={{ flex: 1 }}
+                />
+                <button type="button" className="nc-add-url" onClick={addUrl}>Add</button>
+              </div>
             </div>
           </div>
 
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = '' }} />
 
-          {/* Image previews */}
+          {/* Media library panel */}
+          {showLibrary && (
+            <div className="nc-library">
+              <div className="nc-library__head">
+                <p className="nc-library__title">Media Library</p>
+                <button type="button" className="nc-library__refresh" onClick={loadLibrary}>↻ Refresh</button>
+              </div>
+              {libraryLoading ? (
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                  <span className="nc-spinner" style={{ margin: '0 auto', display: 'block', width: 20, height: 20 }} />
+                </div>
+              ) : library.length === 0 ? (
+                <p className="nc-library__empty">No images uploaded yet. Upload your first image above.</p>
+              ) : (
+                <div className="nc-library__grid">
+                  {library.map(img => (
+                    <button
+                      key={img.publicId}
+                      type="button"
+                      className={`nc-library__item${images.includes(img.url) ? ' selected' : ''}`}
+                      onClick={() => selectFromLibrary(img.url)}
+                      title={img.publicId}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={img.url} alt="" className="nc-library__img" />
+                      {images.includes(img.url) && <span className="nc-library__check">✓</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Selected images */}
           {images.length > 0 && (
             <div className="nc-img-grid">
               {images.map((url, i) => (
@@ -181,8 +254,8 @@ export default function NewCompetitionPage() {
             <div>
               <label className="field-label">Status</label>
               <select className="iv-input" value={form.status} onChange={e => set('status', e.target.value)}>
-                <option value="draft">Draft (hidden)</option>
-                <option value="active">Active (live)</option>
+                <option value="active">Active — live on site</option>
+                <option value="draft">Draft — hidden from site</option>
                 <option value="completed">Completed</option>
               </select>
             </div>
@@ -207,7 +280,7 @@ export default function NewCompetitionPage() {
       </form>
 
       <style>{`
-        .nc-page { max-width: 780px; }
+        .nc-page { max-width: 820px; }
         .nc-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; }
         .nc-back { font-size: .8125rem; color: var(--ink3,#7a726a); text-decoration: none; transition: color .2s; }
         .nc-back:hover { color: var(--rg,#b8687a); }
@@ -222,23 +295,40 @@ export default function NewCompetitionPage() {
         @media (max-width: 600px) { .nc-3col,.nc-2col { grid-template-columns: 1fr; } }
 
         /* Upload */
-        .nc-upload-row { display: flex; flex-direction: column; gap: .75rem; }
+        .nc-upload-row { display: flex; flex-direction: column; gap: .875rem; }
         .nc-upload-btn {
           display: inline-flex; align-items: center; gap: .5rem;
-          padding: .75rem 1.5rem; background: var(--off,#f7f4f0);
-          border: 1px dashed var(--border-strong,#c8b4a0); cursor: pointer;
+          padding: .75rem 1.25rem; background: var(--off,#f7f4f0);
+          border: 1px dashed var(--border,#e8e2da); cursor: pointer;
           font-size: .6875rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
-          color: var(--ink2,#3a3530); transition: border-color .2s, background .2s; width: fit-content;
+          color: var(--ink2,#3a3530); transition: border-color .2s, background .2s, color .2s;
         }
         .nc-upload-btn:hover:not(:disabled) { border-color: var(--rg,#b8687a); background: #fdf0f2; color: var(--rg,#b8687a); }
         .nc-upload-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .nc-library-btn { border-style: solid; }
         .nc-url-row { display: flex; gap: .625rem; }
         .nc-add-url { padding: 0 1.25rem; background: var(--ink,#0c0b0a); color: #fff; border: none; cursor: pointer; font-size: .625rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; transition: background .2s; }
         .nc-add-url:hover { background: #2a2420; }
-        .nc-spinner { width: 14px; height: 14px; border: 1.5px solid rgba(0,0,0,.15); border-top-color: var(--ink,#0c0b0a); border-radius: 50%; animation: spin .6s linear infinite; }
+        .nc-spinner { width: 14px; height: 14px; border: 1.5px solid rgba(0,0,0,.15); border-top-color: var(--ink,#0c0b0a); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Image grid */
+        /* Media library */
+        .nc-library {
+          border: 1px solid var(--border,#e8e2da); background: var(--off,#f7f4f0);
+          padding: 1.25rem;
+        }
+        .nc-library__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .nc-library__title { font-size: .75rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2,#3a3530); }
+        .nc-library__refresh { font-size: .6875rem; color: var(--rg,#b8687a); background: none; border: none; cursor: pointer; text-decoration: underline; }
+        .nc-library__empty { font-size: .875rem; color: var(--ink3,#7a726a); text-align: center; padding: 2rem 0; }
+        .nc-library__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: .5rem; max-height: 320px; overflow-y: auto; }
+        .nc-library__item { position: relative; aspect-ratio: 1; overflow: hidden; border: 2px solid transparent; cursor: pointer; padding: 0; background: none; transition: border-color .15s; }
+        .nc-library__item:hover { border-color: var(--rg,#b8687a); }
+        .nc-library__item.selected { border-color: var(--rg,#b8687a); }
+        .nc-library__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .nc-library__check { position: absolute; top: .25rem; right: .25rem; width: 18px; height: 18px; background: var(--rg,#b8687a); color: #fff; border-radius: 50%; font-size: .6rem; display: flex; align-items: center; justify-content: center; }
+
+        /* Image previews */
         .nc-img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
         .nc-img-item { position: relative; aspect-ratio: 4/3; border: 1px solid var(--border,#e8e2da); overflow: hidden; }
         .nc-img-preview { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -255,7 +345,7 @@ export default function NewCompetitionPage() {
         .nc-check input { width: 15px; height: 15px; accent-color: var(--rg,#b8687a); cursor: pointer; }
 
         /* Error / actions */
-        .nc-error { padding: .875rem 1rem; background: #fdf0f2; border: 1px solid rgba(184,104,122,.25); color: var(--rg-dark,#8a4a56); font-size: .875rem; }
+        .nc-error { padding: .875rem 1rem; background: #fdf0f2; border: 1px solid rgba(184,104,122,.25); color: #8a4a56; font-size: .875rem; }
         .nc-actions { display: flex; gap: 1rem; padding-top: .5rem; }
       `}</style>
     </div>
