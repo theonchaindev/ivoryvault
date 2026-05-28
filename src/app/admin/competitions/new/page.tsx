@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { uploadImage } from '@/lib/uploadImage'
 
 interface MediaImage { url: string; publicId: string; size: number; createdAt: string }
 
@@ -50,13 +51,12 @@ export default function NewCompetitionPage() {
   const uploadFile = async (file: File) => {
     setUploading(true); setError('')
     try {
-      const fd = new FormData(); fd.append('file', file)
-      const res = await fetch('/api/admin/upload', { method: 'POST', body: fd })
-      const data = await res.json()
-      if (!res.ok) { setError(data.error || 'Upload failed'); return }
-      setImages(p => [...p, data.url])
+      const url = await uploadImage(file)
+      setImages(p => [...p, url])
       if (showLibrary) loadLibrary()
-    } catch { setError('Upload failed — check connection') } finally { setUploading(false) }
+    } catch (err) {
+      setError((err as Error).message || 'Upload failed')
+    } finally { setUploading(false) }
   }
 
   const removeImage = (url: string) => setImages(p => p.filter(u => u !== url))
