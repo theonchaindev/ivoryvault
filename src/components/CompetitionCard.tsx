@@ -35,7 +35,7 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
         {/* Image */}
         <div className="cc__img-wrap">
           {img
-            ? <motion.img src={img} alt={c.title} className="cc__img" whileHover={{ scale: 1.06 }} transition={{ duration: 0.7 }} />
+            ? <img src={img} alt={c.title} className="cc__img" />
             : <div className="cc__placeholder" />
           }
           {hot && <span className="cc__hot">🔥 Hot</span>}

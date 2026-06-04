@@ -205,14 +205,15 @@ a { color: inherit; }
 @media (max-width: 1200px) { .comp-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
 @media (max-width: 640px)  {
-  /* Single-column horizontal swipe — same as homepage */
   .section-inner { overflow: hidden; }
   .comp-grid {
     display: flex;
     overflow-x: auto;
+    overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     touch-action: pan-x;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
     gap: 1rem;
   }
@@ -223,7 +224,11 @@ a { color: inherit; }
     min-width: 0;
     scroll-snap-align: start;
     touch-action: pan-x;
+    pointer-events: none;
   }
+  /* Re-enable pointer events only on links/buttons inside cards */
+  .comp-grid > * a,
+  .comp-grid > * button { pointer-events: auto; }
 }
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
