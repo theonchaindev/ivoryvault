@@ -171,7 +171,6 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
       <style>{`
         .hh {
           background: var(--bg);
-          border-bottom: 1px solid var(--border);
           padding-top: 80px;
         }
         .hh__inner {
@@ -181,16 +180,10 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           gap: clamp(2rem,4vw,4rem); align-items: center;
         }
 
-        /* On mobile: hide the text left col, show only the card */
+        /* On mobile: hide the card, show only the brand text */
         @media (max-width: 860px) {
-          .hh__inner { grid-template-columns: 1fr; padding: 1.25rem 1.25rem 1.5rem; gap: 0; }
-          .hh__left { display: none; }
-          /* Condense card on mobile */
-          .hh__card-img-wrap { aspect-ratio: 4/3; }
-          .hh__card-prize-val { font-size: 1.75rem; }
-          .hh__card-body { padding: .75rem .875rem .875rem; }
-          .hh__card-title { font-size: 1.125rem; }
-          .hh__card-sub { display: none; }
+          .hh__inner { grid-template-columns: 1fr; padding: 2rem 1.25rem 2rem; gap: 0; }
+          .hh__card-wrap { display: none; }
         }
 
         /* Left */
