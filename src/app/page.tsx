@@ -13,39 +13,83 @@ import AnimatedSection from '@/components/AnimatedSection'
 
 async function getData() {
   try {
+    const now = new Date()
     const [comps, winners] = await Promise.all([
-      prisma.competition.findMany({ where: { status: 'active' }, orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }], take: 8 }),
-      prisma.winner.findMany({ where: { announced: true }, orderBy: { drawnAt: 'desc' }, take: 4, include: { user: { select: { name: true } }, competition: { select: { title: true, prizeValue: true, images: true, slug: true, ticketsSold: true, maxTickets: true } } } }),
+      prisma.competition.findMany({
+        where: {
+          status: 'active',
+          // Exclude competitions where draw date has already passed
+          OR: [{ drawDate: null }, { drawDate: { gt: now } }],
+        },
+        orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],
+        take: 9,
+      }),
+      prisma.winner.findMany({
+        where: { announced: true },
+        orderBy: { drawnAt: 'desc' },
+        take: 4,
+        include: {
+          user: { select: { name: true } },
+          competition: { select: { title: true, prizeValue: true, images: true, slug: true, ticketsSold: true, maxTickets: true } },
+        },
+      }),
     ])
     return { comps, winners }
-  } catch { return { comps: [], winners: [] } }
+  } catch {
+    return { comps: [], winners: [] }
+  }
+}
+
+function parseImgs(raw: string): string[] {
+  try { return JSON.parse(raw) } catch { return [] }
 }
 
 export default async function Home() {
   const { comps, winners } = await getData()
-  const serialized = comps.map(c => ({ ...c, subtitle: c.subtitle ?? null, drawDate: c.drawDate?.toISOString() ?? null }))
+
+  const heroComps = comps.map(c => ({
+    slug: c.slug,
+    title: c.title,
+    subtitle: c.subtitle ?? null,
+    prizeValue: c.prizeValue,
+    ticketPrice: c.ticketPrice,
+    maxTickets: c.maxTickets,
+    ticketsSold: c.ticketsSold,
+    heroImg: parseImgs(c.images)[0] ?? null,
+    drawDate: c.drawDate?.toISOString() ?? null,
+  }))
+
+  const gridComps = comps.map(c => ({
+    ...c,
+    subtitle: c.subtitle ?? null,
+    drawDate: c.drawDate?.toISOString() ?? null,
+  }))
 
   return (
     <>
       <Navbar />
-      <HomeHero count={comps.length} />
 
-      {/* Live competitions */}
+      {/* Crystal Comps-style carousel hero */}
+      <div style={{ paddingTop: '68px' }}>
+        <HomeHero comps={heroComps} />
+      </div>
+
+      {/* Live competitions grid */}
       <section className="page-section page-section--cream">
         <div className="section-inner">
           <AnimatedSection>
             <div className="section-head">
               <div>
-                <p className="section-head__label">Live Now</p>
+                <p className="section-head__label">Live Now — {comps.length} Active</p>
                 <h2 className="section-head__title">Open Competitions</h2>
               </div>
               <Link href="/competitions" className="section-head__link">View all →</Link>
             </div>
           </AnimatedSection>
 
-          {serialized.length > 0 ? (
+          {gridComps.length > 0 ? (
             <div className="comp-grid">
-              {serialized.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
+              {gridComps.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
             </div>
           ) : (
             <div className="empty-state">
@@ -53,7 +97,7 @@ export default async function Home() {
             </div>
           )}
 
-          {serialized.length > 0 && (
+          {gridComps.length > 0 && (
             <AnimatedSection delay={0.1}>
               <div className="comp-grid-cta">
                 <Link href="/competitions" className="btn-gold">Browse All Competitions</Link>

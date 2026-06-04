@@ -252,12 +252,15 @@ a { color: inherit; }
 /* ═══════════════════════════════════════════════
    COUNTDOWN TIMER
 ═══════════════════════════════════════════════ */
-/* Strip variant (on dark) */
-.ct-strip { display: flex; width: 100%; }
-.ct-strip__box { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: .5625rem .25rem; border-right: 1px solid rgba(255,255,255,.07); }
-.ct-strip__box:last-child { border-right: none; }
-.ct-strip__num { font-family: var(--font-cormorant,serif); font-size: 1.375rem; font-weight: 600; color: #fff; line-height: 1; }
-.ct-strip__lbl { font-size: .42rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.4); margin-top: 1px; }
+/* Strip variant — rounded cream boxes with gold numbers */
+.ct-strip { display: flex; gap: .375rem; padding: .625rem .75rem; background: var(--bg); }
+.ct-strip__box {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: .5rem .25rem;
+}
+.ct-strip__num { font-family: var(--font-cormorant,serif); font-size: 1.375rem; font-weight: 700; color: var(--gold); line-height: 1; }
+.ct-strip__lbl { font-size: .4rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-top: 2px; }
 
 /* ═══════════════════════════════════════════════
    WINNER CARD
