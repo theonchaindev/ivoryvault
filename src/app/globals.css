@@ -187,12 +187,12 @@ a { color: inherit; }
 /* ═══════════════════════════════════════════════
    PAGE SECTIONS
 ═══════════════════════════════════════════════ */
-.page-section { padding: clamp(3.5rem,6vw,6rem) 0; }
-.page-section--cream { background: var(--bg); }
+.page-section { padding: clamp(2rem,5vw,5rem) 0; }
+.page-section--cream { background: var(--bg); border-top: 1px solid var(--border); }
 .page-section--white { background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .page-section--dark { background: var(--ink); }
-.section-inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.5rem,3vw,3rem); }
-.section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1rem; }
+.section-inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.25rem,3vw,3rem); }
+.section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 1.75rem; flex-wrap: wrap; gap: .75rem; }
 .section-head__label { font-size: .5375rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .5rem; font-weight: 600; }
 .section-head__title { font-family: var(--font-cormorant,serif); font-size: clamp(1.875rem,3.5vw,3rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; }
 .section-head__link { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); text-decoration: none; transition: color .2s; align-self: flex-end; white-space: nowrap; }
@@ -203,13 +203,19 @@ a { color: inherit; }
 ═══════════════════════════════════════════════ */
 .comp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
 @media (max-width: 1200px) { .comp-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width: 520px)  {
-  .comp-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; gap: 1rem; padding-bottom: .5rem; scrollbar-width: none; }
+@media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
+@media (max-width: 480px)  {
+  .comp-grid {
+    display: flex; overflow-x: auto;
+    scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    gap: .875rem; padding-bottom: .5rem; scrollbar-width: none;
+    /* peek next card */
+    padding-right: 1.25rem;
+  }
   .comp-grid::-webkit-scrollbar { display: none; }
-  .comp-grid > * { flex: 0 0 80vw; scroll-snap-align: start; }
+  .comp-grid > * { flex: 0 0 72vw; scroll-snap-align: start; }
 }
-.comp-grid-cta { text-align: center; margin-top: 3rem; }
+.comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
 /* ═══════════════════════════════════════════════
    COMPETITION CARD
