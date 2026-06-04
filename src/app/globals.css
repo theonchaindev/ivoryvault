@@ -206,14 +206,14 @@ a { color: inherit; }
 @media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
 @media (max-width: 480px)  {
   .comp-grid {
-    display: flex; overflow-x: auto;
+    display: flex; overflow-x: auto; overflow-y: hidden;
     scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
     gap: .875rem; padding-bottom: .5rem; scrollbar-width: none;
-    /* peek next card */
     padding-right: 1.25rem;
   }
   .comp-grid::-webkit-scrollbar { display: none; }
-  .comp-grid > * { flex: 0 0 72vw; scroll-snap-align: start; }
+  .comp-grid > * { flex: 0 0 72vw; scroll-snap-align: start; touch-action: pan-x; }
 }
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
