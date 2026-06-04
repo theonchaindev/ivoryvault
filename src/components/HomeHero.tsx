@@ -172,7 +172,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         .hh {
           background: var(--bg);
           border-bottom: 1px solid var(--border);
-          padding-top: 72px;
+          padding-top: 80px;
         }
         .hh__inner {
           max-width: 1440px; margin: 0 auto;

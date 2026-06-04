@@ -35,7 +35,7 @@ export default function Navbar() {
       <header className={`nav${scrolled ? ' nav--shadow' : ''}`}>
         <div className="nav__inner">
           <Link href="/" className="nav__logo">
-            <Image src="/logo.png" alt="Ivory Vault" width={54} height={54} className="nav__logo-img" priority />
+            <Image src="/logo.png" alt="Ivory Vault" width={68} height={68} className="nav__logo-img" priority />
             <span className="nav__logo-text">IVORY VAULT</span>
           </Link>
 
