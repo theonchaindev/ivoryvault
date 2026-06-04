@@ -7,121 +7,88 @@ const ease = [0.22, 1, 0.36, 1] as const
 
 export default function HomeHero({ count }: { count: number }) {
   return (
-    <section className="mh">
-      <div className="mh__inner">
+    <section className="hero-banner">
+      <div className="hero-banner__inner">
         <motion.div
-          className="mh__left"
-          initial={{ opacity: 0, y: 20 }}
+          className="hero-banner__left"
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease, delay: 0.1 }}
+          transition={{ duration: 0.7, ease, delay: 0.05 }}
         >
-          <p className="mh__eyebrow">
-            <span className="mh__eyebrow-dot" />
-            Live Now · {count} Active Competition{count !== 1 ? 's' : ''}
-          </p>
-          <h1 className="mh__headline">
-            Win The <em>Extra&shy;ordinary</em>
+          <div className="hero-banner__live">
+            <span className="hero-banner__dot" />
+            {count} Live Competition{count !== 1 ? 's' : ''}
+          </div>
+          <h1 className="hero-banner__title">
+            Win The <em>Extraordinary</em>
           </h1>
+          <p className="hero-banner__sub">
+            UK&apos;s most exciting prize competitions. Tickets from just £1.
+          </p>
         </motion.div>
 
         <motion.div
-          className="mh__right"
-          initial={{ opacity: 0, y: 16 }}
+          className="hero-banner__right"
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease, delay: 0.3 }}
+          transition={{ duration: 0.65, ease, delay: 0.2 }}
         >
-          <p className="mh__sub">Premium UK competitions from £1. Live draws. Real prizes.</p>
-          <div className="mh__ctas">
-            <Link href="/competitions" className="mh__cta-primary">Browse All Competitions</Link>
-            <Link href="/how-it-works" className="mh__cta-ghost">How It Works →</Link>
+          <div className="hero-banner__trust">
+            {['UK Regulated', 'Free Entry', 'Live Draws', '18+ Only'].map((t, i) => (
+              <span key={t} className="hero-banner__trust-item">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden>
+                  <circle cx="5" cy="5" r="4" stroke="var(--rg)" strokeWidth="1.2"/>
+                  <path d="M3 5l1.5 1.5L7 3.5" stroke="var(--rg)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                {t}
+              </span>
+            ))}
+          </div>
+          <div className="hero-banner__ctas">
+            <Link href="/competitions" className="hero-banner__cta">Browse Competitions</Link>
+            <Link href="/how-it-works" className="hero-banner__ghost">How it works →</Link>
           </div>
         </motion.div>
       </div>
 
-      {/* Scrolling trust ticker */}
-      <div className="mh__ticker-wrap">
-        <div className="mh__ticker">
-          {['UK Regulated', 'Free Entry Available', 'Live Recorded Draws', '18+ Only', 'Instant Win Confirmation', 'Stripe Secure Payments', 'Prizes Dispatched 48hrs', 'Fully Transparent'].map((t, i) => (
-            <span key={i} className="mh__ticker-item">
-              <span className="mh__ticker-dot" />
-              {t}
-            </span>
-          ))}
-          {/* duplicate for seamless loop */}
-          {['UK Regulated', 'Free Entry Available', 'Live Recorded Draws', '18+ Only', 'Instant Win Confirmation', 'Stripe Secure Payments', 'Prizes Dispatched 48hrs', 'Fully Transparent'].map((t, i) => (
-            <span key={`b${i}`} className="mh__ticker-item" aria-hidden>
-              <span className="mh__ticker-dot" />
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-
       <style>{`
-        .mh {
-          background: var(--ink);
-          padding-top: 72px;
-          overflow: hidden;
+        .hero-banner {
+          background: #fff;
+          border-bottom: 1px solid var(--border);
+          padding-top: 68px;
         }
-        .mh__inner {
+        .hero-banner__inner {
           max-width: 1440px; margin: 0 auto;
-          padding: clamp(2.5rem,4vw,3.5rem) clamp(1.5rem,4vw,5rem);
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 2rem; align-items: end;
+          padding: clamp(2rem,3.5vw,3rem) clamp(1.5rem,3vw,3rem);
+          display: grid; grid-template-columns: 1fr auto;
+          gap: 3rem; align-items: center;
         }
-        @media (max-width: 700px) { .mh__inner { grid-template-columns: 1fr; gap: 1.25rem; } }
-        .mh__eyebrow {
-          display: flex; align-items: center; gap: .625rem;
-          font-size: .5rem; letter-spacing: .22em; text-transform: uppercase;
-          color: var(--rg); margin-bottom: 1rem;
+        @media (max-width: 700px) { .hero-banner__inner { grid-template-columns: 1fr; gap: 1.5rem; } }
+        .hero-banner__live {
+          display: inline-flex; align-items: center; gap: .5rem;
+          font-size: .5rem; letter-spacing: .2em; text-transform: uppercase;
+          color: var(--rg); margin-bottom: .875rem;
         }
-        .mh__eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rg); animation: pulse 2s infinite; flex-shrink: 0; }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-        .mh__headline {
+        .hero-banner__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rg); animation: blink 1.8s infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+        .hero-banner__title {
           font-family: var(--font-cormorant,serif);
-          font-size: clamp(3rem,6vw,5.5rem);
-          font-weight: 300; line-height: .95;
-          letter-spacing: -.025em; color: #fff;
-          margin: 0;
+          font-size: clamp(2.25rem,5vw,4rem);
+          font-weight: 300; line-height: .95; letter-spacing: -.025em;
+          color: var(--ink); margin-bottom: .625rem;
         }
-        .mh__headline em { font-style: italic; color: #f5e8a0; }
-        .mh__right { display: flex; flex-direction: column; gap: 1.5rem; align-items: flex-start; justify-content: flex-end; }
-        .mh__sub { font-size: clamp(.875rem,1.3vw,1rem); line-height: 1.65; color: rgba(255,255,255,.5); max-width: 380px; }
-        .mh__ctas { display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; }
-        .mh__cta-primary {
-          background: var(--rg); color: #fff;
-          font-size: .6875rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
-          padding: .9375rem 2rem; text-decoration: none;
-          transition: background .2s, transform .15s; display: inline-block;
-          white-space: nowrap;
-        }
-        .mh__cta-primary:hover { background: var(--rg-dark); transform: translateY(-1px); }
-        .mh__cta-ghost {
-          font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase;
-          color: rgba(255,255,255,.5); text-decoration: none;
-          transition: color .2s; white-space: nowrap;
-        }
-        .mh__cta-ghost:hover { color: #fff; }
-
-        /* Ticker */
-        .mh__ticker-wrap {
-          border-top: 1px solid rgba(255,255,255,.07);
-          overflow: hidden; padding: .75rem 0;
-          background: rgba(255,255,255,.03);
-        }
-        .mh__ticker {
-          display: flex; gap: 0;
-          animation: ticker 28s linear infinite;
-          width: max-content;
-        }
-        .mh__ticker:hover { animation-play-state: paused; }
-        @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .mh__ticker-item {
-          display: flex; align-items: center; gap: .625rem;
-          font-size: .5rem; letter-spacing: .16em; text-transform: uppercase;
-          color: rgba(255,255,255,.3); padding: 0 2.5rem; white-space: nowrap;
-        }
-        .mh__ticker-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--rg); flex-shrink: 0; }
+        .hero-banner__title em { font-style: italic; color: var(--rg); }
+        .hero-banner__sub { font-size: clamp(.875rem,1.2vw,.9375rem); color: var(--ink3); line-height: 1.6; }
+        .hero-banner__right { display: flex; flex-direction: column; gap: 1.25rem; align-items: flex-end; }
+        @media (max-width: 700px) { .hero-banner__right { align-items: flex-start; } }
+        .hero-banner__trust { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: flex-end; }
+        @media (max-width: 700px) { .hero-banner__trust { justify-content: flex-start; } }
+        .hero-banner__trust-item { display: flex; align-items: center; gap: .375rem; font-size: .625rem; letter-spacing: .06em; color: var(--ink2); white-space: nowrap; }
+        .hero-banner__ctas { display: flex; align-items: center; gap: 1.25rem; }
+        .hero-banner__cta { background: var(--rg); color: #fff; font-size: .625rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; padding: .875rem 1.75rem; text-decoration: none; transition: background .2s, transform .15s; white-space: nowrap; }
+        .hero-banner__cta:hover { background: var(--rg-dark); transform: translateY(-1px); }
+        .hero-banner__ghost { font-size: .6875rem; letter-spacing: .08em; color: var(--ink3); text-decoration: none; white-space: nowrap; transition: color .2s; }
+        .hero-banner__ghost:hover { color: var(--rg); }
       `}</style>
     </section>
   )
