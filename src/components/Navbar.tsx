@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AnimatePresence, motion } from 'motion/react'
 
 interface User { id: string; name: string; role: string }
@@ -36,11 +37,15 @@ export default function Navbar() {
 
           {/* Logo */}
           <Link href="/" className="iv-nav__logo">
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" className="iv-nav__logo-mark">
-              <rect x="1" y="1" width="20" height="20" stroke="currentColor" strokeWidth="1"/>
-              <path d="M7 7 L11 15 L15 7" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            <span>IVORY VAULT</span>
+            <Image
+              src="/logo.png"
+              alt="Ivory Vault"
+              width={44}
+              height={44}
+              className="iv-nav__logo-img"
+              priority
+            />
+            <span className="iv-nav__logo-text">IVORY VAULT</span>
           </Link>
 
           {/* Centre links */}
@@ -80,6 +85,9 @@ export default function Navbar() {
           <>
             <motion.div className="iv-drawer" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween', duration: .32, ease: [.4, 0, .2, 1] }}>
               <button className="iv-drawer__close" onClick={() => setOpen(false)}>✕</button>
+              <div className="iv-drawer__logo">
+                <Image src="/logo.png" alt="Ivory Vault" width={56} height={56} />
+              </div>
               <nav>
                 {NAV.map((l, i) => (
                   <motion.div key={l.href} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }}>
@@ -105,35 +113,39 @@ export default function Navbar() {
         .iv-nav {
           position: fixed; top: 0; left: 0; right: 0; z-index: 100;
           transition: background .35s, box-shadow .35s, border-color .35s;
-          border-bottom: 1px solid rgba(255,255,255,.12);
-          background: rgba(12,11,10,.45);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(255,255,255,.1);
+          background: rgba(12,11,10,.5);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
         .iv-nav--solid {
-          background: rgba(255,255,255,.97);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
+          background: rgba(255,252,245,.97);
           border-color: var(--border);
           box-shadow: 0 1px 0 var(--border);
         }
         .iv-nav__inner {
           max-width: 1440px; margin: 0 auto;
-          padding: 0 2.5rem; height: 68px;
+          padding: 0 2.5rem; height: 72px;
           display: flex; align-items: center; justify-content: space-between;
           gap: 1.5rem;
         }
         .iv-nav__logo {
-          display: flex; align-items: center; gap: .625rem;
-          text-decoration: none; flex-shrink: 0; color: #fff;
+          display: flex; align-items: center; gap: .75rem;
+          text-decoration: none; flex-shrink: 0;
+        }
+        .iv-nav__logo-img {
+          width: 44px; height: 44px; object-fit: contain;
+          filter: brightness(0) invert(1);
+          transition: filter .3s;
+        }
+        .iv-nav--solid .iv-nav__logo-img { filter: none; }
+        .iv-nav__logo-text {
+          font-family: var(--font-inter, sans-serif);
+          font-size: .625rem; font-weight: 700; letter-spacing: .28em;
+          color: rgba(255,255,255,.9);
           transition: color .3s;
         }
-        .iv-nav--solid .iv-nav__logo { color: var(--ink); }
-        .iv-nav__logo span {
-          font-family: var(--font-inter, sans-serif);
-          font-size: .625rem; font-weight: 600; letter-spacing: .25em;
-          color: inherit;
-        }
+        .iv-nav--solid .iv-nav__logo-text { color: var(--ink); }
         .iv-nav__links {
           display: flex; align-items: center; gap: 2.25rem;
           position: absolute; left: 50%; transform: translateX(-50%);
@@ -146,6 +158,15 @@ export default function Navbar() {
         .iv-nav--solid .iv-nav__link { color: var(--ink2); }
         .iv-nav__link:hover { color: var(--rg) !important; }
         .iv-nav__right { display: flex; align-items: center; gap: 1.25rem; }
+
+        /* Sign out ghost on dark navbar */
+        .iv-nav:not(.iv-nav--solid) .btn-ghost {
+          border-color: rgba(255,255,255,.3); color: rgba(255,255,255,.85);
+        }
+        .iv-nav:not(.iv-nav--solid) .btn-ghost:hover {
+          border-color: rgba(255,255,255,.7); background: rgba(255,255,255,.12); color: #fff;
+        }
+
         .iv-nav__burger {
           display: none; flex-direction: column; gap: 6px;
           background: none; border: none; cursor: pointer; padding: .5rem; width: 36px;
@@ -167,6 +188,7 @@ export default function Navbar() {
           padding: 5rem 2.5rem 3rem;
           border-left: 1px solid var(--border);
         }
+        .iv-drawer__logo { display: flex; justify-content: center; margin-bottom: 2rem; }
         .iv-drawer__close {
           position: absolute; top: 1.5rem; right: 1.5rem;
           background: none; border: none; cursor: pointer;
@@ -182,21 +204,7 @@ export default function Navbar() {
         }
         .iv-drawer__link:hover { color: var(--rg); }
         .iv-drawer__footer { margin-top: auto; display: flex; flex-direction: column; gap: .75rem; }
-        .iv-overlay {
-          position: fixed; inset: 0;
-          background: rgba(12,11,10,.45); z-index: 199;
-        }
-
-        /* Sign out / ghost btn on dark navbar */
-        .iv-nav:not(.iv-nav--solid) .btn-ghost {
-          border-color: rgba(255,255,255,.3);
-          color: rgba(255,255,255,.85);
-        }
-        .iv-nav:not(.iv-nav--solid) .btn-ghost:hover {
-          border-color: rgba(255,255,255,.7);
-          background: rgba(255,255,255,.12);
-          color: #fff;
-        }
+        .iv-overlay { position: fixed; inset: 0; background: rgba(12,11,10,.45); z-index: 199; }
 
         @media (max-width: 900px) {
           .iv-nav__links, .iv-nav__right { display: none !important; }

@@ -46,6 +46,7 @@ export default async function Home() {
     prizeValue: c.prizeValue, ticketPrice: c.ticketPrice,
     maxTickets: c.maxTickets, ticketsSold: c.ticketsSold,
     heroImg: parseImgs(c.images)[0] ?? null,
+    drawDate: c.drawDate?.toISOString() ?? null,
   }))
   const rest = comps.slice(0, 6)
 
