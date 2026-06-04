@@ -5,9 +5,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Navbar />
-      <main style={{ paddingTop: '72px', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        {children}
-      </main>
+      <main className="main-shell">{children}</main>
       <Footer />
     </>
   )

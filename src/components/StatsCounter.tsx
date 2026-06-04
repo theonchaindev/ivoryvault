@@ -13,7 +13,6 @@ function AnimatedNumber({ value }: { value: string }) {
   const prefix = value.match(/^[£]/) ? value[0] : ''
   const suffix = value.replace(/^[£]/, '').replace(/[0-9]+/, '')
   const num = parseInt(numericPart)
-
   const count = useMotionValue(0)
   const rounded = useTransform(count, v => {
     const n = Math.round(v)
@@ -21,14 +20,9 @@ function AnimatedNumber({ value }: { value: string }) {
     if (value.includes('k')) return `${prefix}${n}k+`
     return `${prefix}${n.toLocaleString()}${suffix}`
   })
-
   useEffect(() => {
     if (!inView || !isNumeric) return
-    const controls = animate(count, num, {
-      duration: 1.6,
-      ease: [0.22, 1, 0.36, 1],
-      delay: 0.2,
-    })
+    const controls = animate(count, num, { duration: 1.6, ease: [0.22, 1, 0.36, 1], delay: 0.2 })
     return controls.stop
   }, [inView, count, num, isNumeric])
 
@@ -49,10 +43,9 @@ export default function StatsCounter({ stats }: { stats: Stat[] }) {
         <motion.div
           key={s.l}
           className="stat-item"
-          initial={{ opacity: 0, y: 24 }}
-          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
-          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: i * 0.1 }}
-          style={{ borderRight: i < stats.length - 1 ? '1px solid rgba(255,255,255,.08)' : 'none' }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: i * 0.1 }}
         >
           <AnimatedNumber value={s.v} />
           <p className="stat-l">{s.l}</p>

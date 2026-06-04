@@ -155,7 +155,8 @@ export default function CompetitionDetail({ competition }: { competition: Compet
       </div>
 
       <style>{`
-        .cd { background: var(--off); min-height: 100vh; }
+        /* styles in globals.css */
+        .cd { background: var(--bg); min-height: 100vh; }
         .cd-hero { height: clamp(320px,50vw,580px); position: relative; overflow: hidden; background: var(--ink); }
         .cd-hero__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
         .cd-hero__placeholder { position: absolute; inset: 0; background: linear-gradient(145deg,#1a1510,#0e0c0a); }
