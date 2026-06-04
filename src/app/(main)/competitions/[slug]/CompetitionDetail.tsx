@@ -168,6 +168,8 @@ export default function CompetitionDetail({ competition }: { competition: Compet
 
       <style>{`
         .cdp { background: var(--bg); padding: 3rem 0 5rem; }
+        /* Extra bottom padding on mobile so sticky CTA doesn't overlap content */
+        @media (max-width: 860px) { .cdp { padding-bottom: 7rem; } }
         .cdp__inner {
           max-width: 1280px; margin: 0 auto;
           padding: 0 clamp(1.5rem,3vw,3rem);

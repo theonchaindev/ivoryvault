@@ -185,6 +185,23 @@ export default function TicketSelector({ competition }: Props) {
           display: flex; flex-direction: column; gap: 1.25rem;
           box-shadow: var(--shadow-sm);
         }
+        /* Sticky bottom on mobile */
+        @media (max-width: 860px) {
+          .ts {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            border-radius: 16px 16px 0 0;
+            border-left: none; border-right: none; border-bottom: none;
+            box-shadow: 0 -4px 32px rgba(24,20,15,.12);
+            padding: 1rem 1.25rem;
+            gap: .875rem;
+          }
+          /* Hide the less-critical elements on mobile sticky */
+          .ts__quick-section, .ts__qty-section, .ts__note { display: none; }
+          .ts__header { margin-bottom: 0; }
+          /* Show a compact price + CTA row */
+          .ts__price-row { padding: .625rem .875rem; }
+          .ts__total-row { padding: .625rem 0; border-top: none; border-bottom: none; margin-bottom: 0; }
+        }
         .ts__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
         .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
         .ts__remaining { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
