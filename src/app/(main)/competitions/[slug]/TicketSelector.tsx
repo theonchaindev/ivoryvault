@@ -46,39 +46,55 @@ export default function TicketSelector({ competition }: Props) {
 
   if (competition.status !== 'active') {
     return (
-      <motion.div
-        className="ts-box"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease }}
-      >
-        <p className="ts-closed">This competition has closed</p>
-      </motion.div>
+      <div className="ts">
+        <p className="ts__closed">This competition has closed</p>
+      </div>
     )
   }
 
   return (
     <motion.div
-      className="ts-box"
-      initial={{ opacity: 0, y: 24 }}
+      className="ts"
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.65, ease }}
+      transition={{ duration: 0.6, ease }}
     >
-      <h2 className="ts-title">Enter This Competition</h2>
-      <p className="ts-remaining">{remaining.toLocaleString()} tickets remaining</p>
+      <div className="ts__header">
+        <h2 className="ts__title">Enter This Competition</h2>
+        <span className="ts__remaining">{remaining.toLocaleString()} tickets left</span>
+      </div>
 
       {/* Price per ticket */}
-      <div className="ts-price-row">
-        <span className="ts-price-label">Per Ticket</span>
-        <span className="ts-price-val">{formatCurrency(competition.ticketPrice)}</span>
+      <div className="ts__price-row">
+        <span className="ts__price-label">Price per ticket</span>
+        <span className="ts__price-val">{formatCurrency(competition.ticketPrice)}</span>
+      </div>
+
+      {/* Quick pick buttons */}
+      <div className="ts__quick-section">
+        <p className="ts__section-label">Quick Pick</p>
+        <div className="ts__quick">
+          {[1, 3, 5, 10].filter(n => n <= maxSelect).map(n => (
+            <motion.button
+              key={n}
+              onClick={() => setQty(n)}
+              className={`ts__quick-btn${quantity === n ? ' active' : ''}`}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              transition={spring}
+            >
+              {n}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
       {/* Quantity stepper */}
-      <div className="ts-qty-section">
-        <label className="ts-label">Number of Tickets</label>
-        <div className="ts-stepper">
+      <div className="ts__qty-section">
+        <p className="ts__section-label">Tickets</p>
+        <div className="ts__stepper">
           <motion.button
-            className="ts-step-btn"
+            className="ts__step-btn"
             onClick={() => setQty(quantity - 1)}
             disabled={quantity <= 1}
             whileTap={quantity > 1 ? { scale: 0.88 } : {}}
@@ -89,17 +105,17 @@ export default function TicketSelector({ competition }: Props) {
           <AnimatePresence mode="wait">
             <motion.span
               key={quantity}
-              className="ts-qty-val"
-              initial={{ opacity: 0, y: -12, scale: 0.85 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.85 }}
-              transition={{ duration: 0.2, ease }}
+              className="ts__qty-val"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.15 }}
             >
               {quantity}
             </motion.span>
           </AnimatePresence>
           <motion.button
-            className="ts-step-btn"
+            className="ts__step-btn"
             onClick={() => setQty(quantity + 1)}
             disabled={quantity >= maxSelect}
             whileTap={quantity < maxSelect ? { scale: 0.88 } : {}}
@@ -108,36 +124,20 @@ export default function TicketSelector({ competition }: Props) {
             +
           </motion.button>
         </div>
-        <p className="ts-max">Max {maxSelect} per transaction</p>
-      </div>
-
-      {/* Quick pick */}
-      <div className="ts-quick">
-        {[1, 3, 5, 10].filter(n => n <= maxSelect).map(n => (
-          <motion.button
-            key={n}
-            onClick={() => setQty(n)}
-            className={`ts-quick-btn${quantity === n ? ' active' : ''}`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={spring}
-          >
-            {n}
-          </motion.button>
-        ))}
+        <p className="ts__max">Max {maxSelect} per order</p>
       </div>
 
       {/* Total */}
-      <div className="ts-total-row">
-        <span className="ts-total-label">Total</span>
+      <div className="ts__total-row">
+        <span className="ts__total-label">Total</span>
         <AnimatePresence mode="wait">
           <motion.span
             key={total}
-            className="ts-total-val"
-            initial={{ opacity: 0, y: -8 }}
+            className="ts__total-val"
+            initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18, ease }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.15 }}
           >
             {formatCurrency(total)}
           </motion.span>
@@ -147,11 +147,11 @@ export default function TicketSelector({ competition }: Props) {
       <AnimatePresence>
         {error && (
           <motion.div
-            className="ts-error"
-            initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-            animate={{ opacity: 1, height: 'auto', marginBottom: '1rem' }}
-            exit={{ opacity: 0, height: 0, marginBottom: 0 }}
-            transition={{ duration: 0.25 }}
+            className="ts__error"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
           >
             {error}
           </motion.div>
@@ -159,94 +159,72 @@ export default function TicketSelector({ competition }: Props) {
       </AnimatePresence>
 
       <motion.button
-        className="btn-primary ts-cta"
+        className="ts__cta"
         onClick={handleCheckout}
         disabled={loading}
         whileHover={!loading ? { scale: 1.02 } : {}}
         whileTap={!loading ? { scale: 0.98 } : {}}
         transition={spring}
-        style={{ opacity: loading ? 0.7 : 1 }}
+        style={{ opacity: loading ? 0.75 : 1 }}
       >
-        {loading ? (
-          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.5rem' }}>
-            <span className="ts-spinner" /> Processing...
-          </span>
-        ) : `Enter Now — ${formatCurrency(total)}`}
+        {loading
+          ? <span className="ts__spinner-wrap"><span className="ts__spinner" /> Processing...</span>
+          : `Enter Now — ${formatCurrency(total)}`
+        }
       </motion.button>
 
-      <p className="ts-note">
-        🔒 Secure payment via Stripe.{' '}
-        No purchase necessary —{' '}
-        <a href="/free-entry" className="ts-free-link">free entry available</a>.
+      <p className="ts__note">
+        🔒 Secure checkout via Stripe.{' '}
+        <a href="/free-entry" className="ts__free-link">Free entry also available.</a>
       </p>
 
       <style>{`
-        .ts-box {
-          background: #fff; border: 1px solid var(--border);
-          padding: 2rem; display: flex; flex-direction: column; gap: 0;
+        .ts {
+          background: var(--card); border: 1px solid var(--border);
+          border-radius: var(--r-card); padding: 1.5rem;
+          display: flex; flex-direction: column; gap: 1.25rem;
+          box-shadow: var(--shadow-sm);
         }
-        .ts-title { font-family: var(--font-cormorant,serif); font-size: 1.625rem; font-weight: 500; color: var(--ink); margin-bottom: .375rem; }
-        .ts-remaining { font-size: .8125rem; color: var(--ink3); margin-bottom: 1.75rem; }
-        .ts-closed { font-family: var(--font-cormorant,serif); font-size: 1.25rem; color: var(--ink3); text-align: center; padding: 1rem 0; }
-        .ts-price-row {
-          display: flex; justify-content: space-between; align-items: center;
-          padding: 1rem; background: var(--off); margin-bottom: 1.5rem;
+        .ts__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+        .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
+        .ts__remaining { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
+        .ts__closed { font-family: var(--font-cormorant,serif); font-size: 1.25rem; color: var(--ink3); text-align: center; padding: 1rem 0; }
+        .ts__price-row { display: flex; justify-content: space-between; align-items: center; background: var(--gold-pale); border: 1px solid rgba(201,168,76,.25); border-radius: 10px; padding: .875rem 1rem; }
+        .ts__price-label { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
+        .ts__price-val { font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 700; color: var(--gold); line-height: 1; }
+        .ts__section-label { font-size: .5625rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); margin-bottom: .625rem; font-weight: 500; }
+        .ts__quick { display: flex; gap: .5rem; }
+        .ts__quick-btn { flex: 1; padding: .625rem .5rem; font-size: .875rem; font-weight: 600; border: 1.5px solid var(--border); background: var(--card); color: var(--ink2); cursor: pointer; border-radius: 8px; transition: border-color .15s, background .15s, color .15s; font-family: inherit; }
+        .ts__quick-btn.active { border-color: var(--gold); background: var(--gold); color: #fff; }
+        .ts__quick-btn:hover:not(.active) { border-color: var(--gold); color: var(--gold); }
+        .ts__qty-section {}
+        .ts__stepper { display: flex; align-items: center; border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; height: 54px; }
+        .ts__step-btn { width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; background: none; border: none; cursor: pointer; font-size: 1.5rem; color: var(--ink2); transition: background .15s, color .15s; flex-shrink: 0; font-family: inherit; }
+        .ts__step-btn:hover:not(:disabled) { background: var(--bg2); color: var(--gold); }
+        .ts__step-btn:disabled { opacity: .3; cursor: not-allowed; }
+        .ts__step-btn:first-child { border-right: 1px solid var(--border); }
+        .ts__step-btn:last-child { border-left: 1px solid var(--border); }
+        .ts__qty-val { flex: 1; text-align: center; font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 600; color: var(--ink); display: block; }
+        .ts__max { font-size: .6875rem; color: var(--ink3); margin-top: .375rem; }
+        .ts__total-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1rem 0; }
+        .ts__total-label { font-size: .875rem; font-weight: 500; color: var(--ink2); }
+        .ts__total-val { font-family: var(--font-cormorant,serif); font-size: 2.25rem; font-weight: 600; color: var(--ink); line-height: 1; }
+        .ts__error { padding: .75rem 1rem; background: rgba(224,90,48,.08); border: 1px solid rgba(224,90,48,.25); border-radius: 8px; color: #b84020; font-size: .85rem; overflow: hidden; }
+        .ts__cta {
+          width: 100%; padding: 1rem; border-radius: var(--r-btn);
+          background: var(--gold); color: #fff;
+          font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+          border: none; cursor: pointer; font-family: inherit;
+          transition: background .2s; display: flex; align-items: center; justify-content: center;
         }
-        .ts-price-label { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
-        .ts-price-val { font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 500; color: var(--rg); line-height: 1; }
-        .ts-qty-section { margin-bottom: 1.25rem; }
-        .ts-label { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); margin-bottom: .75rem; }
-        .ts-stepper {
-          display: flex; align-items: center;
-          border: 1px solid var(--border); background: #fff; overflow: hidden;
-          height: 52px;
-        }
-        .ts-step-btn {
-          width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
-          background: none; border: none; cursor: pointer;
-          font-size: 1.375rem; color: var(--ink2); transition: background .15s, color .15s;
-          flex-shrink: 0;
-        }
-        .ts-step-btn:hover:not(:disabled) { background: var(--off); color: var(--ink); }
-        .ts-step-btn:disabled { opacity: .3; cursor: not-allowed; }
-        .ts-step-btn:first-child { border-right: 1px solid var(--border); }
-        .ts-step-btn:last-child { border-left: 1px solid var(--border); }
-        .ts-qty-val {
-          flex: 1; text-align: center;
-          font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 500; color: var(--ink);
-          display: block;
-        }
-        .ts-max { font-size: .6875rem; color: var(--ink3); margin-top: .5rem; }
-        .ts-quick { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
-        .ts-quick-btn {
-          flex: 1; padding: .5rem; font-size: .8125rem; font-weight: 500;
-          border: 1px solid var(--border); background: #fff; color: var(--ink2);
-          cursor: pointer; transition: border-color .15s, background .15s, color .15s;
-        }
-        .ts-quick-btn.active { border-color: var(--rg); background: var(--rg); color: #fff; }
-        .ts-quick-btn:hover:not(.active) { border-color: var(--ink2); color: var(--ink); }
-        .ts-total-row {
-          display: flex; justify-content: space-between; align-items: center;
-          border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-          padding: 1rem 0; margin-bottom: 1.5rem;
-        }
-        .ts-total-label { font-size: .875rem; font-weight: 500; color: var(--ink2); }
-        .ts-total-val { font-family: var(--font-cormorant,serif); font-size: 2.25rem; font-weight: 500; color: var(--ink); line-height: 1; }
-        .ts-error {
-          padding: .75rem; background: rgba(184,104,122,.08);
-          border: 1px solid rgba(184,104,122,.2); color: #8a4f58;
-          font-size: .85rem; overflow: hidden;
-        }
-        .ts-cta { width: 100%; margin-bottom: 1rem; }
-        .ts-note { font-size: .75rem; color: var(--ink3); text-align: center; line-height: 1.55; }
-        .ts-free-link { color: var(--rg); text-decoration: none; }
-        .ts-free-link:hover { text-decoration: underline; }
-        .ts-spinner {
-          display: inline-block; width: 14px; height: 14px;
-          border: 1.5px solid rgba(255,255,255,.25); border-top-color: #fff;
-          border-radius: 50%; animation: ts-spin .6s linear infinite;
-        }
+        .ts__cta:hover:not(:disabled) { background: var(--gold-d); }
+        .ts__cta:disabled { cursor: not-allowed; }
+        .ts__spinner-wrap { display: flex; align-items: center; justify-content: center; gap: .5rem; }
+        .ts__spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: ts-spin .6s linear infinite; }
         @keyframes ts-spin { to { transform: rotate(360deg); } }
+        .ts__note { font-size: .6875rem; color: var(--ink3); text-align: center; line-height: 1.55; }
+        .ts__free-link { color: var(--gold); text-decoration: none; }
+        .ts__free-link:hover { text-decoration: underline; }
       `}</style>
     </motion.div>
   )
