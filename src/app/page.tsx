@@ -7,9 +7,9 @@ import Footer from '@/components/Footer'
 import CompetitionCard from '@/components/CompetitionCard'
 import AnimatedSection from '@/components/AnimatedSection'
 import HomeHero from '@/components/HomeHero'
+import HowItWorks from '@/components/HowItWorks'
 import StatsCounter from '@/components/StatsCounter'
 import WinnerCard from '@/components/WinnerCard'
-import { formatCurrency } from '@/lib/utils'
 
 async function getData() {
   try {
@@ -17,7 +17,7 @@ async function getData() {
       prisma.competition.findMany({
         where: { status: 'active' },
         orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],
-        take: 7,
+        take: 8,
       }),
       prisma.winner.findMany({
         where: { announced: true },
@@ -41,6 +41,7 @@ function parseImgs(raw: string): string[] {
 
 export default async function Home() {
   const { comps, winners } = await getData()
+
   const heroComps = comps.map(c => ({
     slug: c.slug, title: c.title, subtitle: c.subtitle ?? null,
     prizeValue: c.prizeValue, ticketPrice: c.ticketPrice,
@@ -48,37 +49,32 @@ export default async function Home() {
     heroImg: parseImgs(c.images)[0] ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
   }))
-  const rest = comps.slice(0, 6)
+
+  const gridComps = comps.slice(0, 8)
 
   return (
     <>
       <Navbar />
-
       <HomeHero comps={heroComps} />
 
-      {/* ═══════════════════════════════════════════════════════════
-          LIVE COMPETITIONS GRID
-      ═══════════════════════════════════════════════════════════ */}
-      <section className="comps-section">
-        <div className="section-inner">
-
-          {/* Header */}
-          <AnimatedSection>
-            <div className="section-head">
-              <div>
-                <p className="section-label">Live Now — {comps.length} Active</p>
-                <h2 className="section-title">Open Competitions</h2>
+      {/* ── Live Competitions ── */}
+      {gridComps.length > 0 && (
+        <section className="hp-comps">
+          <div className="hp-inner">
+            <AnimatedSection>
+              <div className="hp-section-head">
+                <div>
+                  <p className="hp-label">Live Now · {comps.length} Active</p>
+                  <h2 className="hp-title">Open Competitions</h2>
+                </div>
+                <Link href="/competitions" className="hp-see-all">
+                  See all <span aria-hidden>→</span>
+                </Link>
               </div>
-              <Link href="/competitions" className="section-link">
-                See all competitions <span>→</span>
-              </Link>
-            </div>
-          </AnimatedSection>
+            </AnimatedSection>
 
-          {/* Grid */}
-          {rest.length > 0 ? (
-            <div className="comps-grid">
-              {rest.map((c, i) => (
+            <div className="hp-grid">
+              {gridComps.map((c, i) => (
                 <CompetitionCard
                   key={c.id}
                   competition={{ ...c, subtitle: c.subtitle ?? null, drawDate: c.drawDate?.toISOString() ?? null }}
@@ -86,57 +82,30 @@ export default async function Home() {
                 />
               ))}
             </div>
-          ) : comps.length === 0 ? (
-            <div className="empty-state">
-              <p>New competitions launching soon — <Link href="/signup">sign up</Link> to be notified.</p>
-            </div>
-          ) : null}
 
-          {comps.length > 0 && (
-            <AnimatedSection>
-              <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+            <AnimatedSection delay={0.1}>
+              <div className="hp-grid-cta">
                 <Link href="/competitions" className="btn-dark">Browse All Competitions</Link>
               </div>
             </AnimatedSection>
-          )}
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════
-          HOW IT WORKS — compact strip
-      ═══════════════════════════════════════════════════════════ */}
-      <section className="how-strip">
-        <div className="section-inner">
-          <AnimatedSection>
-            <div className="how-strip__head">
-              <p className="section-label">Simple Process</p>
-              <h2 className="section-title">How It Works</h2>
-            </div>
-            <div className="how-strip__steps">
-              {[
-                { n: '01', t: 'Choose', b: 'Browse our curated luxury competitions and pick the prize you want to win.' },
-                { n: '02', t: 'Get Tickets', b: 'Select your ticket quantity. More entries = more chances to win.' },
-                { n: '03', t: 'Pay Securely', b: 'Checkout via Stripe. All major cards, Apple Pay & Google Pay accepted.' },
-                { n: '04', t: 'Watch the Draw', b: 'Live recorded draws. Winners notified instantly. Prizes dispatched in 48hrs.' },
-              ].map((s, i) => (
-                <div key={s.n} className="how-step">
-                  <p className="how-step__n">{s.n}</p>
-                  <div className="how-step__dot" />
-                  <h3 className="how-step__t">{s.t}</h3>
-                  <p className="how-step__b">{s.b}</p>
-                </div>
-              ))}
-            </div>
-          </AnimatedSection>
-          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
-            <Link href="/how-it-works" className="btn-ghost">Full Details →</Link>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ═══════════════════════════════════════════════════════════
-          STATS — dark band with animated counters
-      ═══════════════════════════════════════════════════════════ */}
+      {comps.length === 0 && (
+        <section className="hp-comps">
+          <div className="hp-inner">
+            <div className="hp-empty">
+              <p>New competitions launching soon — <Link href="/signup">sign up</Link> to be notified.</p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── How It Works ── */}
+      <HowItWorks />
+
+      {/* ── Stats ── */}
       <StatsCounter stats={[
         { v: '10,000+', l: 'Members' },
         { v: '£500k+', l: 'Prizes Awarded' },
@@ -144,22 +113,20 @@ export default async function Home() {
         { v: '48hrs', l: 'Prize Delivery' },
       ]} />
 
-      {/* ═══════════════════════════════════════════════════════════
-          WINNERS
-      ═══════════════════════════════════════════════════════════ */}
+      {/* ── Recent Winners ── */}
       {winners.length > 0 && (
-        <section className="winners-section">
-          <div className="section-inner">
+        <section className="hp-winners">
+          <div className="hp-inner">
             <AnimatedSection>
-              <div className="section-head">
+              <div className="hp-section-head">
                 <div>
-                  <p className="section-label">Previous Draws</p>
-                  <h2 className="section-title">Recent Winners</h2>
+                  <p className="hp-label">Previous Draws</p>
+                  <h2 className="hp-title">Recent Winners</h2>
                 </div>
-                <Link href="/winners" className="section-link">All winners <span>→</span></Link>
+                <Link href="/winners" className="hp-see-all">All winners <span aria-hidden>→</span></Link>
               </div>
             </AnimatedSection>
-            <div className="winners-grid">
+            <div className="hp-winners-grid">
               {winners.map((w, i) => (
                 <WinnerCard
                   key={w.id}
@@ -177,16 +144,16 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ═══════════════════════════════════════════════════════════
-          FINAL CTA BAND
-      ═══════════════════════════════════════════════════════════ */}
-      <section className="cta-band">
+      {/* ── CTA Band ── */}
+      <section className="hp-cta">
         <AnimatedSection>
-          <p className="section-label" style={{ color: 'rgba(255,255,255,.5)' }}>Don&apos;t miss out</p>
-          <h2 className="cta-band__title">Your next win starts with one ticket.</h2>
-          <div className="cta-band__btns">
-            <Link href="/competitions" className="btn-rg">Browse Competitions</Link>
-            <Link href="/signup" className="cta-band__ghost">Create free account →</Link>
+          <p className="hp-cta__eyebrow">Don&apos;t miss out</p>
+          <h2 className="hp-cta__title">Your next win starts<br />with one ticket.</h2>
+          <div className="hp-cta__btns">
+            <Link href="/competitions" className="btn-rg" style={{ padding: '1.0625rem 2.5rem', fontSize: '.6875rem' }}>
+              Browse Competitions
+            </Link>
+            <Link href="/signup" className="hp-cta__ghost">Create free account →</Link>
           </div>
         </AnimatedSection>
       </section>
@@ -194,65 +161,48 @@ export default async function Home() {
       <Footer />
 
       <style>{`
-        /* ─── SECTIONS ─────────────────────────── */
-        .section-inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.5rem,4vw,5rem); }
-        .section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: clamp(2rem,4vw,3.5rem); flex-wrap: wrap; gap: 1rem; }
-        .section-label { font-size: .5625rem; letter-spacing: .2em; text-transform: uppercase; color: var(--rg); margin-bottom: .75rem; }
-        .section-title { font-family: var(--font-cormorant,serif); font-size: clamp(2.25rem,4vw,3.75rem); font-weight: 300; line-height: .95; letter-spacing: -.02em; color: var(--ink); }
-        .section-link { font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; transition: border-color .2s, color .2s; white-space: nowrap; }
-        .section-link:hover { color: var(--rg); border-color: var(--rg); }
+        .hp-inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.5rem,4vw,5rem); }
 
-        /* ─── COMPETITIONS SECTION ─────────────── */
-        .comps-section { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); }
-        .comps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        @media (max-width: 1100px) { .comps-grid { grid-template-columns: repeat(2, 1fr); } }
+        /* Competitions section */
+        .hp-comps { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); border-top: 1px solid var(--border); }
+        .hp-section-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: clamp(2rem,4vw,3.5rem); flex-wrap: wrap; gap: 1rem; }
+        .hp-label { font-size: .5375rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .75rem; }
+        .hp-title { font-family: var(--font-cormorant,serif); font-size: clamp(2.25rem,4vw,3.75rem); font-weight: 300; line-height: .95; letter-spacing: -.02em; color: var(--ink); }
+        .hp-see-all { font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; white-space: nowrap; transition: color .2s, border-color .2s; }
+        .hp-see-all:hover { color: var(--rg); border-color: var(--rg); }
+        .hp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
+        @media (max-width: 1200px) { .hp-grid { grid-template-columns: repeat(3,1fr); } }
+        @media (max-width: 900px) { .hp-grid { grid-template-columns: repeat(2,1fr); } }
         @media (max-width: 640px) {
-          .comps-grid {
-            display: flex; overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            gap: 1rem; padding-bottom: 1rem;
-            scrollbar-width: none;
-          }
-          .comps-grid::-webkit-scrollbar { display: none; }
-          .comps-grid > * { flex: 0 0 78vw; scroll-snap-align: start; }
+          .hp-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; gap: 1rem; padding-bottom: 1rem; scrollbar-width: none; }
+          .hp-grid::-webkit-scrollbar { display: none; }
+          .hp-grid > * { flex: 0 0 80vw; scroll-snap-align: start; }
         }
-        .empty-state { padding: 4rem; text-align: center; font-size: .9375rem; color: var(--ink3); border: 1px dashed var(--border); }
-        .empty-state a { color: var(--rg); }
+        .hp-grid-cta { text-align: center; margin-top: clamp(2rem,4vw,3.5rem); }
+        .hp-empty { padding: 4rem 2rem; text-align: center; font-size: .9375rem; color: var(--ink3); border: 1px dashed var(--border); }
+        .hp-empty a { color: var(--rg); }
 
-        /* ─── HOW IT WORKS STRIP ───────────────── */
-        .how-strip { padding: clamp(4rem,7vw,7rem) 0; background: #fff; border-top: 1px solid var(--border); }
-        .how-strip__head { margin-bottom: clamp(2.5rem,4vw,3.5rem); }
-        .how-strip__steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; border-top: 1px solid var(--border); }
-        .how-step { padding: clamp(1.75rem,3vw,2.5rem) clamp(1.25rem,2vw,2rem); border-right: 1px solid var(--border); }
-        .how-step:last-child { border-right: none; }
-        .how-step__n { font-family: var(--font-cormorant,serif); font-size: clamp(3.5rem,5vw,5.5rem); font-weight: 300; color: #ede8e0; line-height: 1; margin-bottom: 1rem; letter-spacing: -.02em; }
-        .how-step__dot { width: 5px; height: 5px; border-radius: 50%; background: var(--rg); margin-bottom: 1rem; }
-        .how-step__t { font-family: var(--font-cormorant,serif); font-size: clamp(1.25rem,2vw,1.5rem); font-weight: 500; color: var(--ink); margin-bottom: .625rem; }
-        .how-step__b { font-size: .8125rem; line-height: 1.75; color: var(--ink2); }
-        @media (max-width: 768px) { .how-strip__steps { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 480px) { .how-strip__steps { grid-template-columns: 1fr; } }
-
-        /* ─── STATS BAND ───────────────────────── */
+        /* Stats */
         .stats-band { background: var(--ink); display: grid; grid-template-columns: repeat(4,1fr); }
-        .stat-item { padding: clamp(2.5rem,5vw,4rem) clamp(1.5rem,3vw,3rem); text-align: center; }
-        .stat-v { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,5vw,4rem); font-weight: 300; color: var(--rg-pale,#f2e8ea); line-height: 1; margin-bottom: .5rem; }
-        .stat-l { font-size: .5625rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.35); }
+        .stat-item { padding: clamp(2.5rem,5vw,4rem) clamp(1.5rem,3vw,3rem); text-align: center; border-right: 1px solid rgba(255,255,255,.07); }
+        .stat-item:last-child { border-right: none; }
+        .stat-v { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,5vw,4rem); font-weight: 300; color: var(--rg-pale); line-height: 1; margin-bottom: .5rem; }
+        .stat-l { font-size: .5375rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.3); }
         @media (max-width: 640px) { .stats-band { grid-template-columns: 1fr 1fr; } }
 
-        /* ─── WINNERS ──────────────────────────── */
-        .winners-section { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); border-top: 1px solid var(--border); }
-        .winners-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; margin-top: clamp(2rem,4vw,3rem); }
-        @media (max-width: 900px) { .winners-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 480px) { .winners-grid { grid-template-columns: 1fr; } }
+        /* Winners */
+        .hp-winners { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); border-top: 1px solid var(--border); }
+        .hp-winners-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; margin-top: clamp(2rem,4vw,3rem); }
+        @media (max-width: 1000px) { .hp-winners-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 480px) { .hp-winners-grid { grid-template-columns: 1fr; } }
 
-        /* ─── CTA BAND ─────────────────────────── */
-        .cta-band { background: var(--ink); padding: clamp(5rem,9vw,9rem) clamp(1.5rem,5vw,5rem); text-align: center; }
-        .cta-band__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.5rem,6vw,5.5rem); font-weight: 300; color: #fff; line-height: .95; letter-spacing: -.02em; margin: 1rem 0 2.5rem; }
-        .cta-band__btns { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
-        .cta-band__ghost { color: rgba(255,255,255,.6); font-size: .75rem; text-decoration: none; letter-spacing: .06em; align-self: center; transition: color .2s; }
-        .cta-band__ghost:hover { color: #fff; }
-
+        /* CTA */
+        .hp-cta { background: var(--ink); padding: clamp(5rem,9vw,9rem) clamp(1.5rem,5vw,5rem); text-align: center; }
+        .hp-cta__eyebrow { font-size: .5375rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: 1.25rem; }
+        .hp-cta__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5.75rem); font-weight: 300; color: #fff; line-height: .95; letter-spacing: -.02em; margin-bottom: 2.5rem; }
+        .hp-cta__btns { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+        .hp-cta__ghost { color: rgba(255,255,255,.55); font-size: .75rem; text-decoration: none; letter-spacing: .08em; transition: color .2s; }
+        .hp-cta__ghost:hover { color: #fff; }
       `}</style>
     </>
   )

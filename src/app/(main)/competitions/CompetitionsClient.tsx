@@ -11,10 +11,10 @@ interface Competition {
   status: string; featured: boolean
 }
 
-const categories = [
-  { id: 'all', label: 'All' },
+const cats = [
+  { id: 'all', label: 'All Competitions' },
   { id: 'watches', label: 'Watches & Jewellery' },
-  { id: 'cash', label: 'Cash' },
+  { id: 'cash', label: 'Cash Prizes' },
   { id: 'electronics', label: 'Electronics' },
   { id: 'experience', label: 'Experiences' },
 ]
@@ -25,18 +25,38 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
   const filtered = competitions.filter(c => {
     if (active === 'all') return true
     const s = (c.title + ' ' + (c.subtitle || '')).toLowerCase()
-    if (active === 'watches') return s.includes('watch') || s.includes('jewel') || s.includes('ring') || s.includes('gold')
+    if (active === 'watches') return s.includes('watch') || s.includes('jewel') || s.includes('rolex') || s.includes('omega') || s.includes('gold') || s.includes('ring')
     if (active === 'cash') return s.includes('cash') || s.includes('£') || s.includes('money')
-    if (active === 'electronics') return s.includes('macbook') || s.includes('iphone') || s.includes('tech') || s.includes('electronic')
-    if (active === 'experience') return s.includes('travel') || s.includes('holiday') || s.includes('trip') || s.includes('experience')
+    if (active === 'electronics') return s.includes('macbook') || s.includes('iphone') || s.includes('tech') || s.includes('ps5') || s.includes('electronic')
+    if (active === 'experience') return s.includes('travel') || s.includes('holiday') || s.includes('trip') || s.includes('experience') || s.includes('track')
     return true
   })
 
   return (
     <div className="cc-wrap">
-      {/* Filter tabs */}
-      <div className="cc-tabs" role="tablist">
-        {categories.map(cat => (
+
+      {/* ── Page header ── */}
+      <motion.div
+        className="cc-header"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div>
+          <p className="cc-header__label">Live Now · {competitions.length} Active</p>
+          <h1 className="cc-header__title">All Competitions</h1>
+        </div>
+      </motion.div>
+
+      {/* ── Filter tabs ── */}
+      <motion.div
+        className="cc-tabs"
+        role="tablist"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+      >
+        {cats.map(cat => (
           <button
             key={cat.id}
             role="tab"
@@ -54,18 +74,18 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
             )}
           </button>
         ))}
-      </div>
+      </motion.div>
 
-      {/* Grid */}
+      {/* ── Grid ── */}
       <AnimatePresence mode="wait">
         {filtered.length > 0 ? (
           <motion.div
             key={active}
             className="cc-grid"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
             {filtered.map((comp, i) => (
               <CompetitionCard key={comp.id} competition={comp} index={i} />
@@ -77,7 +97,7 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
             className="cc-empty"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="cc-empty__text">No competitions in this category yet</p>
@@ -95,26 +115,24 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
       </AnimatePresence>
 
       <style>{`
-        .cc-wrap { max-width: 1280px; margin: 0 auto; padding: 2rem 2rem 6rem; }
+        .cc-wrap { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.5rem,4vw,5rem) 6rem; }
+        .cc-header { padding: 4rem 0 2.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2.5rem; }
+        .cc-header__label { font-size: .5375rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .75rem; }
+        .cc-header__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.5rem,5vw,4rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; }
         .cc-tabs {
           display: flex; gap: 0; margin-bottom: 2.5rem;
-          border-bottom: 1px solid var(--border); overflow-x: auto;
-          scrollbar-width: none;
+          border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none;
         }
         .cc-tabs::-webkit-scrollbar { display: none; }
         .cc-tab {
           position: relative; padding: .875rem 1.5rem;
           font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase;
           font-weight: 500; background: none; border: none;
-          color: var(--ink3); cursor: pointer; white-space: nowrap;
-          transition: color .2s;
+          color: var(--ink3); cursor: pointer; white-space: nowrap; transition: color .2s;
         }
-        .cc-tab.active { color: var(--rg); }
+        .cc-tab.active { color: var(--ink); }
         .cc-tab:hover:not(.active) { color: var(--ink2); }
-        .cc-tab__indicator {
-          position: absolute; bottom: -1px; left: 0; right: 0;
-          height: 2px; background: var(--rg);
-        }
+        .cc-tab__indicator { position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--rg); }
         .cc-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -124,19 +142,12 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
         .cc-empty__text { font-family: var(--font-cormorant,serif); font-size: 1.5rem; color: var(--ink3); }
         @media (max-width: 640px) {
           .cc-grid {
-            display: flex;
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-            gap: 1rem;
-            padding-bottom: 1rem;
-            scrollbar-width: none;
+            display: flex; overflow-x: auto;
+            scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+            gap: 1rem; padding-bottom: 1rem; scrollbar-width: none;
           }
           .cc-grid::-webkit-scrollbar { display: none; }
-          .cc-grid > * {
-            flex: 0 0 78vw;
-            scroll-snap-align: start;
-          }
+          .cc-grid > * { flex: 0 0 80vw; scroll-snap-align: start; }
         }
       `}</style>
     </div>
