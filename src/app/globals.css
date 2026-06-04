@@ -204,7 +204,26 @@ a { color: inherit; }
 .comp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
 @media (max-width: 1200px) { .comp-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
-@media (max-width: 480px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: .75rem; } }
+@media (max-width: 640px)  {
+  .comp-grid {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: visible;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    scrollbar-width: none;
+    gap: 1rem;
+    /* cards are exactly viewport width minus 2×padding */
+  }
+  .comp-grid::-webkit-scrollbar { display: none; }
+  .comp-grid > * {
+    flex: 0 0 calc(100vw - 2.5rem);
+    width: calc(100vw - 2.5rem);
+    scroll-snap-align: start;
+    touch-action: pan-x;
+  }
+}
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
 /* ═══════════════════════════════════════════════
@@ -408,6 +427,14 @@ a { color: inherit; }
 .comps-page__label { font-size: .5375rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .75rem; font-weight: 600; }
 .comps-page__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.25rem,5vw,4rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.025em; }
 .comps-page__body { max-width: 1440px; margin: 0 auto; padding: 2.5rem clamp(1.25rem,3vw,3rem) 5rem; }
+@media (max-width: 640px) {
+  /* Remove side padding so grid can go full width; tabs get their own */
+  .comps-page__body { padding-left: 0; padding-right: 0; overflow-x: clip; }
+  .comps-page__header { padding-left: 1.25rem !important; padding-right: 1.25rem !important; }
+  .cc-tabs { padding-left: 1.25rem; }
+  /* Grid: 1.25rem padding on both sides built into the flex container */
+  .comp-grid { padding-left: 1.25rem; padding-right: 1.25rem; }
+}
 .cc-tabs { display: flex; gap: 0; margin-bottom: 2rem; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
 .cc-tabs::-webkit-scrollbar { display: none; }
 .cc-tab { position: relative; padding: .75rem 1.125rem; font-size: .625rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; background: none; border: none; color: var(--ink3); cursor: pointer; white-space: nowrap; transition: color .2s; font-family: inherit; flex-shrink: 0; }
