@@ -111,7 +111,7 @@ export default function WinnerCard({ winner, index = 0 }: { winner: WinnerData; 
         .wc__no-img { aspect-ratio: 4/3; background: linear-gradient(145deg, #1a0f14, #0d0a0c); }
         .wc__accent {
           position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 2;
-          background: linear-gradient(90deg, transparent 0%, #c9848e 30%, var(--rg) 50%, #c9848e 70%, transparent 100%);
+          background: linear-gradient(90deg, transparent 0%, #d4b86a 30%, var(--rg) 50%, #d4b86a 70%, transparent 100%);
         }
         .wc__body { padding: 1.5rem 1.75rem 1.625rem; }
         .wc__tag {
@@ -127,7 +127,7 @@ export default function WinnerCard({ winner, index = 0 }: { winner: WinnerData; 
         .wc__foot { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: .875rem; }
         .wc__value {
           font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 400; line-height: 1;
-          background: linear-gradient(120deg, #e0a0aa 0%, #c9848e 40%, var(--rg) 100%);
+          background: linear-gradient(120deg, #f0d88a 0%, #d4a832 40%, var(--rg) 100%);
           -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
         .wc__date { font-size: .5625rem; letter-spacing: .08em; color: rgba(255,255,255,.28); }

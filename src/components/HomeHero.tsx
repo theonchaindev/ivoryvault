@@ -206,7 +206,7 @@ function HeroStyles() {
         position: relative; min-height: 100svh;
         display: flex; flex-direction: column; justify-content: flex-end;
         overflow: hidden;
-        background: linear-gradient(145deg, #1a0f14 0%, #0e0a10 50%, #0d0c0b 100%);
+        background: linear-gradient(145deg, #1a1510 0%, #100e0a 50%, #0d0c0b 100%);
       }
       .hero__bg {
         position: absolute; inset: 0; width: 100%; height: 100%;
@@ -214,7 +214,7 @@ function HeroStyles() {
       }
       .hero__bg-fallback {
         position: absolute; inset: 0;
-        background: linear-gradient(145deg, #2a1520, #1a0f14, #0d0c0b);
+        background: linear-gradient(145deg, #201a10, #14110a, #0d0c0b);
       }
       .hero__overlay {
         position: absolute; inset: 0;
@@ -240,7 +240,7 @@ function HeroStyles() {
       .hero__tag--rg { background: var(--rg); border-color: var(--rg); color: #fff; }
       .hero__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5.5rem); font-weight: 300; line-height: 1; letter-spacing: -.02em; color: #fff; margin-bottom: .75rem; }
       .hero__title--large { font-size: clamp(3rem,7vw,6rem); }
-      .hero__title em { font-style: italic; color: #f0d8dd; }
+      .hero__title em { font-style: italic; color: #f5e5a8; }
       .hero__subtitle { font-size: clamp(.875rem,1.5vw,1.0625rem); line-height: 1.65; color: rgba(255,255,255,.65); max-width: 500px; margin-bottom: 1.75rem; }
       .hero__stats { display: flex; align-items: center; background: rgba(255,255,255,.07); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.1); width: fit-content; margin-bottom: 1.25rem; }
       .hero__stat { padding: .875rem 1.5rem; }

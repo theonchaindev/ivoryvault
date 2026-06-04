@@ -205,7 +205,17 @@ export default async function Home() {
         .comps-section { padding: clamp(4rem,7vw,7rem) 0; background: var(--off); }
         .comps-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         @media (max-width: 1100px) { .comps-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 640px)  { .comps-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+          .comps-grid {
+            display: flex; overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 1rem; padding-bottom: 1rem;
+            scrollbar-width: none;
+          }
+          .comps-grid::-webkit-scrollbar { display: none; }
+          .comps-grid > * { flex: 0 0 78vw; scroll-snap-align: start; }
+        }
         .empty-state { padding: 4rem; text-align: center; font-size: .9375rem; color: var(--ink3); border: 1px dashed var(--border); }
         .empty-state a { color: var(--rg); }
 

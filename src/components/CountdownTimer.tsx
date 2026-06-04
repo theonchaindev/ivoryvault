@@ -10,7 +10,7 @@ export default function CountdownTimer({
 }: {
   drawDate: string
   compact?: boolean
-  variant?: 'dark' | 'light'
+  variant?: 'dark' | 'light' | 'strip'
 }) {
   const [t, setT] = useState(() => getTimeRemaining(drawDate))
 
@@ -18,8 +18,6 @@ export default function CountdownTimer({
     const id = setInterval(() => setT(getTimeRemaining(drawDate)), 1000)
     return () => clearInterval(id)
   }, [drawDate])
-
-  const light = variant === 'light'
 
   if (t.total <= 0) {
     return (
@@ -30,12 +28,48 @@ export default function CountdownTimer({
   }
 
   const units = [
-    { v: t.days, l: 'D' },
-    { v: t.hours, l: 'H' },
-    { v: t.minutes, l: 'M' },
-    { v: t.seconds, l: 'S' },
+    { v: t.days, l: 'Days' },
+    { v: t.hours, l: 'Hrs' },
+    { v: t.minutes, l: 'Mins' },
+    { v: t.seconds, l: 'Secs' },
   ]
 
+  /* ── Strip variant: 4 dark boxes side-by-side ── */
+  if (variant === 'strip') {
+    return (
+      <div className="ct-strip">
+        {units.map((u, i) => (
+          <div key={u.l} className="ct-strip__box">
+            <span className="ct-strip__num">{String(u.v).padStart(2, '0')}</span>
+            <span className="ct-strip__lbl">{u.l}</span>
+            {i < units.length - 1 && <span className="ct-strip__sep">:</span>}
+          </div>
+        ))}
+        <style>{`
+          .ct-strip { display: flex; width: 100%; }
+          .ct-strip__box {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: .5rem .25rem; position: relative;
+            border-right: 1px solid rgba(255,255,255,.08);
+          }
+          .ct-strip__box:last-child { border-right: none; }
+          .ct-strip__num {
+            font-family: var(--font-cormorant,serif); font-size: 1.375rem;
+            font-weight: 500; color: #fff; line-height: 1;
+          }
+          .ct-strip__lbl {
+            font-size: .45rem; letter-spacing: .12em; text-transform: uppercase;
+            color: rgba(255,255,255,.45); margin-top: 2px;
+          }
+          .ct-strip__sep { display: none; }
+        `}</style>
+      </div>
+    )
+  }
+
+  const light = variant === 'light'
+
+  /* ── Compact variant ── */
   if (compact) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '.375rem', flexWrap: 'wrap' }}>
@@ -63,7 +97,7 @@ export default function CountdownTimer({
               textTransform: 'uppercase',
               letterSpacing: '.06em',
             }}>
-              {u.l}
+              {u.l.charAt(0)}
             </span>
             {i < units.length - 1 && (
               <span style={{ color: light ? 'rgba(255,255,255,.25)' : 'var(--border)', marginLeft: '.25rem' }}>·</span>
@@ -74,6 +108,7 @@ export default function CountdownTimer({
     )
   }
 
+  /* ── Full block variant ── */
   return (
     <div style={{ display: 'flex', gap: '.5rem' }}>
       {units.map((u, i) => (

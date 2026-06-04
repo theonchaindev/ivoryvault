@@ -122,7 +122,22 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
         }
         .cc-empty { padding: 5rem 2rem; text-align: center; }
         .cc-empty__text { font-family: var(--font-cormorant,serif); font-size: 1.5rem; color: var(--ink3); }
-        @media (max-width: 640px) { .cc-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+          .cc-grid {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            scrollbar-width: none;
+          }
+          .cc-grid::-webkit-scrollbar { display: none; }
+          .cc-grid > * {
+            flex: 0 0 78vw;
+            scroll-snap-align: start;
+          }
+        }
       `}</style>
     </div>
   )

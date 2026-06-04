@@ -2,14 +2,14 @@
 
 :root {
   --white:   #ffffff;
-  --off:     #f7f4f0;
-  --border:  #e8e2da;
+  --off:     #f7f2e8;
+  --border:  #e8dfc8;
   --ink:     #0c0b0a;
   --ink2:    #3a3530;
   --ink3:    #7a726a;
-  --rg:      #b8687a;
-  --rg-dark: #8a4a56;
-  --rg-pale: #f2e8ea;
+  --rg:      #c9a84c;
+  --rg-dark: #a8862e;
+  --rg-pale: #f5efd5;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
