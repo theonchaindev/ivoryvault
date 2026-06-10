@@ -167,7 +167,7 @@ export default function HowItWorksClient({ faqs, compliance, children }: Props) 
         .hiw-inner { max-width: 1280px; margin: 0 auto; padding: 0 clamp(0rem,0vw,0rem); }
         .hiw-inner--narrow { max-width: 800px; }
         .hiw-label { font-size: .5875rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .875rem; }
-        .hiw-title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; margin-bottom: .875rem; }
+        .hiw-title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 700; color: var(--ink); line-height: .95; letter-spacing: -.02em; margin-bottom: .875rem; }
         .hiw-sub { font-family: var(--font-cormorant,serif); font-size: clamp(1rem,2vw,1.25rem); font-style: italic; color: var(--ink3); max-width: 560px; line-height: 1.6; }
         .hiw-section-title { font-family: var(--font-cormorant,serif); font-size: clamp(1.75rem,3vw,2.5rem); font-weight: 400; color: var(--ink); }
         .hiw-compliance { padding: clamp(4rem,7vw,6rem) 2rem; background: #fff; border-top: 1px solid var(--border); }
@@ -186,7 +186,7 @@ export default function HowItWorksClient({ faqs, compliance, children }: Props) 
           transition: color .2s;
         }
         .faq-q:hover { color: var(--rg); }
-        .faq-icon { font-size: 1.5rem; font-weight: 300; color: var(--rg); flex-shrink: 0; line-height: 1; display: block; }
+        .faq-icon { font-size: 1.5rem; font-weight: 700; color: var(--rg); flex-shrink: 0; line-height: 1; display: block; }
         .faq-a-wrap { overflow: hidden; }
         .faq-a { padding: 0 0 1.5rem; font-size: .9rem; color: var(--ink2); line-height: 1.8; }
       `}</style>

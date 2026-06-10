@@ -217,7 +217,7 @@ export default function AccountClient({
         .acc__name {
           font-family: var(--font-cormorant,serif);
           font-size: clamp(2.5rem,5vw,4.5rem);
-          font-weight: 300; color: #fff; line-height: .95;
+          font-weight: 700; color: #fff; line-height: .95;
           letter-spacing: -.02em; margin-bottom: .5rem;
         }
         .acc__email { font-size: .8125rem; color: rgba(255,255,255,.35); }
@@ -240,7 +240,7 @@ export default function AccountClient({
         }
         .acc__tier-name {
           font-family: var(--font-cormorant,serif);
-          font-size: 2.5rem; font-weight: 300; line-height: 1;
+          font-size: 2.5rem; font-weight: 700; line-height: 1;
           color: #fff;
         }
         .acc__tier-sub { font-size: .75rem; color: rgba(255,255,255,.4); margin-bottom: 1.25rem; }
@@ -270,14 +270,14 @@ export default function AccountClient({
         @media (max-width: 560px) { .acc__stats { grid-template-columns: 1fr; } }
         .acc__stat { background: #fff; padding: 2rem; text-align: center; }
         .acc__stat-val {
-          font-family: var(--font-cormorant,serif); font-size: 3rem; font-weight: 300;
+          font-family: var(--font-cormorant,serif); font-size: 3rem; font-weight: 700;
           color: var(--rg); line-height: 1; margin-bottom: .375rem;
         }
         .acc__stat-label { font-size: .5625rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); }
 
         /* Section title */
         .acc__section-title {
-          font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 300;
+          font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 700;
           color: var(--ink); letter-spacing: -.01em;
         }
 
@@ -316,7 +316,7 @@ export default function AccountClient({
           text-align: center; padding: 5rem 2rem;
           border: 1px solid var(--border); background: #fff;
         }
-        .acc__empty-title { font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 300; color: var(--ink3); margin-bottom: .5rem; }
+        .acc__empty-title { font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 700; color: var(--ink3); margin-bottom: .5rem; }
         .acc__empty-sub { font-size: .875rem; color: var(--ink3); }
       `}</style>
     </div>

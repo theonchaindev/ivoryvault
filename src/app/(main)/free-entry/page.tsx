@@ -89,7 +89,7 @@ export default function FreeEntryPage() {
                     style={{
                       fontFamily: 'var(--font-cormorant)',
                       fontSize: '3rem',
-                      fontWeight: 300,
+                      fontWeight: 700,
                       color: '#e8d8cc',
                       lineHeight: 1,
                       display: 'block',

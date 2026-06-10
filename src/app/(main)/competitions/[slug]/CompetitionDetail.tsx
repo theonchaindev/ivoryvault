@@ -226,7 +226,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         .cdp__right { display: flex; flex-direction: column; gap: 1.25rem; }
 
         .cdp__title-block {}
-        .cdp__title { font-family: var(--font-cormorant,serif); font-size: clamp(1.875rem,3.5vw,3rem); font-weight: 300; color: var(--ink); line-height: 1; letter-spacing: -.02em; margin-bottom: .375rem; }
+        .cdp__title { font-family: var(--font-cormorant,serif); font-size: clamp(1.875rem,3.5vw,3rem); font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -.02em; margin-bottom: .375rem; }
         .cdp__subtitle { font-family: var(--font-cormorant,serif); font-style: italic; font-size: 1rem; color: var(--ink3); }
 
         /* Progress */

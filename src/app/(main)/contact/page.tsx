@@ -186,7 +186,7 @@ export default function ContactPage() {
         .cp__hero { background: #fff; border-bottom: 1px solid var(--border); padding: clamp(5rem,8vw,8rem) 2rem clamp(3rem,5vw,4rem); }
         .cp__inner { max-width: 1280px; margin: 0 auto; }
         .cp__label { font-size: .5875rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .875rem; }
-        .cp__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; }
+        .cp__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 700; color: var(--ink); line-height: .95; letter-spacing: -.02em; }
         .cp__body { max-width: 1280px; margin: 0 auto; padding: clamp(3rem,6vw,5rem) 2rem clamp(4rem,8vw,7rem); }
         .cp__grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap: clamp(3rem,5vw,5rem); align-items: start; }
         .cp__info-title { font-family: var(--font-cormorant,serif); font-size: clamp(1.5rem,3vw,2rem); font-weight: 400; color: var(--ink); margin-bottom: 1.25rem; }

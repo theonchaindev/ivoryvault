@@ -41,7 +41,7 @@ export default function CompetitionsHero({ count }: { count: number }) {
         }
         .ch__inner { max-width: 1280px; margin: 0 auto; }
         .ch__label { font-size: .5875rem; letter-spacing: .22em; text-transform: uppercase; color: var(--rg); margin-bottom: .875rem; }
-        .ch__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 300; color: var(--ink); line-height: .95; letter-spacing: -.02em; margin-bottom: .75rem; }
+        .ch__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.75rem,6vw,5rem); font-weight: 700; color: var(--ink); line-height: .95; letter-spacing: -.02em; margin-bottom: .75rem; }
         .ch__sub { font-family: var(--font-cormorant,serif); font-size: clamp(1rem,2vw,1.25rem); font-style: italic; color: var(--ink3); }
       `}</style>
     </section>

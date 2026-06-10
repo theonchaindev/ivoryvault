@@ -196,7 +196,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           color: var(--gold); font-weight: 600;
         }
         .hh__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse-dot 1.8s infinite; }
-        .hh__headline { font-family: var(--font-cormorant,serif); font-size: clamp(2.5rem,5vw,4.25rem); font-weight: 300; line-height: .92; letter-spacing: -.03em; color: var(--ink); }
+        .hh__headline { font-family: var(--font-cormorant,serif); font-size: clamp(2.5rem,5vw,4.25rem); font-weight: 700; line-height: .92; letter-spacing: -.03em; color: var(--ink); }
         .hh__headline em { font-style: italic; color: var(--gold); }
         .hh__sub { font-size: .9375rem; color: var(--ink3); line-height: 1.6; max-width: 400px; }
         .hh__trust { display: flex; gap: 1rem; flex-wrap: wrap; }
