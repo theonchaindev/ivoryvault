@@ -1,17 +1,11 @@
 import type { Metadata } from 'next'
-import { Cormorant_Garamond, Inter } from 'next/font/google'
+import { Montserrat } from 'next/font/google'
 import './globals.css'
 
-const cormorant = Cormorant_Garamond({
-  variable: '--font-cormorant',
+const montserrat = Montserrat({
+  variable: '--font-montserrat',
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-})
-
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
+  weight: ['300', '400', '500', '600', '700', '800'],
 })
 
 export const metadata: Metadata = {
@@ -22,8 +16,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${cormorant.variable} ${inter.variable}`}>
-      <body style={{ fontFamily: 'var(--font-inter), Inter, sans-serif' }}>
+    <html lang="en" className={montserrat.variable}>
+      <body style={{ fontFamily: 'var(--font-montserrat), system-ui, sans-serif' }}>
         {children}
       </body>
     </html>

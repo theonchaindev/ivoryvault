@@ -56,7 +56,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
             {comps.length} Live Competition{comps.length !== 1 ? 's' : ''}
           </div>
           <h1 className="hh__headline">Win The <em>Extra&shy;ordinary</em></h1>
-          <p className="hh__sub">UK luxury prize competitions. Tickets from just £1.</p>
+          <p className="hh__sub">UK luxury prize competitions. Transparent live draws.</p>
           <div className="hh__trust">
             {['✓ UK Regulated', '✓ Free Entry', '✓ Live Draws', '✓ 18+'].map(t => (
               <span key={t} className="hh__trust-item">{t}</span>

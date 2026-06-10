@@ -20,6 +20,9 @@
   --r-btn:     8px;
   --r-input:   8px;
   --r-pill:    999px;
+  /* Unified clean geometric type (Gotham-style) — maps legacy var names to Montserrat */
+  --font-cormorant: var(--font-montserrat), system-ui, sans-serif;
+  --font-inter:     var(--font-montserrat), system-ui, sans-serif;
 }
 
 /* ═══════════════════════════════════════════════
@@ -273,15 +276,15 @@ a { color: inherit; }
 /* ═══════════════════════════════════════════════
    COUNTDOWN TIMER
 ═══════════════════════════════════════════════ */
-/* Strip variant — rounded cream boxes with gold numbers */
-.ct-strip { display: flex; gap: .375rem; padding: .625rem .75rem; background: var(--bg); }
+/* Strip variant — dark high-contrast boxes, white numbers, gold labels */
+.ct-strip { display: flex; gap: .375rem; padding: .625rem .75rem; background: var(--ink); }
 .ct-strip__box {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: var(--card); border: 1px solid var(--border);
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
   border-radius: 8px; padding: .5rem .25rem;
 }
-.ct-strip__num { font-family: var(--font-cormorant,serif); font-size: 1.375rem; font-weight: 700; color: var(--gold); line-height: 1; }
-.ct-strip__lbl { font-size: .4rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-top: 2px; }
+.ct-strip__num { font-size: 1.375rem; font-weight: 700; color: #fff; line-height: 1; letter-spacing: -.01em; }
+.ct-strip__lbl { font-size: .4rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-top: 3px; }
 
 /* ═══════════════════════════════════════════════
    WINNER CARD
