@@ -97,7 +97,6 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
 
                 <div className="hh__card-body">
                   <h3 className="hh__card-title">{c.title}</h3>
-                  {c.subtitle && <p className="hh__card-sub">{c.subtitle}</p>}
 
                   <div className="hh__card-sold-row">
                     <span>{c.ticketsSold.toLocaleString()} sold</span>
@@ -113,12 +112,9 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
                   </div>
 
                   <div className="hh__card-foot">
-                    <div>
-                      <span className="hh__card-price">{formatCurrency(c.ticketPrice)}</span>
-                      <span className="hh__card-per"> per entry</span>
-                    </div>
-                    <Link href={`/competitions/${c.slug}`} className="hh__card-btn">Enter Now →</Link>
+                    <span className="hh__card-price">{formatCurrency(c.ticketPrice)}<span className="hh__card-per"> / entry</span></span>
                   </div>
+                  <Link href={`/competitions/${c.slug}`} className="hh__card-btn">Enter Now</Link>
                 </div>
               </motion.div>
             </AnimatePresence>
@@ -170,94 +166,118 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
 
       <style>{`
         .hh {
-          background: var(--bg);
+          position: relative;
+          background: var(--ink);
           padding-top: 80px;
+          overflow: hidden;
+        }
+        /* Gold radial glow + subtle texture */
+        .hh::before {
+          content: ''; position: absolute; top: -20%; right: -10%;
+          width: 70%; height: 140%;
+          background: radial-gradient(ellipse at center, rgba(201,168,76,.18) 0%, rgba(201,168,76,.05) 40%, transparent 70%);
+          pointer-events: none;
+        }
+        .hh::after {
+          content: ''; position: absolute; inset: 0;
+          background:
+            linear-gradient(135deg, rgba(201,168,76,.04) 0%, transparent 50%),
+            radial-gradient(circle at 15% 30%, rgba(255,255,255,.02) 0%, transparent 25%);
+          pointer-events: none;
         }
         .hh__inner {
+          position: relative; z-index: 1;
           max-width: 1440px; margin: 0 auto;
-          padding: clamp(2rem,4vw,3.5rem) clamp(1.5rem,4vw,4rem);
-          display: grid; grid-template-columns: 1fr 400px;
-          gap: clamp(2rem,4vw,4rem); align-items: center;
+          padding: clamp(2.5rem,5vw,4.5rem) clamp(1.5rem,4vw,4rem);
+          display: grid; grid-template-columns: 1.1fr 380px;
+          gap: clamp(2.5rem,5vw,5rem); align-items: center;
         }
-
-        /* On mobile: hide the card, show only the brand text */
         @media (max-width: 860px) {
-          .hh__inner { grid-template-columns: 1fr; padding: 2rem 1.25rem 2rem; gap: 0; }
+          .hh__inner { grid-template-columns: 1fr; padding: 2.5rem 1.5rem 3rem; gap: 0; }
           .hh__card-wrap { display: none; }
         }
 
         /* Left */
-        .hh__left { display: flex; flex-direction: column; gap: 1.25rem; }
+        .hh__left { display: flex; flex-direction: column; gap: 1.5rem; }
         .hh__badge {
           display: inline-flex; align-items: center; gap: .5rem; width: fit-content;
-          background: var(--gold-pale); border: 1px solid rgba(201,168,76,.35);
-          border-radius: 999px; padding: .35rem 1rem;
+          background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.3);
+          border-radius: 999px; padding: .4rem 1rem;
           font-size: .5rem; letter-spacing: .18em; text-transform: uppercase;
-          color: var(--gold); font-weight: 600;
+          color: var(--gold); font-weight: 700;
         }
-        .hh__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse-dot 1.8s infinite; }
-        .hh__headline { font-family: var(--font-cormorant,serif); font-size: clamp(2.5rem,5vw,4.25rem); font-weight: 700; line-height: .92; letter-spacing: -.03em; color: var(--ink); }
-        .hh__headline em { font-style: italic; color: var(--gold); }
-        .hh__sub { font-size: .9375rem; color: var(--ink3); line-height: 1.6; max-width: 400px; }
-        .hh__trust { display: flex; gap: 1rem; flex-wrap: wrap; }
-        .hh__trust-item { font-size: .625rem; color: var(--ink2); letter-spacing: .04em; }
+        .hh__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse-dot 1.8s infinite; box-shadow: 0 0 8px rgba(201,168,76,.8); }
+        .hh__headline {
+          font-size: clamp(2.75rem,6.5vw,5.5rem);
+          font-weight: 800; line-height: .92; letter-spacing: -.035em; color: #fff;
+          text-transform: uppercase;
+        }
+        .hh__headline em {
+          font-style: normal; display: block;
+          background: linear-gradient(120deg, #e8cd7a 0%, var(--gold) 45%, #b8923a 100%);
+          -webkit-background-clip: text; background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .hh__sub { font-size: 1rem; color: rgba(255,255,255,.55); line-height: 1.6; max-width: 420px; }
+        .hh__trust { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+        .hh__trust-item { font-size: .625rem; color: rgba(255,255,255,.5); letter-spacing: .06em; font-weight: 500; }
         .hh__cta {
           display: inline-flex; align-items: center; width: fit-content;
-          background: var(--gold); color: #fff;
-          font-size: .6875rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-          padding: .9375rem 2rem; border-radius: var(--r-btn); text-decoration: none;
-          transition: background .2s, transform .15s;
+          background: var(--gold); color: var(--ink);
+          font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+          padding: 1.0625rem 2.5rem; border-radius: var(--r-btn); text-decoration: none;
+          transition: background .2s, transform .15s, box-shadow .2s;
+          box-shadow: 0 8px 24px rgba(201,168,76,.3);
         }
-        .hh__cta:hover { background: var(--gold-d); transform: translateY(-1px); }
+        .hh__cta:hover { background: #e8cd7a; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(201,168,76,.45); }
 
-        /* Card wrapper — clips the slide animation */
+        /* Card wrapper */
         .hh__card-wrap { position: relative; }
         .hh__card-viewport { overflow: hidden; border-radius: var(--r-card); }
         .hh__card {
           background: var(--card);
-          border: 1px solid var(--border);
           border-radius: var(--r-card);
           overflow: hidden;
-          box-shadow: var(--shadow-md);
+          box-shadow: 0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(201,168,76,.2);
         }
         .hh__card-img-wrap { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--bg2); }
         .hh__card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
         .hh__card-placeholder { position: absolute; inset: 0; background: linear-gradient(145deg,var(--bg2),var(--border)); }
-        .hh__card-img-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(24,20,15,.8) 0%, transparent 55%); }
-        .hh__card-prize-overlay { position: absolute; bottom: .875rem; left: 1rem; right: 1rem; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between; }
+        .hh__card-img-grad { position: absolute; inset: 0; background: linear-gradient(to top, rgba(24,20,15,.85) 0%, transparent 55%); }
+        .hh__card-prize-overlay { position: absolute; bottom: .875rem; left: 1.125rem; right: 1.125rem; z-index: 2; display: flex; align-items: flex-end; justify-content: space-between; }
         .hh__card-prize-label { font-size: .45rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.6); }
-        .hh__card-prize-val { font-family: var(--font-cormorant,serif); font-size: 2.25rem; font-weight: 600; color: #fff; line-height: 1; }
-        .hh__card-timer { background: var(--bg); }
-        .hh__card-body { padding: .875rem 1rem 1rem; }
-        .hh__card-title { font-family: var(--font-cormorant,serif); font-size: 1.25rem; font-weight: 600; color: var(--ink); margin-bottom: .2rem; line-height: 1.15; }
-        .hh__card-sub { font-size: .6875rem; color: var(--ink3); margin-bottom: .625rem; line-height: 1.4; }
-        .hh__card-sold-row { display: flex; justify-content: space-between; font-size: .5625rem; color: var(--ink3); margin-bottom: .3rem; }
-        .hh__card-remaining { color: var(--gold); font-weight: 600; }
+        .hh__card-prize-val { font-size: 2rem; font-weight: 800; color: #fff; line-height: 1; }
+        .hh__card-timer { background: var(--ink); }
+        .hh__card-body { padding: 1rem 1.125rem 1.125rem; }
+        .hh__card-title { font-size: 1.0625rem; font-weight: 700; color: var(--ink); margin-bottom: .75rem; line-height: 1.2; }
+        .hh__card-sold-row { display: flex; justify-content: space-between; font-size: .5625rem; color: var(--ink3); margin-bottom: .3rem; font-weight: 500; }
+        .hh__card-remaining { color: var(--gold); font-weight: 700; }
         .hh__card-track { height: 5px; background: var(--bg2); border-radius: 999px; overflow: hidden; margin-bottom: .75rem; }
         .hh__card-fill { height: 100%; background: var(--gold); border-radius: 999px; }
-        .hh__card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: .625rem; border-top: 1px solid var(--border); }
-        .hh__card-price { font-family: var(--font-cormorant,serif); font-size: 1.25rem; font-weight: 700; color: var(--ink); }
-        .hh__card-per { font-size: .5rem; color: var(--ink3); }
+        .hh__card-foot { margin-bottom: .75rem; }
+        .hh__card-price { font-size: 1.25rem; font-weight: 800; color: var(--ink); }
+        .hh__card-per { font-size: .625rem; color: var(--ink3); font-weight: 500; }
         .hh__card-btn {
-          background: var(--gold); color: #fff;
-          font-size: .5375rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-          padding: .5rem .875rem; border-radius: var(--r-btn); text-decoration: none;
+          display: block; width: 100%; text-align: center;
+          background: var(--gold); color: var(--ink);
+          font-size: .6875rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+          padding: .8125rem; border-radius: var(--r-btn); text-decoration: none;
           transition: background .2s;
         }
-        .hh__card-btn:hover { background: var(--gold-d); }
+        .hh__card-btn:hover { background: #e8cd7a; }
 
         /* Nav row */
-        .hh__nav { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: .875rem; }
+        .hh__nav { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1.25rem; }
         .hh__arrow {
-          width: 32px; height: 32px; border-radius: 50%;
-          background: var(--card); border: 1px solid var(--border);
-          font-size: 1.25rem; color: var(--ink2); cursor: pointer;
+          width: 34px; height: 34px; border-radius: 50%;
+          background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.15);
+          font-size: 1.25rem; color: rgba(255,255,255,.7); cursor: pointer;
           display: flex; align-items: center; justify-content: center; line-height: 1;
           transition: border-color .2s, color .2s, background .2s;
         }
-        .hh__arrow:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-pale); }
+        .hh__arrow:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.12); }
         .hh__dots { display: flex; align-items: center; gap: .5rem; }
-        .hh__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--border); border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s; }
+        .hh__dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.2); border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s; }
         .hh__dot.active { background: var(--gold); transform: scale(1.35); }
 
         /* Progress bar */
