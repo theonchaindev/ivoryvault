@@ -75,8 +75,10 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
               <span className="cc__price">{formatCurrency(c.ticketPrice)}</span>
               <span className="cc__price-per"> per entry</span>
             </div>
-            <span className="cc__cta-pill">Enter →</span>
           </div>
+
+          {/* Bold full-width Enter Now button */}
+          <span className="cc__enter-btn">Enter Now</span>
         </div>
 
       </Link>
