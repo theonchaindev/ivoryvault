@@ -235,6 +235,17 @@ a { color: inherit; }
 }
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
+/* Mobile-only 2-column grid (sits under the swipe carousel on homepage) */
+.comp-grid-2col { display: none; }
+@media (max-width: 640px) {
+  .comp-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .75rem;
+    margin-top: 1.5rem;
+  }
+}
+
 /* ═══════════════════════════════════════════════
    COMPETITION CARD
 ═══════════════════════════════════════════════ */
