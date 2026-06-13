@@ -25,7 +25,7 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
   return (
     <motion.article
       ref={ref}
-      className="cc"
+      className={`cc${c.slug === 'ps5-dualsense-controller' ? ' theme-blue' : ''}`}
       initial={{ opacity: 0, y: 24 }}
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}

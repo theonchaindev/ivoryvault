@@ -55,6 +55,16 @@ a { color: inherit; }
 }
 
 /* ═══════════════════════════════════════════════
+   THEME: BLUE (Safari-style) — per-competition override.
+   Re-points the gold tokens to blue for any subtree with .theme-blue
+═══════════════════════════════════════════════ */
+.theme-blue {
+  --gold:      #1f7ae0;
+  --gold-d:    #155fb0;
+  --gold-pale: #e8f1fc;
+}
+
+/* ═══════════════════════════════════════════════
    STAR DIVIDER
 ═══════════════════════════════════════════════ */
 .star-divider { display: flex; align-items: center; gap: 1rem; width: 100%; }

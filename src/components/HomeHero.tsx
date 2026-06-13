@@ -67,7 +67,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={idx}
-                className="hh__card"
+                className={`hh__card${c.slug === 'ps5-dualsense-controller' ? ' theme-blue' : ''}`}
                 initial={{ opacity: 0, x: enterX }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: exitX }}

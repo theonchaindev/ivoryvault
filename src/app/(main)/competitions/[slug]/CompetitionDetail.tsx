@@ -22,7 +22,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
   const hot = pct >= 80
 
   return (
-    <div className="cdp">
+    <div className={`cdp${competition.slug === 'ps5-dualsense-controller' ? ' theme-blue' : ''}`}>
       <div className="cdp__inner">
 
         {/* ── LEFT: image column ── */}
