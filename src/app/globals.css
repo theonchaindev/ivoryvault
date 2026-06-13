@@ -63,6 +63,10 @@ a { color: inherit; }
   --gold-d:    #155fb0;
   --gold-pale: #e8f1fc;
 }
+/* Lighter blue progress track (the champagne --bg2 clashes with blue) */
+.theme-blue .cc__track,
+.theme-blue .cdp__track,
+.theme-blue .hh__card-track { background: #d6e6f8; }
 
 /* ═══════════════════════════════════════════════
    STAR DIVIDER
