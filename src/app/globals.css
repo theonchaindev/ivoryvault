@@ -67,6 +67,10 @@ a { color: inherit; }
 .theme-blue .cc__track,
 .theme-blue .cdp__track,
 .theme-blue .hh__card-track { background: #d6e6f8; }
+/* Sold / remaining counts in blue */
+.theme-blue .cc__sold-row span,
+.theme-blue .hh__card-sold-row span,
+.theme-blue .cdp__pct { color: var(--gold); }
 
 /* ═══════════════════════════════════════════════
    STAR DIVIDER
