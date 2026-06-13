@@ -82,11 +82,6 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
                     ? <img src={c.heroImg} alt={c.title} className="hh__card-img" />
                     : <div className="hh__card-placeholder" />
                   }
-                  <div className="hh__card-img-grad" />
-                  <div className="hh__card-prize-overlay">
-                    <span className="hh__card-prize-label">Prize Value</span>
-                    <span className="hh__card-prize-val">{formatCurrency(c.prizeValue)}</span>
-                  </div>
                 </div>
 
                 {c.drawDate && (

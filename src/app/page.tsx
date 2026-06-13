@@ -10,6 +10,7 @@ import HowItWorks from '@/components/HowItWorks'
 import StatsCounter from '@/components/StatsCounter'
 import WinnerCard from '@/components/WinnerCard'
 import AnimatedSection from '@/components/AnimatedSection'
+import StarDivider from '@/components/StarDivider'
 
 async function getData() {
   try {
@@ -87,6 +88,8 @@ export default async function Home() {
             </div>
           </AnimatedSection>
 
+          <div style={{ marginBottom: '2rem' }}><StarDivider /></div>
+
           {gridComps.length > 0 ? (
             <>
               {/* Swipe carousel (mobile) / grid (desktop) */}
@@ -135,6 +138,9 @@ export default async function Home() {
                 <Link href="/winners" className="section-head__link">All winners →</Link>
               </div>
             </AnimatedSection>
+
+            <div style={{ marginBottom: '2rem' }}><StarDivider /></div>
+
             <div className="winners-grid">
               {winners.map((w, i) => (
                 <WinnerCard key={w.id} index={i} winner={{ ...w, drawnAt: w.drawnAt.toISOString(), prizeTitle: w.prizeTitle ?? null, prizeValue: w.prizeValue ?? null }} />

@@ -39,10 +39,6 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
             : <div className="cc__placeholder" />
           }
           {hot && <span className="cc__hot">🔥 Hot</span>}
-          <div className="cc__prize-overlay">
-            <span className="cc__prize-label">Prize Value</span>
-            <span className="cc__prize-val">{formatCurrency(c.prizeValue)}</span>
-          </div>
         </div>
 
         {/* Timer */}

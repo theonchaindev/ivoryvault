@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import StarDivider from './StarDivider'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -41,6 +42,8 @@ export default function Footer() {
             </nav>
           </div>
         </div>
+
+        <div style={{ margin: '0 0 1.75rem' }}><StarDivider dark /></div>
 
         <div className="site-footer__bottom">
           <p>© {year} Ivory Vault Ltd. All rights reserved.</p>

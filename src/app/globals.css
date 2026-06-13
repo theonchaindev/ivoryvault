@@ -55,6 +55,14 @@ a { color: inherit; }
 }
 
 /* ═══════════════════════════════════════════════
+   STAR DIVIDER
+═══════════════════════════════════════════════ */
+.star-divider { display: flex; align-items: center; gap: 1rem; width: 100%; }
+.star-divider__line { flex: 1; height: 1px; background: var(--border); }
+.star-divider__star { color: var(--gold); flex-shrink: 0; }
+.star-divider--dark .star-divider__line { background: rgba(255,255,255,.12); }
+
+/* ═══════════════════════════════════════════════
    BUTTONS
 ═══════════════════════════════════════════════ */
 .btn-gold {
@@ -127,7 +135,7 @@ a { color: inherit; }
 }
 .nav__logo { display: flex; align-items: center; gap: .875rem; text-decoration: none; flex-shrink: 0; }
 .nav__logo-img { width: 68px; height: 68px; object-fit: contain; }
-.nav__logo-text { font-size: .5625rem; font-weight: 700; letter-spacing: .26em; color: var(--ink); }
+.nav__logo-text { font-family: var(--font-cinzel), serif; font-size: .8125rem; font-weight: 600; letter-spacing: .22em; color: var(--ink); }
 .nav__links { display: flex; align-items: center; gap: 2rem; position: absolute; left: 50%; transform: translateX(-50%); }
 .nav__link { font-size: .6875rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); text-decoration: none; transition: color .2s; font-weight: 500; }
 .nav__link:hover { color: var(--gold); }
@@ -341,7 +349,7 @@ a { color: inherit; }
 ═══════════════════════════════════════════════ */
 .hiw { padding: clamp(4rem,7vw,7rem) 0; background: var(--card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .hiw__inner { max-width: 1440px; margin: 0 auto; padding: 0 clamp(1.5rem,3vw,3rem); }
-.hiw__head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: clamp(2.5rem,5vw,4rem); }
+.hiw__head { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
 .hiw__label { font-size: .5375rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold); margin-bottom: .625rem; font-weight: 600; }
 .hiw__title { font-family: var(--font-cormorant,serif); font-size: clamp(2.25rem,4vw,3.5rem); font-weight: 700; line-height: .95; letter-spacing: -.025em; color: var(--ink); }
 .hiw__title em { font-style: italic; color: var(--gold); }
@@ -400,7 +408,7 @@ a { color: inherit; }
 .site-footer__brand { display: flex; flex-direction: column; gap: .875rem; }
 .site-footer__logo { display: flex; align-items: center; gap: .875rem; }
 .site-footer__logo-text { display: flex; flex-direction: column; gap: .2rem; }
-.site-footer__logo-text span:first-child { font-size: .5625rem; font-weight: 700; letter-spacing: .26em; color: rgba(255,255,255,.9); }
+.site-footer__logo-text span:first-child { font-family: var(--font-cinzel), serif; font-size: .9375rem; font-weight: 600; letter-spacing: .2em; color: rgba(255,255,255,.95); }
 .site-footer__logo-sub { font-size: .45rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
 .site-footer__tagline { font-family: var(--font-cormorant,serif); font-style: italic; font-size: 1rem; color: rgba(255,255,255,.3); }
 .site-footer__desc { font-size: .8125rem; line-height: 1.75; color: rgba(255,255,255,.28); max-width: 320px; }
@@ -410,7 +418,7 @@ a { color: inherit; }
 .site-footer__nav { display: flex; flex-direction: column; gap: .75rem; }
 .site-footer__link { font-size: .8125rem; color: rgba(255,255,255,.45); text-decoration: none; transition: color .2s; }
 .site-footer__link:hover { color: #fff; }
-.site-footer__bottom { border-top: 1px solid rgba(255,255,255,.07); padding-top: 1.75rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .6875rem; color: rgba(255,255,255,.22); }
+.site-footer__bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .6875rem; color: rgba(255,255,255,.22); }
 .site-footer__free { color: rgba(201,168,76,.6); text-decoration: none; transition: color .2s; }
 .site-footer__free:hover { color: var(--gold); }
 

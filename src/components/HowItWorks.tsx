@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRef } from 'react'
 import { motion, useInView } from 'motion/react'
+import StarDivider from './StarDivider'
 
 const steps = [
   { n: '01', title: 'Choose', body: 'Browse our curated luxury competitions and pick the prize you want to win.' },
@@ -30,6 +31,8 @@ export default function HowItWorks() {
           </div>
           <Link href="/how-it-works" className="hiw__link">Full details →</Link>
         </motion.div>
+
+        <div style={{ margin: '0 0 clamp(2rem,4vw,3rem)' }}><StarDivider /></div>
 
         <div className="hiw__grid">
           {steps.map((s, i) => (
