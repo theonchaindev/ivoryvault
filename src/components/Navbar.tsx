@@ -60,6 +60,14 @@ export default function Navbar() {
             )}
           </div>
 
+          {/* Basket — always visible (sits outside the burger menu on mobile) */}
+          <Link href="/account" className="nav__basket" aria-label="Basket">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M3 6h18l-1.5 12.5a2 2 0 0 1-2 1.75H6.5a2 2 0 0 1-2-1.75L3 6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+              <path d="M8.5 9V5.5a3.5 3.5 0 0 1 7 0V9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+            </svg>
+          </Link>
+
           <button className="nav__burger" onClick={() => setOpen(!open)} aria-label="Menu">
             <span className={open ? 'open' : ''} />
             <span className={open ? 'open' : ''} />
@@ -80,7 +88,7 @@ export default function Navbar() {
                 <Image src="/logo.png" alt="Ivory Vault" width={52} height={52} />
               </div>
               <nav>
-                {NAV.map((l, i) => (
+                {[{ href: '/', label: 'Home' }, ...NAV].map((l, i) => (
                   <motion.div key={l.href} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }}>
                     <Link href={l.href} onClick={() => setOpen(false)} className="nav__drawer-link">{l.label}</Link>
                   </motion.div>
