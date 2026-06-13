@@ -7,7 +7,7 @@ import Footer from '@/components/Footer'
 import CompetitionCard from '@/components/CompetitionCard'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
-import StatsCounter from '@/components/StatsCounter'
+// import StatsCounter from '@/components/StatsCounter' // hidden for now
 import WinnerCard from '@/components/WinnerCard'
 import AnimatedSection from '@/components/AnimatedSection'
 import StarDivider from '@/components/StarDivider'
@@ -119,12 +119,13 @@ export default async function Home() {
 
       <HowItWorks />
 
+      {/* Stats section hidden for now
       <StatsCounter stats={[
         { v: '10,000+', l: 'Happy Members' },
         { v: '£500k+', l: 'Prizes Awarded' },
         { v: '100%', l: 'Transparent Draws' },
         { v: '48hrs', l: 'Prize Delivery' },
-      ]} />
+      ]} /> */}
 
       {winners.length > 0 && (
         <section className="page-section page-section--cream">

@@ -224,9 +224,10 @@ a { color: inherit; }
 @media (max-width: 1200px) { .comp-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
 @media (max-width: 640px)  {
-  .section-inner { overflow: hidden; }
+  .section-inner { overflow-x: clip; }
   .comp-grid {
     display: flex;
+    flex-wrap: nowrap;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
@@ -241,13 +242,8 @@ a { color: inherit; }
     flex: 0 0 calc(100vw - 2.5rem);
     width: calc(100vw - 2.5rem);
     min-width: 0;
-    scroll-snap-align: start;
-    touch-action: pan-x;
-    pointer-events: none;
+    scroll-snap-align: center;
   }
-  /* Re-enable pointer events only on links/buttons inside cards */
-  .comp-grid > * a,
-  .comp-grid > * button { pointer-events: auto; }
 }
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
 
