@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Montserrat } from 'next/font/google'
 import './globals.css'
+import { CartProvider } from '@/context/CartContext'
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -18,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={montserrat.variable}>
       <body style={{ fontFamily: 'var(--font-montserrat), system-ui, sans-serif' }}>
-        {children}
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   )

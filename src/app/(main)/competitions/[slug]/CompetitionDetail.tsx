@@ -7,7 +7,7 @@ import TicketSelector from './TicketSelector'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 interface Competition {
-  id: string; title: string; subtitle?: string | null
+  id: string; slug: string; title: string; subtitle?: string | null
   description: string; prizeValue: number; ticketPrice: number
   maxTickets: number; ticketsSold: number; status: string
   drawDate?: Date | null; images: string[]
@@ -126,7 +126,9 @@ export default function CompetitionDetail({ competition }: { competition: Compet
           {/* Ticket selector */}
           <TicketSelector competition={{
             id: competition.id,
+            slug: competition.slug,
             title: competition.title,
+            image: competition.images[0] ?? null,
             ticketPrice: competition.ticketPrice,
             maxTickets: competition.maxTickets,
             ticketsSold: competition.ticketsSold,

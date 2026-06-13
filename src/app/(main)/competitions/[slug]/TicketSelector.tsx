@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
+import { useCart } from '@/context/CartContext'
 
 interface Props {
   competition: {
-    id: string; title: string; ticketPrice: number
+    id: string; slug: string; title: string; image: string | null; ticketPrice: number
     maxTickets: number; ticketsSold: number; status: string
   }
 }
@@ -15,9 +17,10 @@ const spring = { type: 'spring', stiffness: 400, damping: 28 } as const
 const ease = [0.22, 1, 0.36, 1] as const
 
 export default function TicketSelector({ competition }: Props) {
+  const router = useRouter()
+  const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [added, setAdded] = useState(false)
 
   const remaining = competition.maxTickets - competition.ticketsSold
   const maxSelect = Math.min(remaining, 50)
@@ -25,23 +28,31 @@ export default function TicketSelector({ competition }: Props) {
 
   const setQty = (n: number) => setQuantity(Math.min(maxSelect, Math.max(1, n)))
 
-  const handleCheckout = async () => {
-    setLoading(true); setError('')
-    try {
-      const res = await fetch('/api/payments/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ competitionId: competition.id, quantity }),
-      })
-      const data = await res.json()
-      if (res.status === 401) { window.location.href = '/login?from=' + encodeURIComponent(window.location.pathname); return }
-      if (!res.ok) { setError(data.error || 'Failed to create payment'); return }
-      alert(`Payment intent created! In production this opens Stripe checkout.\n\nClient secret: ${data.clientSecret?.substring(0, 20)}...`)
-    } catch {
-      setError('Something went wrong. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+  const handleAddToBasket = () => {
+    addItem({
+      competitionId: competition.id,
+      slug: competition.slug,
+      title: competition.title,
+      image: competition.image,
+      ticketPrice: competition.ticketPrice,
+      quantity,
+      maxAvailable: maxSelect,
+    })
+    setAdded(true)
+    setTimeout(() => setAdded(false), 2200)
+  }
+
+  const handleBuyNow = () => {
+    addItem({
+      competitionId: competition.id,
+      slug: competition.slug,
+      title: competition.title,
+      image: competition.image,
+      ticketPrice: competition.ticketPrice,
+      quantity,
+      maxAvailable: maxSelect,
+    })
+    router.push('/basket')
   }
 
   if (competition.status !== 'active') {
@@ -144,34 +155,19 @@ export default function TicketSelector({ competition }: Props) {
         </AnimatePresence>
       </div>
 
-      <AnimatePresence>
-        {error && (
-          <motion.div
-            className="ts__error"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {error}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <motion.button
         className="ts__cta"
-        onClick={handleCheckout}
-        disabled={loading}
-        whileHover={!loading ? { scale: 1.02 } : {}}
-        whileTap={!loading ? { scale: 0.98 } : {}}
+        onClick={handleAddToBasket}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         transition={spring}
-        style={{ opacity: loading ? 0.75 : 1 }}
       >
-        {loading
-          ? <span className="ts__spinner-wrap"><span className="ts__spinner" /> Processing...</span>
-          : `Enter Now — ${formatCurrency(total)}`
-        }
+        {added ? '✓ Added to Basket' : `Add to Basket — ${formatCurrency(total)}`}
       </motion.button>
+
+      <button className="ts__buy-now" onClick={handleBuyNow}>
+        Buy Now →
+      </button>
 
       <p className="ts__note">
         🔒 Secure checkout via Stripe.{' '}
@@ -230,15 +226,19 @@ export default function TicketSelector({ competition }: Props) {
         .ts__cta {
           width: 100%; padding: 1rem; border-radius: var(--r-btn);
           background: var(--gold); color: #fff;
-          font-size: .75rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+          font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
           border: none; cursor: pointer; font-family: inherit;
           transition: background .2s; display: flex; align-items: center; justify-content: center;
         }
-        .ts__cta:hover:not(:disabled) { background: var(--gold-d); }
-        .ts__cta:disabled { cursor: not-allowed; }
-        .ts__spinner-wrap { display: flex; align-items: center; justify-content: center; gap: .5rem; }
-        .ts__spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: 50%; animation: ts-spin .6s linear infinite; }
-        @keyframes ts-spin { to { transform: rotate(360deg); } }
+        .ts__cta:hover { background: var(--gold-d); }
+        .ts__buy-now {
+          width: 100%; padding: .75rem; border-radius: var(--r-btn);
+          background: transparent; color: var(--ink2);
+          font-size: .6875rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+          border: 1.5px solid var(--border); cursor: pointer; font-family: inherit;
+          transition: border-color .2s, color .2s;
+        }
+        .ts__buy-now:hover { border-color: var(--ink); color: var(--ink); }
         .ts__note { font-size: .6875rem; color: var(--ink3); text-align: center; line-height: 1.55; }
         .ts__free-link { color: var(--gold); text-decoration: none; }
         .ts__free-link:hover { text-decoration: underline; }

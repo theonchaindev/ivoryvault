@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import AccountClient from './AccountClient'
+import ClearBasketOnSuccess from './ClearBasketOnSuccess'
 
 async function getUserTickets(userId: string) {
   try {
@@ -73,16 +74,19 @@ export default async function AccountPage() {
   }))
 
   return (
-    <AccountClient
-      name={session.name}
-      email={session.email}
-      totalTickets={totalTickets}
-      totalEntries={tickets.length}
-      activeEntries={activeEntries}
-      tier={tier}
-      nextTier={nextTier}
-      progressPct={progressPct}
-      tickets={ticketData}
-    />
+    <>
+      <ClearBasketOnSuccess />
+      <AccountClient
+        name={session.name}
+        email={session.email}
+        totalTickets={totalTickets}
+        totalEntries={tickets.length}
+        activeEntries={activeEntries}
+        tier={tier}
+        nextTier={nextTier}
+        progressPct={progressPct}
+        tickets={ticketData}
+      />
+    </>
   )
 }

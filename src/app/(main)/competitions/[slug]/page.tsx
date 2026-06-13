@@ -34,6 +34,7 @@ export default async function CompetitionPage({ params }: PageProps) {
   return (
     <CompetitionDetail competition={{
       id: competition.id,
+      slug: competition.slug,
       title: competition.title,
       subtitle: competition.subtitle ?? null,
       description: competition.description,

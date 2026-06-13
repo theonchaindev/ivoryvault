@@ -4,8 +4,32 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AnimatePresence, motion } from 'motion/react'
+import { useCart } from '@/context/CartContext'
 
 interface User { id: string; name: string; role: string }
+
+function BasketIcon({ count }: { count: number }) {
+  return (
+    <Link href="/basket" className="nav__basket" aria-label="Basket">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M3 6h18l-1.5 12.5a2 2 0 0 1-2 1.75H6.5a2 2 0 0 1-2-1.75L3 6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
+        <path d="M8.5 9V5.5a3.5 3.5 0 0 1 7 0V9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      </svg>
+      {count > 0 && <span className="nav__basket-count">{count}</span>}
+    </Link>
+  )
+}
+
+function AccountIcon() {
+  return (
+    <Link href="/account" className="nav__account" aria-label="Account">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.6"/>
+        <path d="M4 20c0-3.5 3.5-6 8-6s8 2.5 8 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
+      </svg>
+    </Link>
+  )
+}
 
 const NAV = [
   { href: '/competitions', label: 'Competitions' },
@@ -18,6 +42,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [scrolled, setScrolled] = useState(false)
+  const { count } = useCart()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 4)
@@ -49,24 +74,21 @@ export default function Navbar() {
             {user ? (
               <>
                 {user.role === 'admin' && <Link href="/admin" className="nav__link nav__link--gold">Admin</Link>}
-                <Link href="/account" className="nav__link">Account</Link>
+                <AccountIcon />
+                <BasketIcon count={count} />
                 <button className="nav__btn-ghost" onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/' }}>Sign Out</button>
               </>
             ) : (
               <>
                 <Link href="/login" className="nav__link">Sign In</Link>
+                <BasketIcon count={count} />
                 <Link href="/signup" className="nav__btn-gold">Join Free</Link>
               </>
             )}
           </div>
 
-          {/* Basket — always visible (sits outside the burger menu on mobile) */}
-          <Link href="/account" className="nav__basket" aria-label="Basket">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <path d="M3 6h18l-1.5 12.5a2 2 0 0 1-2 1.75H6.5a2 2 0 0 1-2-1.75L3 6Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/>
-              <path d="M8.5 9V5.5a3.5 3.5 0 0 1 7 0V9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
-            </svg>
-          </Link>
+          {/* Mobile basket — sits outside the burger menu */}
+          <div className="nav__mobile-basket"><BasketIcon count={count} /></div>
 
           <button className="nav__burger" onClick={() => setOpen(!open)} aria-label="Menu">
             <span className={open ? 'open' : ''} />
