@@ -99,7 +99,7 @@ export default function Navbar() {
                   ? <Link href="/account" className="btn-dark" onClick={() => setOpen(false)} style={{ textAlign: 'center' }}>My Account</Link>
                   : <>
                       <Link href="/signup" className="btn-gold" onClick={() => setOpen(false)} style={{ textAlign: 'center' }}>Join Free</Link>
-                      <Link href="/btn-outline" className="btn-outline" onClick={() => setOpen(false)} style={{ textAlign: 'center' }}>Sign In</Link>
+                      <Link href="/login" className="btn-outline" onClick={() => setOpen(false)} style={{ textAlign: 'center' }}>Sign In</Link>
                     </>
                 }
               </div>
