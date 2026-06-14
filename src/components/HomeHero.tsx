@@ -158,23 +158,32 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
       <style>{`
         .hh {
           position: relative;
-          background: var(--ink);
           padding-top: 80px;
           overflow: hidden;
-        }
-        /* Gold radial glow + subtle texture */
-        .hh::before {
-          content: ''; position: absolute; top: -20%; right: -10%;
-          width: 70%; height: 140%;
-          background: radial-gradient(ellipse at center, rgba(31,122,224,.18) 0%, rgba(31,122,224,.05) 40%, transparent 70%);
-          pointer-events: none;
-        }
-        .hh::after {
-          content: ''; position: absolute; inset: 0;
           background:
-            linear-gradient(135deg, rgba(31,122,224,.04) 0%, transparent 50%),
-            radial-gradient(circle at 15% 30%, rgba(255,255,255,.02) 0%, transparent 25%);
-          pointer-events: none;
+            radial-gradient(900px 600px at 78% 8%, rgba(31,122,224,.28) 0%, transparent 60%),
+            radial-gradient(800px 700px at 8% 100%, rgba(74,154,238,.18) 0%, transparent 55%),
+            linear-gradient(160deg, #0d1726 0%, #11121c 50%, #0b0b10 100%);
+        }
+        /* Dot-grid texture overlay */
+        .hh::before {
+          content: ''; position: absolute; inset: 0; pointer-events: none;
+          background-image: radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px);
+          background-size: 26px 26px;
+          mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, #000 30%, transparent 75%);
+          -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, #000 30%, transparent 75%);
+        }
+        /* Floating glow orb */
+        .hh::after {
+          content: ''; position: absolute; top: -25%; right: -8%;
+          width: 55%; height: 130%; pointer-events: none;
+          background: radial-gradient(ellipse at center, rgba(31,122,224,.35) 0%, rgba(31,122,224,.08) 45%, transparent 70%);
+          filter: blur(20px);
+          animation: hh-float 14s ease-in-out infinite;
+        }
+        @keyframes hh-float {
+          0%,100% { transform: translate(0,0) scale(1); opacity: .9; }
+          50%     { transform: translate(-4%, 5%) scale(1.08); opacity: 1; }
         }
         .hh__inner {
           position: relative; z-index: 1;
