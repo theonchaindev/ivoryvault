@@ -202,7 +202,7 @@ export default function TicketSelector({ competition }: Props) {
         .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
         .ts__remaining { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
         .ts__closed { font-family: var(--font-cormorant,serif); font-size: 1.25rem; color: var(--ink3); text-align: center; padding: 1rem 0; }
-        .ts__price-row { display: flex; justify-content: space-between; align-items: center; background: var(--gold-pale); border: 1px solid rgba(201,168,76,.25); border-radius: 10px; padding: .875rem 1rem; }
+        .ts__price-row { display: flex; justify-content: space-between; align-items: center; background: var(--gold-pale); border: 1px solid rgba(31,122,224,.25); border-radius: 10px; padding: .875rem 1rem; }
         .ts__price-label { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); }
         .ts__price-val { font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 700; color: var(--gold); line-height: 1; }
         .ts__section-label { font-size: .5625rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); margin-bottom: .625rem; font-weight: 500; }

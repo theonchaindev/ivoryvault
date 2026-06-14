@@ -67,7 +67,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={idx}
-                className={`hh__card${c.slug === 'ps5-dualsense-controller' ? ' theme-blue' : ''}`}
+                className={"hh__card"}
                 initial={{ opacity: 0, x: enterX }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: exitX }}
@@ -166,13 +166,13 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         .hh::before {
           content: ''; position: absolute; top: -20%; right: -10%;
           width: 70%; height: 140%;
-          background: radial-gradient(ellipse at center, rgba(201,168,76,.18) 0%, rgba(201,168,76,.05) 40%, transparent 70%);
+          background: radial-gradient(ellipse at center, rgba(31,122,224,.18) 0%, rgba(31,122,224,.05) 40%, transparent 70%);
           pointer-events: none;
         }
         .hh::after {
           content: ''; position: absolute; inset: 0;
           background:
-            linear-gradient(135deg, rgba(201,168,76,.04) 0%, transparent 50%),
+            linear-gradient(135deg, rgba(31,122,224,.04) 0%, transparent 50%),
             radial-gradient(circle at 15% 30%, rgba(255,255,255,.02) 0%, transparent 25%);
           pointer-events: none;
         }
@@ -192,12 +192,12 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         .hh__left { display: flex; flex-direction: column; gap: 1.5rem; }
         .hh__badge {
           display: inline-flex; align-items: center; gap: .5rem; width: fit-content;
-          background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.3);
+          background: rgba(31,122,224,.12); border: 1px solid rgba(31,122,224,.3);
           border-radius: 999px; padding: .4rem 1rem;
           font-size: .5rem; letter-spacing: .18em; text-transform: uppercase;
           color: var(--gold); font-weight: 700;
         }
-        .hh__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse-dot 1.8s infinite; box-shadow: 0 0 8px rgba(201,168,76,.8); }
+        .hh__badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: pulse-dot 1.8s infinite; box-shadow: 0 0 8px rgba(31,122,224,.8); }
         .hh__headline {
           font-size: clamp(2.75rem,6.5vw,5.5rem);
           font-weight: 800; line-height: .92; letter-spacing: -.035em; color: #fff;
@@ -205,7 +205,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         }
         .hh__headline em {
           font-style: normal; display: block;
-          background: linear-gradient(120deg, #e8cd7a 0%, var(--gold) 45%, #b8923a 100%);
+          background: linear-gradient(120deg, #4a9aee 0%, var(--gold) 45%, #1056a0 100%);
           -webkit-background-clip: text; background-clip: text;
           -webkit-text-fill-color: transparent;
         }
@@ -218,9 +218,9 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
           padding: 1.0625rem 2.5rem; border-radius: var(--r-btn); text-decoration: none;
           transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 8px 24px rgba(201,168,76,.3);
+          box-shadow: 0 8px 24px rgba(31,122,224,.3);
         }
-        .hh__cta:hover { background: #e8cd7a; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(201,168,76,.45); }
+        .hh__cta:hover { background: #4a9aee; transform: translateY(-2px); box-shadow: 0 12px 32px rgba(31,122,224,.45); }
 
         /* Card wrapper */
         .hh__card-wrap { position: relative; }
@@ -229,7 +229,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           background: var(--card);
           border-radius: var(--r-card);
           overflow: hidden;
-          box-shadow: 0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(201,168,76,.2);
+          box-shadow: 0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(31,122,224,.2);
         }
         .hh__card-img-wrap { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--bg2); }
         .hh__card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -243,7 +243,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         .hh__card-title { font-size: 1.0625rem; font-weight: 700; color: var(--ink); margin-bottom: .75rem; line-height: 1.2; }
         .hh__card-sold-row { display: flex; justify-content: space-between; font-size: .5625rem; color: var(--ink3); margin-bottom: .3rem; font-weight: 500; }
         .hh__card-remaining { color: var(--gold); font-weight: 700; }
-        .hh__card-track { height: 5px; background: var(--bg2); border-radius: 999px; overflow: hidden; margin-bottom: .75rem; }
+        .hh__card-track { height: 5px; background: var(--track); border-radius: 999px; overflow: hidden; margin-bottom: .75rem; }
         .hh__card-fill { height: 100%; background: var(--gold); border-radius: 999px; }
         .hh__card-foot { margin-bottom: .75rem; }
         .hh__card-price { font-size: 1.25rem; font-weight: 800; color: var(--ink); }
@@ -255,7 +255,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           padding: .8125rem; border-radius: var(--r-btn); text-decoration: none;
           transition: background .2s;
         }
-        .hh__card-btn:hover { background: #e8cd7a; }
+        .hh__card-btn:hover { background: #4a9aee; }
 
         /* Nav row */
         .hh__nav { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1.25rem; }
@@ -266,7 +266,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           display: flex; align-items: center; justify-content: center; line-height: 1;
           transition: border-color .2s, color .2s, background .2s;
         }
-        .hh__arrow:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,.12); }
+        .hh__arrow:hover { border-color: var(--gold); color: var(--gold); background: rgba(31,122,224,.12); }
         .hh__dots { display: flex; align-items: center; gap: .5rem; }
         .hh__dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,.2); border: none; cursor: pointer; padding: 0; transition: background .2s, transform .2s; }
         .hh__dot.active { background: var(--gold); transform: scale(1.35); }

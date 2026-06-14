@@ -117,7 +117,7 @@ export default function FeaturedGrid({ competitions }: { competitions: Comp[] })
         .fg__head { display: flex; align-items: center; justify-content: space-between; padding: clamp(2rem,3vw,3rem) 0 1.5rem; }
         .fg__label { display: flex; align-items: center; gap: .75rem; font-size: .5375rem; letter-spacing: .22em; text-transform: uppercase; color: var(--ink2); }
         .fg__live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--rg); animation: live-pulse 2s infinite; flex-shrink: 0; }
-        @keyframes live-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(201,168,76,.5); } 50% { box-shadow: 0 0 0 6px rgba(201,168,76,0); } }
+        @keyframes live-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(31,122,224,.5); } 50% { box-shadow: 0 0 0 6px rgba(31,122,224,0); } }
         .fg__see-all { font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); text-decoration: none; transition: color .2s; }
         .fg__see-all:hover { color: var(--rg); }
 

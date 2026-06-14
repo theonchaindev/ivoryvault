@@ -309,7 +309,7 @@ export default function AccountClient({
           background: var(--off); color: var(--ink3);
           border: 1px solid var(--border);
         }
-        .acc__badge--live { background: rgba(184,104,122,.08); color: var(--rg); border-color: rgba(184,104,122,.25); }
+        .acc__badge--live { background: var(--gold-pale); color: var(--rg); border-color: rgba(31,122,224,.25); }
 
         /* Empty */
         .acc__empty {

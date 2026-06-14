@@ -22,7 +22,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
   const hot = pct >= 80
 
   return (
-    <div className={`cdp${competition.slug === 'ps5-dualsense-controller' ? ' theme-blue' : ''}`}>
+    <div className={"cdp"}>
       <div className="cdp__inner">
 
         {/* ── LEFT: image column ── */}
@@ -201,7 +201,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         .cdp__prize-chip {
           position: absolute; bottom: 1rem; right: 1rem; z-index: 2;
           background: rgba(250,247,242,.93); backdrop-filter: blur(10px);
-          border: 1px solid rgba(201,168,76,.4); border-radius: var(--r-card);
+          border: 1px solid rgba(31,122,224,.4); border-radius: var(--r-card);
           padding: .625rem 1rem; text-align: right;
         }
         .cdp__prize-chip-label { display: block; font-size: .45rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: .2rem; }
@@ -237,7 +237,7 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         .cdp__stat-label { font-size: .5375rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); margin-bottom: .25rem; }
         .cdp__stat-val { font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 400; color: var(--ink); line-height: 1; }
         .cdp__stat-val--gold { color: var(--gold); }
-        .cdp__track { height: 6px; background: var(--bg2); border-radius: var(--r-pill); overflow: hidden; margin-bottom: .5rem; }
+        .cdp__track { height: 6px; background: var(--track); border-radius: var(--r-pill); overflow: hidden; margin-bottom: .5rem; }
         .cdp__fill { height: 100%; background: var(--gold); border-radius: var(--r-pill); }
         .cdp__pct { font-size: .75rem; color: var(--ink3); text-align: right; }
 
