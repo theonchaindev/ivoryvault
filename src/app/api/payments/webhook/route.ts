@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
+import { syncEarnedSpins } from '@/lib/spins'
 import Stripe from 'stripe'
 
 /** Record a single competition purchase: create ticket, bump count, auto-draw if sold out. */
@@ -10,6 +11,9 @@ async function recordPurchase(userId: string, competitionId: string, qty: number
   await prisma.ticket.create({
     data: { userId, competitionId, quantity: qty, stripePaymentId: paymentRef },
   })
+
+  // Award any free spins earned from new ticket total (tier-up / every 50 tickets)
+  await syncEarnedSpins(userId)
 
   const competition = await prisma.competition.update({
     where: { id: competitionId },

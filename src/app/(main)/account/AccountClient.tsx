@@ -27,10 +27,20 @@ interface TicketEntry {
   }
 }
 
+interface Notification {
+  id: string
+  title: string
+  body: string
+  icon: string
+  read: boolean
+  createdAt: string
+}
+
 interface Props {
   name: string
   email: string
   siteCredit: number
+  freeSpins: number
   totalTickets: number
   totalEntries: number
   activeEntries: number
@@ -38,9 +48,10 @@ interface Props {
   nextTier: Tier | null
   progressPct: number
   tickets: TicketEntry[]
+  notifications: Notification[]
 }
 
-type View = 'overview' | 'addresses' | 'account' | 'communication' | 'safeplay'
+type View = 'overview' | 'notifications' | 'addresses' | 'account' | 'communication' | 'safeplay'
 type Filter = 'all' | 'active' | 'past'
 
 const ease = [0.22, 1, 0.36, 1] as const
@@ -48,6 +59,7 @@ const ease = [0.22, 1, 0.36, 1] as const
 /* ── Menu icons ── */
 const icons: Record<string, React.ReactNode> = {
   overview: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="8" height="18" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
+  notifications: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6.5H4c.5-1 2-2.5 2-6.5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M10 19a2 2 0 0 0 4 0" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
   addresses: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><circle cx="12" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6"/></svg>,
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6"/><circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M6.5 19a6 6 0 0 1 11 0" stroke="currentColor" strokeWidth="1.6"/></svg>,
   communication: <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 5h16v11H7l-3 3V5Z" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round"/><path d="M8 9h8M8 12h5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
@@ -57,20 +69,41 @@ const icons: Record<string, React.ReactNode> = {
 
 const MENU: { id: View; label: string }[] = [
   { id: 'overview', label: 'Overview' },
+  { id: 'notifications', label: 'Notifications' },
   { id: 'addresses', label: 'Addresses' },
   { id: 'account', label: 'Account details' },
   { id: 'communication', label: 'Communication' },
   { id: 'safeplay', label: 'Safe Play' },
 ]
 
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime()
+  const m = Math.floor(diff / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  const d = Math.floor(h / 24)
+  return `${d}d ago`
+}
+
 export default function AccountClient({
-  name, email, siteCredit, totalTickets, totalEntries, activeEntries,
-  tier, nextTier, progressPct, tickets,
+  name, email, siteCredit, freeSpins, totalTickets, totalEntries, activeEntries,
+  tier, nextTier, progressPct, tickets, notifications,
 }: Props) {
   const [view, setView] = useState<View>('overview')
   const [filter, setFilter] = useState<Filter>('all')
+  const [unread, setUnread] = useState(notifications.filter(n => !n.read).length)
 
   const firstName = name.trim().split(' ')[0]
+
+  const openView = (v: View) => {
+    setView(v)
+    if (v === 'notifications' && unread > 0) {
+      setUnread(0)
+      fetch('/api/notifications/read', { method: 'POST' }).catch(() => {})
+    }
+  }
 
   const logout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
@@ -97,16 +130,17 @@ export default function AccountClient({
             Site Credit
             <span className="acc__credit-q" title="Credit can be used towards any competition entry at checkout.">?</span>
             <strong>{formatCurrency(siteCredit)}</strong>
-            {siteCredit === 0 && <Link href="/spin" className="acc__credit-spin">Spin to win free credit →</Link>}
+            {freeSpins > 0 && <Link href="/spin" className="acc__credit-spin">🎡 {freeSpins} free spin{freeSpins === 1 ? '' : 's'} →</Link>}
           </p>
         </motion.div>
 
         {/* ── Menu ── */}
         <motion.nav className="acc__menu" initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease, delay: 0.08 }}>
           {MENU.map(m => (
-            <button key={m.id} className={`acc__menu-item${view === m.id ? ' active' : ''}`} onClick={() => setView(m.id)}>
+            <button key={m.id} className={`acc__menu-item${view === m.id ? ' active' : ''}`} onClick={() => openView(m.id)}>
               <span className="acc__menu-icon">{icons[m.id]}</span>
               {m.label}
+              {m.id === 'notifications' && unread > 0 && <span className="acc__menu-badge">{unread}</span>}
             </button>
           ))}
           <button className="acc__menu-item acc__menu-item--logout" onClick={logout}>
@@ -212,6 +246,34 @@ export default function AccountClient({
               </>
             )}
 
+            {view === 'notifications' && (
+              <div className="acc__panel">
+                <h2 className="acc__h2">Notifications</h2>
+                {notifications.length > 0 ? (
+                  <div className="acc__notes">
+                    {notifications.map((n, i) => (
+                      <motion.div
+                        key={n.id}
+                        className={`acc__note${!n.read ? ' unread' : ''}`}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.35, ease, delay: i * 0.04 }}
+                      >
+                        <span className="acc__note-icon">{n.icon === 'win' ? '🎉' : n.icon === 'tier' ? '⭐' : n.icon === 'spin' ? '🎡' : '🔔'}</span>
+                        <div className="acc__note-body">
+                          <p className="acc__note-title">{n.title}</p>
+                          <p className="acc__note-text">{n.body}</p>
+                          <p className="acc__note-time">{timeAgo(n.createdAt)}</p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="acc__panel-note">No notifications yet. We&apos;ll let you know about wins, free spins and tier upgrades here.</p>
+                )}
+              </div>
+            )}
+
             {view === 'account' && (
               <div className="acc__panel">
                 <h2 className="acc__h2">Account details</h2>
@@ -273,6 +335,7 @@ export default function AccountClient({
         .acc__menu-item.active { background: var(--gold-pale); color: var(--gold); }
         .acc__menu-item.active .acc__menu-icon { color: var(--gold); }
         .acc__menu-icon { display: inline-flex; color: var(--ink2); }
+        .acc__menu-badge { margin-left: auto; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--gold); color: #fff; font-size: .6875rem; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; }
         .acc__menu-item--logout { color: #d23b3b; }
         .acc__menu-item--logout .acc__menu-icon { color: #d23b3b; }
         .acc__menu-item--logout:hover { background: #fdecea; }
@@ -334,6 +397,15 @@ export default function AccountClient({
         .acc__panel-note a { color: var(--gold); text-decoration: underline; }
         .acc__toggle { display: flex; align-items: center; gap: .75rem; padding: .75rem 0; font-size: .9375rem; color: var(--ink2); cursor: pointer; }
         .acc__toggle input { width: 18px; height: 18px; accent-color: var(--gold); }
+
+        /* Notifications */
+        .acc__notes { display: flex; flex-direction: column; gap: .75rem; }
+        .acc__note { display: flex; gap: 1rem; padding: 1rem 1.125rem; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
+        .acc__note.unread { background: var(--gold-pale); border-color: var(--gold); }
+        .acc__note-icon { font-size: 1.25rem; line-height: 1; flex-shrink: 0; }
+        .acc__note-title { font-weight: 800; color: var(--ink); font-size: .9375rem; }
+        .acc__note-text { font-size: .8125rem; color: var(--ink2); line-height: 1.5; margin-top: .2rem; }
+        .acc__note-time { font-size: .6875rem; color: var(--ink3); margin-top: .375rem; }
       `}</style>
     </div>
   )

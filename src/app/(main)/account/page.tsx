@@ -1,8 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { formatCurrency, formatDate } from '@/lib/utils'
-import Link from 'next/link'
+import { getTier, getNextTier } from '@/lib/tiers'
 import AccountClient from './AccountClient'
 import ClearBasketOnSuccess from './ClearBasketOnSuccess'
 
@@ -33,28 +32,17 @@ export const metadata = {
   title: 'My Account — Ivory Vault',
 }
 
-const TIERS = [
-  { name: 'Bronze', min: 0, max: 49, color: '#cd7f32', perks: ['Early access to new competitions', 'Member newsletter'] },
-  { name: 'Silver', min: 50, max: 199, color: '#a8a9ad', perks: ['All Bronze perks', '5% bonus entries on purchases', 'Priority customer support'] },
-  { name: 'Gold', min: 200, max: 499, color: '#c9a84c', perks: ['All Silver perks', '10% bonus entries', 'Exclusive Gold-only competitions', 'Free postal entries'] },
-  { name: 'Platinum', min: 500, max: Infinity, color: '#c9a84c', perks: ['All Gold perks', '15% bonus entries', 'Dedicated account manager', 'VIP draw events', 'First refusal on limited prizes'] },
-]
-
-function getTier(totalTickets: number) {
-  return TIERS.find(t => totalTickets >= t.min && totalTickets <= t.max) ?? TIERS[0]
-}
-
-function getNextTier(totalTickets: number) {
-  const idx = TIERS.findIndex(t => totalTickets >= t.min && totalTickets <= t.max)
-  return idx < TIERS.length - 1 ? TIERS[idx + 1] : null
-}
-
 export default async function AccountPage() {
   const session = await getSession()
   if (!session) redirect('/login')
 
   const tickets = await getUserTickets(session.userId)
-  const dbUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true } })
+  const dbUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true, freeSpins: true } })
+  const notifications = await prisma.notification.findMany({
+    where: { userId: session.userId },
+    orderBy: { createdAt: 'desc' },
+    take: 30,
+  })
 
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0)
   const activeEntries = tickets.filter(t => t.competition.status === 'active').length
@@ -81,6 +69,7 @@ export default async function AccountPage() {
         name={session.name}
         email={session.email}
         siteCredit={dbUser?.siteCredit ?? 0}
+        freeSpins={dbUser?.freeSpins ?? 0}
         totalTickets={totalTickets}
         totalEntries={tickets.length}
         activeEntries={activeEntries}
@@ -88,6 +77,7 @@ export default async function AccountPage() {
         nextTier={nextTier}
         progressPct={progressPct}
         tickets={ticketData}
+        notifications={notifications.map(n => ({ id: n.id, title: n.title, body: n.body, icon: n.icon, read: n.read, createdAt: n.createdAt.toISOString() }))}
       />
     </>
   )

@@ -8,18 +8,35 @@ datasource db {
 }
 
 model User {
-  id         String   @id @default(cuid())
-  email      String   @unique
-  name       String
-  password   String
-  role       String   @default("user")
-  siteCredit Float    @default(0)
-  hasSpun    Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id               String   @id @default(cuid())
+  email            String   @unique
+  name             String
+  password         String
+  role             String   @default("user")
+  siteCredit       Float    @default(0)
+  freeSpins        Int      @default(1)
+  spinsFromTier    Int      @default(0)
+  spinsFromTickets Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  tickets Ticket[]
-  winners Winner[]
+  tickets       Ticket[]
+  winners       Winner[]
+  notifications Notification[]
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  icon      String   @default("info")
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Competition {

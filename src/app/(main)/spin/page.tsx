@@ -16,12 +16,12 @@ export default async function SpinPage() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.userId },
-    select: { hasSpun: true, siteCredit: true },
+    select: { freeSpins: true, siteCredit: true },
   })
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: 'calc(100vh - 80px)' }}>
-      <SpinWheel alreadySpun={user?.hasSpun ?? false} startCredit={user?.siteCredit ?? 0} />
+      <SpinWheel freeSpins={user?.freeSpins ?? 0} startCredit={user?.siteCredit ?? 0} />
     </div>
   )
 }

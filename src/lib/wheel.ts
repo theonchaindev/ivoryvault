@@ -1,28 +1,29 @@
-// Wheel segments in visual order (clockwise). Values in GBP.
-export const WHEEL_SEGMENTS: number[] = [0.25, 0.5, 1, 0.25, 2.5, 0.5, 0.25, 5, 0.5, 1]
+// Wheel shows alternating WIN / NO WIN segments (looks 50/50)…
+export interface WheelSeg { win: boolean }
 
-// Probability weights per prize amount — heavily favours 25p / 50p.
-const WEIGHTS: Record<string, number> = {
-  '0.25': 40,
-  '0.5': 33,
-  '1': 15,
-  '2.5': 8,
-  '5': 4,
-}
+export const WHEEL_SEGMENTS: WheelSeg[] = [
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+]
 
-/** Server-side weighted pick. Returns the winning amount and a matching segment index. */
-export function pickPrize(): { amount: number; index: number } {
-  const total = Object.values(WEIGHTS).reduce((s, w) => s + w, 0)
-  let r = Math.random() * total
-  let amount = 0.25
-  for (const [amt, w] of Object.entries(WEIGHTS)) {
-    if (r < w) { amount = parseFloat(amt); break }
-    r -= w
+// …but a real win is 1 in 10.
+export const WIN_CHANCE = 0.1
+// Prize pool when you do win.
+export const WIN_AMOUNTS = [0.25, 0.5, 0.75, 1]
+
+/** Server-side outcome. Returns whether it's a win, the amount, and a segment index to land on. */
+export function pickOutcome(): { win: boolean; amount: number; index: number } {
+  const winIdx = WHEEL_SEGMENTS.map((s, i) => (s.win ? i : -1)).filter(i => i >= 0)
+  const loseIdx = WHEEL_SEGMENTS.map((s, i) => (!s.win ? i : -1)).filter(i => i >= 0)
+
+  if (Math.random() < WIN_CHANCE) {
+    const amount = WIN_AMOUNTS[Math.floor(Math.random() * WIN_AMOUNTS.length)]
+    return { win: true, amount, index: winIdx[Math.floor(Math.random() * winIdx.length)] }
   }
-  // pick a random segment index that matches the chosen amount
-  const matches = WHEEL_SEGMENTS.map((v, i) => (v === amount ? i : -1)).filter(i => i >= 0)
-  const index = matches[Math.floor(Math.random() * matches.length)] ?? 0
-  return { amount, index }
+  return { win: false, amount: 0, index: loseIdx[Math.floor(Math.random() * loseIdx.length)] }
 }
 
 export function formatPrize(v: number): string {
