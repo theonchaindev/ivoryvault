@@ -30,6 +30,7 @@ interface TicketEntry {
 interface Props {
   name: string
   email: string
+  siteCredit: number
   totalTickets: number
   totalEntries: number
   activeEntries: number
@@ -63,7 +64,7 @@ const MENU: { id: View; label: string }[] = [
 ]
 
 export default function AccountClient({
-  name, email, totalTickets, totalEntries, activeEntries,
+  name, email, siteCredit, totalTickets, totalEntries, activeEntries,
   tier, nextTier, progressPct, tickets,
 }: Props) {
   const [view, setView] = useState<View>('overview')
@@ -95,7 +96,8 @@ export default function AccountClient({
           <p className="acc__credit">
             Site Credit
             <span className="acc__credit-q" title="Credit can be used towards any competition entry at checkout.">?</span>
-            <strong>{formatCurrency(0)}</strong>
+            <strong>{formatCurrency(siteCredit)}</strong>
+            {siteCredit === 0 && <Link href="/spin" className="acc__credit-spin">Spin to win free credit →</Link>}
           </p>
         </motion.div>
 
@@ -260,6 +262,8 @@ export default function AccountClient({
         .acc__credit { display: flex; align-items: center; gap: .5rem; margin-top: .875rem; font-size: 1.125rem; color: var(--ink2); }
         .acc__credit strong { color: var(--ink); font-weight: 800; }
         .acc__credit-q { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--ink3); color: var(--ink3); font-size: .6875rem; font-weight: 700; cursor: help; }
+        .acc__credit-spin { font-size: .75rem; font-weight: 700; color: var(--gold); text-decoration: none; margin-left: .25rem; }
+        .acc__credit-spin:hover { text-decoration: underline; }
 
         /* Menu */
         .acc__menu { margin-top: 1.75rem; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); overflow: hidden; box-shadow: var(--shadow-sm); }

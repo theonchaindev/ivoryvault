@@ -54,6 +54,7 @@ export default async function AccountPage() {
   if (!session) redirect('/login')
 
   const tickets = await getUserTickets(session.userId)
+  const dbUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true } })
 
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0)
   const activeEntries = tickets.filter(t => t.competition.status === 'active').length
@@ -79,6 +80,7 @@ export default async function AccountPage() {
       <AccountClient
         name={session.name}
         email={session.email}
+        siteCredit={dbUser?.siteCredit ?? 0}
         totalTickets={totalTickets}
         totalEntries={tickets.length}
         activeEntries={activeEntries}
