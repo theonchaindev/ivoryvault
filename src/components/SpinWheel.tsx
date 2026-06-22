@@ -71,7 +71,7 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
           <svg viewBox="0 0 300 300" width="100%" height="100%">
             {WHEEL_SEGMENTS.map((seg, i) => {
               const mid = i * SEG + SEG / 2
-              const lp = polar(cx, cy, r * 0.62, mid)
+              const lp = polar(cx, cy, r * 0.7, mid)
               return (
                 <g key={i}>
                   <path d={segmentPath(i, cx, cy, r)} fill={seg.win ? 'var(--gold)' : '#18140f'} stroke="#fff" strokeWidth="1.5" />
@@ -81,7 +81,14 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
                     textAnchor="middle" dominantBaseline="middle"
                     transform={`rotate(${mid} ${lp.x} ${lp.y})`}
                   >
-                    {seg.win ? 'WIN' : 'NO WIN'}
+                    {seg.win ? (
+                      <tspan x={lp.x} dy="0">WIN</tspan>
+                    ) : (
+                      <>
+                        <tspan x={lp.x} dy="-0.45em">NO</tspan>
+                        <tspan x={lp.x} dy="1em">WIN</tspan>
+                      </>
+                    )}
                   </text>
                 </g>
               )
@@ -135,7 +142,7 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
         .sw__sub { font-size: .9375rem; color: var(--ink3); line-height: 1.6; max-width: 420px; margin: 1rem auto 0; }
         .sw__spins-pill { display: inline-block; margin-top: 1.25rem; padding: .5rem 1.125rem; border-radius: 999px; background: var(--gold-pale); border: 1px solid var(--gold); color: var(--gold); font-size: .75rem; font-weight: 800; letter-spacing: .04em; }
 
-        .sw__stage { position: relative; width: min(340px,86vw); aspect-ratio: 1; margin: 2rem auto 0; }
+        .sw__stage { position: relative; width: min(440px,92vw); aspect-ratio: 1; margin: 2rem auto 0; }
         .sw__pointer { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); z-index: 3; width: 0; height: 0; border-left: 16px solid transparent; border-right: 16px solid transparent; border-top: 26px solid var(--gold); filter: drop-shadow(0 2px 4px rgba(0,0,0,.35)); }
         .sw__wheel { width: 100%; height: 100%; position: relative; border-radius: 50%; box-shadow: 0 20px 50px rgba(0,0,0,.3), 0 0 0 8px var(--card), 0 0 0 9px var(--border); }
         .sw__hub { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 44px; height: 44px; border-radius: 50%; background: var(--gold); box-shadow: 0 2px 10px rgba(0,0,0,.3); border: 3px solid #fff; }
