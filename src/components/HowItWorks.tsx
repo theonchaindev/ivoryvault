@@ -44,7 +44,6 @@ export default function HowItWorks() {
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 + i * 0.1 }}
               whileHover={{ y: -4 }}
             >
-              <p className="hiw__num">{s.n}</p>
               <div className="hiw__dot" />
               <h3 className="hiw__step-title">{s.title}</h3>
               <p className="hiw__step-body">{s.body}</p>

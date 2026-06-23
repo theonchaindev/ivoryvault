@@ -367,9 +367,8 @@ a { color: inherit; }
   transition: border-color .2s, box-shadow .2s;
 }
 .hiw__step:hover { border-color: var(--gold); box-shadow: 0 4px 24px rgba(31,122,224,.12); }
-.hiw__num { font-family: var(--font-cormorant,serif); font-size: clamp(3.5rem,5vw,5rem); font-weight: 700; color: var(--border); line-height: 1; letter-spacing: -.03em; margin-bottom: 1.25rem; }
 .hiw__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); margin-bottom: 1.25rem; }
-.hiw__step-title { font-family: var(--font-cormorant,serif); font-size: clamp(1.25rem,2vw,1.625rem); font-weight: 500; color: var(--ink); margin-bottom: .625rem; }
+.hiw__step-title { font-size: clamp(1.625rem,2.6vw,2.25rem); font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin-bottom: .625rem; }
 .hiw__step-body { font-size: .8125rem; line-height: 1.8; color: var(--ink2); }
 
 /* ═══════════════════════════════════════════════
