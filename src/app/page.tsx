@@ -60,11 +60,13 @@ export default async function Home() {
     drawDate: c.drawDate?.toISOString() ?? null,
   }))
 
-  const gridComps = comps.slice(0, 4).map(c => ({
+  const serialize = (c: typeof comps[number]) => ({
     ...c,
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
-  }))
+  })
+  const swiperComps = comps.map(serialize)        // horizontal swiper — all comps
+  const gridComps = comps.slice(0, 4).map(serialize) // 2x2 grid — first 4
 
   return (
     <>
@@ -90,10 +92,18 @@ export default async function Home() {
 
           <div style={{ marginBottom: '2rem' }}><StarDivider /></div>
 
-          {gridComps.length > 0 ? (
-            <div className="comp-grid">
-              {gridComps.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
-            </div>
+          {swiperComps.length > 0 ? (
+            <>
+              {/* Horizontal swiper — all competitions */}
+              <div className="comp-swiper">
+                {swiperComps.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
+              </div>
+
+              {/* 2x2 grid below */}
+              <div className="comp-grid-2x2">
+                {gridComps.map((c, i) => <CompetitionCard key={`g-${c.id}`} competition={c} index={i} />)}
+              </div>
+            </>
           ) : (
             <div className="empty-state">
               New competitions coming soon — <Link href="/signup">sign up</Link> to be notified.
