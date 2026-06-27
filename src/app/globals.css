@@ -245,9 +245,9 @@ a { color: inherit; }
 .comp-swiper > * { flex: 0 0 300px; scroll-snap-align: start; }
 @media (max-width: 640px) { .comp-swiper > * { flex: 0 0 78vw; } }
 
-/* 2x2 grid (homepage) */
+/* 2x2 grid (homepage) — stays 2 columns on mobile */
 .comp-grid-2x2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.5rem; }
-@media (max-width: 480px) { .comp-grid-2x2 { grid-template-columns: 1fr; gap: 1rem; } }
+@media (max-width: 640px) { .comp-grid-2x2 { gap: .75rem; } }
 
 /* ═══════════════════════════════════════════════
    COMPETITION CARD
