@@ -60,7 +60,7 @@ export default async function Home() {
     drawDate: c.drawDate?.toISOString() ?? null,
   }))
 
-  const gridComps = comps.map(c => ({
+  const gridComps = comps.slice(0, 4).map(c => ({
     ...c,
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
@@ -91,16 +91,9 @@ export default async function Home() {
           <div style={{ marginBottom: '2rem' }}><StarDivider /></div>
 
           {gridComps.length > 0 ? (
-            <>
-              {/* Swipe carousel (mobile) / grid (desktop) */}
-              <div className="comp-grid">
-                {gridComps.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
-              </div>
-              {/* Mobile-only 2-column grid of all comps below the carousel */}
-              <div className="comp-grid-2col">
-                {gridComps.map((c, i) => <CompetitionCard key={`m-${c.id}`} competition={c} index={i} />)}
-              </div>
-            </>
+            <div className="comp-grid">
+              {gridComps.map((c, i) => <CompetitionCard key={c.id} competition={c} index={i} />)}
+            </div>
           ) : (
             <div className="empty-state">
               New competitions coming soon — <Link href="/signup">sign up</Link> to be notified.

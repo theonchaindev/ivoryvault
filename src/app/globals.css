@@ -230,40 +230,8 @@ a { color: inherit; }
 .comp-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1.5rem; }
 @media (max-width: 1200px) { .comp-grid { grid-template-columns: repeat(3,1fr); } }
 @media (max-width: 860px)  { .comp-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; } }
-@media (max-width: 640px)  {
-  .section-inner { overflow-x: clip; }
-  .comp-grid {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-    gap: 1rem;
-  }
-  .comp-grid::-webkit-scrollbar { display: none; }
-  .comp-grid > * {
-    flex: 0 0 calc(100vw - 2.5rem);
-    width: calc(100vw - 2.5rem);
-    min-width: 0;
-    scroll-snap-align: center;
-  }
-}
+@media (max-width: 440px)  { .comp-grid { grid-template-columns: 1fr; } }
 .comp-grid-cta { text-align: center; margin-top: 2.5rem; }
-
-/* Mobile-only 2-column grid (sits under the swipe carousel on homepage) */
-.comp-grid-2col { display: none; }
-@media (max-width: 640px) {
-  .comp-grid-2col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: .75rem;
-    margin-top: 1.5rem;
-  }
-}
 
 /* ═══════════════════════════════════════════════
    COMPETITION CARD
