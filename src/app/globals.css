@@ -4,7 +4,7 @@
    DESIGN TOKENS
 ═══════════════════════════════════════════════ */
 :root {
-  --bg:        #62e2ff;
+  --bg:        #faf7f2;
   --bg2:       #f5ead8;
   --card:      #ffffff;
   /* Brand accent — Safari blue (token names kept as --gold for compatibility) */
