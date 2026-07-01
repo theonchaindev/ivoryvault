@@ -191,12 +191,19 @@ export default function TicketSelector({ competition }: Props) {
             padding: 1rem 1.25rem;
             gap: .875rem;
           }
-          /* Hide the less-critical elements on mobile sticky */
-          .ts__quick-section, .ts__qty-section, .ts__note { display: none; }
+          /* Hide only the least-critical elements on mobile sticky */
+          .ts__quick-section, .ts__note { display: none; }
           .ts__header { margin-bottom: 0; }
-          /* Show a compact price + CTA row */
-          .ts__price-row { padding: .625rem .875rem; }
-          .ts__total-row { padding: .625rem 0; border-top: none; border-bottom: none; margin-bottom: 0; }
+          /* Compact price + total rows */
+          .ts__price-row { padding: .5rem .875rem; }
+          .ts__total-row { padding: .5rem 0; border-top: none; border-bottom: none; margin-bottom: 0; }
+          /* Quantity stepper — inline label + control */
+          .ts__qty-section { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+          .ts__qty-section .ts__section-label { margin-bottom: 0; }
+          .ts__stepper { height: 46px; }
+          .ts__step-btn { width: 46px; height: 46px; font-size: 1.375rem; }
+          .ts__qty-val { min-width: 44px; font-size: 1.375rem; }
+          .ts__max { display: none; }
         }
         .ts__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
         .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
