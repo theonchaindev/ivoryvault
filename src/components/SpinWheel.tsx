@@ -111,27 +111,23 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
             {/* Coloured segments */}
             {WHEEL_SEGMENTS.map((seg, i) => {
               const mid = i * SEG + SEG / 2
-              const lp = polar(cx, cy, rSeg * 0.64, mid)
+              // radial label — runs along the spoke so long words fit narrow wedges
+              const inner = polar(cx, cy, rSeg * 0.34, mid)
+              const flip = mid > 90 && mid < 270 // keep bottom-half text upright
+              const rot = flip ? mid + 90 : mid - 90
+              const anchor = flip ? 'end' : 'start'
               return (
                 <g key={i}>
                   <path d={segmentPath(i, cx, cy, rSeg)} fill={COLORS[i % COLORS.length]} stroke="#fff" strokeWidth="1.5" />
                   <text
-                    x={lp.x} y={lp.y}
+                    x={inner.x} y={inner.y}
                     fill={seg.win ? '#ffe14d' : '#fff'}
-                    fontSize={seg.win ? 11.5 : 11}
-                    fontWeight="800"
-                    textAnchor="middle" dominantBaseline="middle"
+                    fontSize="12" fontWeight="800"
+                    textAnchor={anchor} dominantBaseline="middle"
                     stroke="rgba(0,0,0,.35)" strokeWidth="0.5" paintOrder="stroke"
-                    transform={`rotate(${mid} ${lp.x} ${lp.y})`}
+                    transform={`rotate(${rot} ${inner.x} ${inner.y})`}
                   >
-                    {seg.win ? (
-                      <tspan x={lp.x} dy="0">WINNER</tspan>
-                    ) : (
-                      <>
-                        <tspan x={lp.x} dy="-0.45em">NO</tspan>
-                        <tspan x={lp.x} dy="1em">WIN</tspan>
-                      </>
-                    )}
+                    {seg.win ? 'WINNER' : 'NO WIN'}
                   </text>
                 </g>
               )
