@@ -30,18 +30,18 @@ export default async function AdminWinnersPage() {
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: '#1c1a18' }}>
+        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>
           Winners
         </h1>
-        <p style={{ color: '#9a8878', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+        <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
           {winners.length} winners drawn
         </p>
       </div>
 
       {/* Draw a winner */}
       {drawableCompetitions.length > 0 && (
-        <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc', padding: '2rem', marginBottom: '2rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: '#1c1a18', marginBottom: '1.25rem' }}>
+        <div style={{ backgroundColor: 'white', border: '1px solid var(--border)', padding: '2rem', marginBottom: '2rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
             Draw a Winner
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -53,13 +53,13 @@ export default async function AdminWinnersPage() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '1rem',
-                  backgroundColor: '#fdf6ef',
-                  border: '1px solid #e8d8cc',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <div>
-                  <p style={{ fontSize: '0.9rem', fontWeight: 500, color: '#1c1a18' }}>{comp.title}</p>
-                  <p style={{ fontSize: '0.75rem', color: '#9a8878' }}>{comp.ticketsSold} tickets sold · {comp.status}</p>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--ink)' }}>{comp.title}</p>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--ink3)' }}>{comp.ticketsSold} tickets sold · {comp.status}</p>
                 </div>
                 <AdminDrawButton competitionId={comp.id} competitionTitle={comp.title} />
               </div>
@@ -69,9 +69,9 @@ export default async function AdminWinnersPage() {
       )}
 
       {/* Winners table */}
-      <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc' }}>
-        <div style={{ padding: '1.5rem', borderBottom: '1px solid #e8d8cc' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: '#1c1a18' }}>
+      <div style={{ backgroundColor: 'white', border: '1px solid var(--border)' }}>
+        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--ink)' }}>
             All Winners
           </h2>
         </div>
@@ -80,7 +80,7 @@ export default async function AdminWinnersPage() {
             <thead>
               <tr>
                 {['Winner', 'Competition', 'Prize', 'Ticket #', 'Drawn', 'Announced', ''].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#9a8878', borderBottom: '1px solid #e8d8cc' }}>
+                  <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink3)', borderBottom: '1px solid var(--border)' }}>
                     {h}
                   </th>
                 ))}
@@ -89,23 +89,23 @@ export default async function AdminWinnersPage() {
             <tbody>
               {winners.map(winner => (
                 <tr key={winner.id}>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 500, color: '#1c1a18' }}>{winner.user.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#9a8878' }}>{winner.user.email}</div>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--ink)' }}>{winner.user.name}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--ink3)' }}>{winner.user.email}</div>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.875rem', color: '#5c524a' }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink2)' }}>
                     {winner.competition.title}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.875rem', color: '#b76e79', fontWeight: 500 }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--gold)', fontWeight: 500 }}>
                     {formatCurrency(winner.prizeValue ?? winner.competition.prizeValue)}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.875rem', color: '#9a8878' }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink3)' }}>
                     #{winner.ticketNumber || '—'}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.8rem', color: '#9a8878' }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--ink3)' }}>
                     {formatDate(winner.drawnAt)}
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <span
                       style={{
                         display: 'inline-block',
@@ -113,16 +113,16 @@ export default async function AdminWinnersPage() {
                         fontSize: '0.65rem',
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
-                        backgroundColor: winner.announced ? 'rgba(183,110,121,0.1)' : '#f0e3d3',
-                        color: winner.announced ? '#b76e79' : '#9a8878',
+                        backgroundColor: winner.announced ? 'rgba(37,99,235,0.1)' : 'var(--border)',
+                        color: winner.announced ? 'var(--gold)' : 'var(--ink3)',
                         border: '1px solid',
-                        borderColor: winner.announced ? 'rgba(183,110,121,0.2)' : '#e8d8cc',
+                        borderColor: winner.announced ? 'rgba(37,99,235,0.25)' : 'var(--border)',
                       }}
                     >
                       {winner.announced ? 'Yes' : 'No'}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
                     {!winner.announced && (
                       <AdminAnnounceButton winnerId={winner.id} />
                     )}
@@ -133,7 +133,7 @@ export default async function AdminWinnersPage() {
           </table>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center' }}>
-            <p style={{ color: '#9a8878' }}>No winners drawn yet.</p>
+            <p style={{ color: 'var(--ink3)' }}>No winners drawn yet.</p>
           </div>
         )}
       </div>

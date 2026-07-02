@@ -4,20 +4,21 @@
    DESIGN TOKENS
 ═══════════════════════════════════════════════ */
 :root {
-  --bg:        #faf7f2;
-  --bg2:       #f5ead8;
+  /* Grey · white · blue theme */
+  --bg:        #f2f4f7;
+  --bg2:       #e6eaf0;
   --card:      #ffffff;
-  /* Brand accent — Safari blue (token names kept as --gold for compatibility) */
-  --gold:      #1f7ae0;
-  --gold-d:    #155fb0;
-  --gold-pale: #e8f1fc;
-  --track:     #d6e6f8;
-  --ink:       #18140f;
-  --ink2:      #4a3e34;
-  --ink3:      #9a8878;
-  --border:    #ece5d8;
-  --shadow-sm: 0 1px 3px rgba(24,20,15,.05), 0 4px 16px rgba(24,20,15,.06);
-  --shadow-md: 0 2px 8px rgba(24,20,15,.06), 0 16px 48px rgba(24,20,15,.1);
+  /* Brand accent — blue (token names kept as --gold for compatibility) */
+  --gold:      #2563eb;
+  --gold-d:    #1d4ed8;
+  --gold-pale: #e8f0fe;
+  --track:     #d5e2fb;
+  --ink:       #1b2432;
+  --ink2:      #3a4553;
+  --ink3:      #6b7684;
+  --border:    #e2e7ee;
+  --shadow-sm: 0 1px 3px rgba(20,28,42,.05), 0 4px 16px rgba(20,28,42,.07);
+  --shadow-md: 0 2px 8px rgba(20,28,42,.07), 0 16px 48px rgba(20,28,42,.12);
   --r-card:    16px;
   --r-btn:     8px;
   --r-input:   8px;

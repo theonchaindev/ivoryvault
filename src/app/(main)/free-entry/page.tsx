@@ -8,11 +8,11 @@ export const metadata = {
 
 export default function FreeEntryPage() {
   return (
-    <div style={{ backgroundColor: '#fdf6ef', minHeight: 'calc(100vh - 72px)' }}>
-      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid #e8d8cc', backgroundColor: '#fffcf9' }}>
+    <div style={{ backgroundColor: 'var(--bg)', minHeight: 'calc(100vh - 72px)' }}>
+      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b76e79', marginBottom: '0.75rem' }}>No Purchase Necessary</p>
-          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, color: '#1c1a18' }}>
+          <p style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '0.75rem' }}>No Purchase Necessary</p>
+          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, color: 'var(--ink)' }}>
             Free Entry Route
           </h1>
           <p
@@ -35,19 +35,19 @@ export default function FreeEntryPage() {
           <div
             style={{
               padding: '1.5rem 2rem',
-              backgroundColor: '#fffcf9',
-              border: '1px solid #b76e79',
-              borderLeft: '4px solid #b76e79',
+              backgroundColor: 'var(--card)',
+              border: '1px solid var(--gold)',
+              borderLeft: '4px solid var(--gold)',
               marginBottom: '3rem',
             }}
           >
             <p style={{ fontSize: '0.875rem', color: '#5c524a', lineHeight: 1.7 }}>
-              <strong style={{ color: '#1c1a18' }}>Important:</strong> In accordance with UK competition law, a free alternative method of entry (AMOE) is available for all Ivory Vault competitions. No purchase is necessary to enter, and free entries are given equal standing in the draw.
+              <strong style={{ color: 'var(--ink)' }}>Important:</strong> In accordance with UK competition law, a free alternative method of entry (AMOE) is available for all Ivory Vault competitions. No purchase is necessary to enter, and free entries are given equal standing in the draw.
             </p>
           </div>
 
           {/* How to enter free */}
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.875rem', fontWeight: 600, color: '#1c1a18', marginBottom: '2rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.875rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '2rem' }}>
             How to Enter for Free
           </h2>
 
@@ -80,8 +80,8 @@ export default function FreeEntryPage() {
                   display: 'flex',
                   gap: '2rem',
                   padding: '2rem',
-                  backgroundColor: '#fffcf9',
-                  border: '1px solid #e8d8cc',
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <div>
@@ -90,7 +90,7 @@ export default function FreeEntryPage() {
                       fontFamily: 'var(--font-cormorant)',
                       fontSize: '3rem',
                       fontWeight: 700,
-                      color: '#e8d8cc',
+                      color: 'var(--border)',
                       lineHeight: 1,
                       display: 'block',
                     }}
@@ -104,7 +104,7 @@ export default function FreeEntryPage() {
                       fontFamily: 'var(--font-cormorant)',
                       fontSize: '1.25rem',
                       fontWeight: 600,
-                      color: '#1c1a18',
+                      color: 'var(--ink)',
                       marginBottom: '0.75rem',
                     }}
                   >
@@ -119,8 +119,8 @@ export default function FreeEntryPage() {
           </div>
 
           {/* Rules */}
-          <div style={{ padding: '2rem', backgroundColor: '#fffcf9', border: '1px solid #e8d8cc', marginBottom: '3rem' }}>
-            <h3 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.25rem', fontWeight: 600, color: '#1c1a18', marginBottom: '1.25rem' }}>
+          <div style={{ padding: '2rem', backgroundColor: 'var(--card)', border: '1px solid var(--border)', marginBottom: '3rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.25rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
               Free Entry Rules
             </h3>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', listStyle: 'none', padding: 0, margin: 0 }}>
@@ -135,7 +135,7 @@ export default function FreeEntryPage() {
                 'Free entries are subject to the same Terms & Conditions as purchased tickets',
               ].map((rule, i) => (
                 <li key={i} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: '#b76e79', marginTop: '9px', flexShrink: 0 }} />
+                  <div style={{ width: '4px', height: '4px', borderRadius: '50%', backgroundColor: 'var(--gold)', marginTop: '9px', flexShrink: 0 }} />
                   <span style={{ fontSize: '0.875rem', color: '#5c524a', lineHeight: 1.7 }}>{rule}</span>
                 </li>
               ))}
@@ -143,7 +143,7 @@ export default function FreeEntryPage() {
           </div>
 
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#9a8878', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
+            <p style={{ color: 'var(--ink3)', marginBottom: '1.5rem', fontSize: '0.875rem' }}>
               Have questions about free entry?
             </p>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>

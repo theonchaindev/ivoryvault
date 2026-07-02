@@ -21,10 +21,10 @@ export default async function AdminCompetitionsPage() {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: '#1c1a18' }}>
+          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>
             Competitions
           </h1>
-          <p style={{ color: '#9a8878', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+          <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
             {competitions.length} total
           </p>
         </div>
@@ -33,7 +33,7 @@ export default async function AdminCompetitionsPage() {
         </Link>
       </div>
 
-      <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc' }}>
+      <div style={{ backgroundColor: 'white', border: '1px solid var(--border)' }}>
         {competitions.length > 0 ? (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -47,8 +47,8 @@ export default async function AdminCompetitionsPage() {
                       fontSize: '0.65rem',
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      color: '#9a8878',
-                      borderBottom: '1px solid #e8d8cc',
+                      color: 'var(--ink3)',
+                      borderBottom: '1px solid var(--border)',
                     }}
                   >
                     {h}
@@ -59,13 +59,13 @@ export default async function AdminCompetitionsPage() {
             <tbody>
               {competitions.map(comp => (
                 <tr key={comp.id}>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
-                    <div style={{ fontWeight: 500, color: '#1c1a18', fontSize: '0.9rem' }}>{comp.title}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#9a8878', marginTop: '2px' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontWeight: 500, color: 'var(--ink)', fontSize: '0.9rem' }}>{comp.title}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--ink3)', marginTop: '2px' }}>
                       {formatCurrency(comp.prizeValue)} prize
                     </div>
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <span
                       style={{
                         display: 'inline-block',
@@ -73,36 +73,36 @@ export default async function AdminCompetitionsPage() {
                         fontSize: '0.7rem',
                         letterSpacing: '0.08em',
                         textTransform: 'uppercase',
-                        backgroundColor: comp.status === 'active' ? 'rgba(183,110,121,0.1)' : comp.status === 'draft' ? '#f0e3d3' : '#f5f5f5',
-                        color: comp.status === 'active' ? '#b76e79' : comp.status === 'draft' ? '#9a8878' : '#5c524a',
+                        backgroundColor: comp.status === 'active' ? 'rgba(37,99,235,0.1)' : comp.status === 'draft' ? 'var(--border)' : '#f5f5f5',
+                        color: comp.status === 'active' ? 'var(--gold)' : comp.status === 'draft' ? 'var(--ink3)' : 'var(--ink2)',
                         border: '1px solid',
-                        borderColor: comp.status === 'active' ? 'rgba(183,110,121,0.2)' : '#e8d8cc',
+                        borderColor: comp.status === 'active' ? 'rgba(37,99,235,0.25)' : 'var(--border)',
                       }}
                     >
                       {comp.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.875rem', color: '#5c524a' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink2)' }}>
                     {formatCurrency(comp.ticketPrice)}
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
-                    <div style={{ fontSize: '0.875rem', color: '#1c1a18' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--ink)' }}>
                       {comp.ticketsSold} / {comp.maxTickets}
                     </div>
-                    <div style={{ height: '3px', backgroundColor: '#e8d8cc', marginTop: '4px', width: '80px' }}>
+                    <div style={{ height: '3px', backgroundColor: 'var(--border)', marginTop: '4px', width: '80px' }}>
                       <div
                         style={{
                           height: '100%',
                           width: `${Math.min(100, (comp.ticketsSold / comp.maxTickets) * 100)}%`,
-                          backgroundColor: '#b76e79',
+                          backgroundColor: 'var(--gold)',
                         }}
                       />
                     </div>
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3', fontSize: '0.8rem', color: '#9a8878' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--ink3)' }}>
                     {comp.drawDate ? formatDate(comp.drawDate) : '—'}
                   </td>
-                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
                     <AdminCompetitionsActions competitionId={comp.id} />
                   </td>
                 </tr>
@@ -111,7 +111,7 @@ export default async function AdminCompetitionsPage() {
           </table>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center' }}>
-            <p style={{ color: '#9a8878' }}>No competitions yet.</p>
+            <p style={{ color: 'var(--ink3)' }}>No competitions yet.</p>
             <Link href="/admin/competitions/new" className="btn-primary" style={{ display: 'inline-flex', marginTop: '1rem', fontSize: '0.8rem' }}>
               Create First Competition
             </Link>

@@ -7,14 +7,14 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <div style={{ backgroundColor: '#fdf6ef', minHeight: 'calc(100vh - 72px)' }}>
-      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid #e8d8cc', backgroundColor: '#fffcf9' }}>
+    <div style={{ backgroundColor: 'var(--bg)', minHeight: 'calc(100vh - 72px)' }}>
+      <div style={{ padding: '4rem 2rem 3rem', borderBottom: '1px solid var(--border)', backgroundColor: 'var(--card)' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
-          <p style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: '#b76e79', marginBottom: '0.75rem' }}>Legal</p>
-          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, color: '#1c1a18' }}>
+          <p style={{ fontSize: '0.75rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '0.75rem' }}>Legal</p>
+          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 600, color: 'var(--ink)' }}>
             Terms & Conditions
           </h1>
-          <p style={{ fontSize: '0.85rem', color: '#9a8878', marginTop: '0.75rem' }}>Last updated: January 2025</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--ink3)', marginTop: '0.75rem' }}>Last updated: January 2025</p>
         </div>
       </div>
 
@@ -63,13 +63,13 @@ export default function TermsPage() {
                 content: `Ivory Vault reserves the right to amend these terms at any time. By entering any competition, you agree to be bound by these terms and conditions. If any provision is found to be invalid, the remaining provisions will continue in full force and effect.`,
               },
             ].map(section => (
-              <div key={section.title} style={{ borderBottom: '1px solid #e8d8cc', paddingBottom: '2.5rem' }}>
+              <div key={section.title} style={{ borderBottom: '1px solid var(--border)', paddingBottom: '2.5rem' }}>
                 <h2
                   style={{
                     fontFamily: 'var(--font-cormorant)',
                     fontSize: '1.375rem',
                     fontWeight: 600,
-                    color: '#1c1a18',
+                    color: 'var(--ink)',
                     marginBottom: '1rem',
                   }}
                 >

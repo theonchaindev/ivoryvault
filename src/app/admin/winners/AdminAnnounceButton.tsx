@@ -38,7 +38,7 @@ export default function AdminAnnounceButton({ winnerId }: Props) {
       disabled={loading}
       style={{
         fontSize: '0.75rem',
-        color: '#b76e79',
+        color: 'var(--gold)',
         background: 'none',
         border: 'none',
         cursor: 'pointer',

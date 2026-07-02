@@ -107,7 +107,7 @@ export default function EditCompetitionPage() {
     } catch { setError('Something went wrong') } finally { setSaving(false) }
   }
 
-  if (loading) return <div style={{ padding: '2rem', color: '#9a8878' }}>Loading...</div>
+  if (loading) return <div style={{ padding: '2rem', color: 'var(--ink3)' }}>Loading...</div>
 
   return (
     <div className="nc-page">

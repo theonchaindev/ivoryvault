@@ -43,34 +43,34 @@ export default function AdminNav() {
 
       <style>{`
         .admin-sidebar {
-          width: 240px; background: #1c1a18; color: #9a8878;
+          width: 240px; background: var(--ink); color: var(--ink3);
           display: flex; flex-direction: column; flex-shrink: 0;
           position: fixed; top: 0; left: 0; height: 100vh; overflow-y: auto;
         }
         .admin-sidebar__logo { padding: 2rem 1.5rem; border-bottom: 1px solid #2a2826; }
         .admin-sidebar__brand {
           font-family: var(--font-cormorant,serif); font-size: 1.25rem;
-          font-weight: 600; letter-spacing: .1em; color: #fdf6ef;
+          font-weight: 600; letter-spacing: .1em; color: #ffffff;
         }
         .admin-sidebar__sub {
           font-size: .65rem; letter-spacing: .15em; text-transform: uppercase;
-          color: #b76e79; margin-top: 4px;
+          color: var(--gold); margin-top: 4px;
         }
         .admin-sidebar__nav { padding: 1rem 0; flex: 1; }
         .admin-nav-link {
           display: flex; align-items: center; gap: .875rem;
-          padding: .875rem 1.5rem; font-size: .85rem; color: #9a8878;
+          padding: .875rem 1.5rem; font-size: .85rem; color: var(--ink3);
           text-decoration: none; border-left: 2px solid transparent;
           transition: color .2s, background .2s, border-color .2s;
         }
         .admin-nav-link:hover, .admin-nav-link.active {
-          color: #fdf6ef; border-left-color: #b76e79;
-          background: rgba(183,110,121,.08);
+          color: #ffffff; border-left-color: var(--gold);
+          background: rgba(37,99,235,.12);
         }
         .admin-nav-link__icon { font-size: 1rem; }
         .admin-sidebar__footer { padding: 1.5rem; border-top: 1px solid #2a2826; }
-        .admin-sidebar__back { font-size: .75rem; color: #5c524a; text-decoration: none; transition: color .2s; }
-        .admin-sidebar__back:hover { color: #9a8878; }
+        .admin-sidebar__back { font-size: .75rem; color: var(--ink2); text-decoration: none; transition: color .2s; }
+        .admin-sidebar__back:hover { color: var(--ink3); }
       `}</style>
     </>
   )

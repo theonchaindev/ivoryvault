@@ -214,7 +214,7 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
         .sw__spin-center.disabled { cursor: not-allowed; filter: grayscale(.4) brightness(.9); opacity: .85; }
 
         .sw__foot { margin-top: 2.25rem; }
-        .sw__spin-btn { background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .9375rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 1.125rem 3rem; border-radius: var(--r-btn); box-shadow: 0 10px 28px rgba(201,168,76,.4); transition: background .2s, transform .15s; }
+        .sw__spin-btn { background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .9375rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; padding: 1.125rem 3rem; border-radius: var(--r-btn); box-shadow: 0 10px 28px rgba(37,99,235,.35); transition: background .2s, transform .15s; }
         .sw__spin-btn:hover:not(:disabled) { background: var(--gold-d); transform: translateY(-2px); }
         .sw__terms { font-size: .6875rem; color: var(--ink3); margin-top: 1rem; letter-spacing: .03em; }
         .sw__terms strong { color: var(--gold); }

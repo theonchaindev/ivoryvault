@@ -28,13 +28,13 @@ export default function AdminCompetitionsActions({ competitionId }: Props) {
     <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
       <Link
         href={`/admin/competitions/${competitionId}`}
-        style={{ fontSize: '0.8rem', color: '#b76e79', textDecoration: 'none' }}
+        style={{ fontSize: '0.8rem', color: 'var(--gold)', textDecoration: 'none' }}
       >
         Edit
       </Link>
       <button
         onClick={handleDelete}
-        style={{ fontSize: '0.8rem', color: '#9a8878', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+        style={{ fontSize: '0.8rem', color: 'var(--ink3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
       >
         Delete
       </button>

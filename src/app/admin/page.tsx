@@ -32,19 +32,19 @@ export default async function AdminDashboard() {
   const stats = await getStats()
 
   const statCards = [
-    { label: 'Total Users', value: stats.users.toLocaleString(), color: '#b76e79' },
-    { label: 'Active Competitions', value: stats.competitions.toLocaleString(), color: '#b76e79' },
-    { label: 'Total Revenue', value: formatCurrency(stats.revenue), color: '#b76e79' },
-    { label: 'Total Winners', value: stats.winners.toLocaleString(), color: '#b76e79' },
+    { label: 'Total Users', value: stats.users.toLocaleString(), color: 'var(--gold)' },
+    { label: 'Active Competitions', value: stats.competitions.toLocaleString(), color: 'var(--gold)' },
+    { label: 'Total Revenue', value: formatCurrency(stats.revenue), color: 'var(--gold)' },
+    { label: 'Total Winners', value: stats.winners.toLocaleString(), color: 'var(--gold)' },
   ]
 
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: '#1c1a18' }}>
+        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>
           Dashboard
         </h1>
-        <p style={{ color: '#9a8878', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+        <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
           Overview of Ivory Vault activity
         </p>
       </div>
@@ -63,14 +63,14 @@ export default async function AdminDashboard() {
             key={card.label}
             style={{
               backgroundColor: 'white',
-              border: '1px solid #e8d8cc',
+              border: '1px solid var(--border)',
               padding: '1.75rem',
             }}
           >
             <p style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: card.color, lineHeight: 1 }}>
               {card.value}
             </p>
-            <p style={{ fontSize: '0.75rem', color: '#9a8878', marginTop: '0.5rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            <p style={{ fontSize: '0.75rem', color: 'var(--ink3)', marginTop: '0.5rem', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
               {card.label}
             </p>
           </div>
@@ -97,12 +97,12 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Recent orders */}
-      <div style={{ backgroundColor: 'white', border: '1px solid #e8d8cc', padding: '2rem' }}>
+      <div style={{ backgroundColor: 'white', border: '1px solid var(--border)', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: '#1c1a18' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--ink)' }}>
             Recent Orders
           </h2>
-          <Link href="/admin/orders" style={{ fontSize: '0.75rem', color: '#b76e79', textDecoration: 'none' }}>
+          <Link href="/admin/orders" style={{ fontSize: '0.75rem', color: 'var(--gold)', textDecoration: 'none' }}>
             View All →
           </Link>
         </div>
@@ -120,8 +120,8 @@ export default async function AdminDashboard() {
                       fontSize: '0.65rem',
                       letterSpacing: '0.1em',
                       textTransform: 'uppercase',
-                      color: '#9a8878',
-                      borderBottom: '1px solid #e8d8cc',
+                      color: 'var(--ink3)',
+                      borderBottom: '1px solid var(--border)',
                     }}
                   >
                     {h}
@@ -132,20 +132,20 @@ export default async function AdminDashboard() {
             <tbody>
               {stats.recentOrders.map(order => (
                 <tr key={order.id}>
-                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: '#1c1a18', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: 'var(--ink)', borderBottom: '1px solid var(--border)' }}>
                     <div>{order.user.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#9a8878' }}>{order.user.email}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--ink3)' }}>{order.user.email}</div>
                   </td>
-                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: '#5c524a', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: 'var(--ink2)', borderBottom: '1px solid var(--border)' }}>
                     {order.competition.title}
                   </td>
-                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: '#1c1a18', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: 'var(--ink)', borderBottom: '1px solid var(--border)' }}>
                     {order.quantity}
                   </td>
-                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: '#b76e79', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 0', fontSize: '0.875rem', color: 'var(--gold)', borderBottom: '1px solid var(--border)' }}>
                     {formatCurrency(order.competition.ticketPrice * order.quantity)}
                   </td>
-                  <td style={{ padding: '1rem 0', fontSize: '0.8rem', color: '#9a8878', borderBottom: '1px solid #f0e3d3' }}>
+                  <td style={{ padding: '1rem 0', fontSize: '0.8rem', color: 'var(--ink3)', borderBottom: '1px solid var(--border)' }}>
                     {formatDate(order.purchasedAt)}
                   </td>
                 </tr>
@@ -153,7 +153,7 @@ export default async function AdminDashboard() {
             </tbody>
           </table>
         ) : (
-          <p style={{ color: '#9a8878', fontSize: '0.875rem' }}>No orders yet.</p>
+          <p style={{ color: 'var(--ink3)', fontSize: '0.875rem' }}>No orders yet.</p>
         )}
       </div>
     </div>
