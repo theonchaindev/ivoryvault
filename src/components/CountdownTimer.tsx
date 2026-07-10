@@ -59,10 +59,10 @@ export default function CountdownTimer({
             borderRadius: '10px',
             padding: '.625rem .875rem', minWidth: '58px',
           }}>
-            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 600, color: 'var(--gold)', lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
               {String(u.v).padStart(2, '0')}
             </span>
-            <span style={{ fontSize: '.42rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.5)', marginTop: '3px' }}>
+            <span style={{ fontSize: '.42rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.6)', marginTop: '3px' }}>
               {u.l}
             </span>
           </div>
@@ -99,15 +99,15 @@ export default function CountdownTimer({
       {units.map(u => (
         <div key={u.l} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          background: light ? 'rgba(255,255,255,.12)' : 'var(--bg2)',
-          border: `1px solid ${light ? 'rgba(255,255,255,.2)' : 'var(--border)'}`,
+          background: light ? 'rgba(255,255,255,.12)' : 'var(--ink)',
+          border: `1px solid ${light ? 'rgba(255,255,255,.2)' : 'rgba(255,255,255,.08)'}`,
           padding: '.75rem 1rem', minWidth: '62px',
           borderRadius: '10px',
         }}>
-          <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '2rem', fontWeight: 600, color: light ? '#fff' : 'var(--gold)', lineHeight: 1 }}>
+          <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '2rem', fontWeight: 600, color: '#fff', lineHeight: 1 }}>
             {String(u.v).padStart(2, '0')}
           </span>
-          <span style={{ fontSize: '.45rem', letterSpacing: '.14em', textTransform: 'uppercase', color: light ? 'rgba(255,255,255,.5)' : 'var(--ink3)', marginTop: '4px' }}>
+          <span style={{ fontSize: '.45rem', letterSpacing: '.14em', textTransform: 'uppercase', color: light ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.55)', marginTop: '4px' }}>
             {u.l}
           </span>
         </div>

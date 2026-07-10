@@ -288,25 +288,24 @@ a { color: inherit; }
 .cc__enter-btn {
   display: block; width: 100%; text-align: center;
   margin-top: .75rem; padding: .8125rem 1rem;
-  background: var(--gold); color: #fff;
+  background: var(--ink); color: #fff;
   font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
   border-radius: var(--r-btn);
   transition: background .2s, transform .15s, box-shadow .2s;
 }
-.cc:hover .cc__enter-btn { background: var(--gold-d); box-shadow: 0 6px 18px rgba(31,122,224,.35); }
+.cc:hover .cc__enter-btn { background: var(--ink2); box-shadow: 0 6px 18px rgba(20,28,42,.3); }
 
 /* ═══════════════════════════════════════════════
    COUNTDOWN TIMER
 ═══════════════════════════════════════════════ */
-/* Strip variant — dark high-contrast boxes, white numbers, gold labels */
-.ct-strip { display: flex; gap: .375rem; padding: .625rem .75rem; background: var(--ink); }
+/* Strip variant — clean solid navy bar, white numbers + labels */
+.ct-strip { display: flex; gap: .25rem; padding: .75rem .5rem; background: var(--ink); }
 .ct-strip__box {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; padding: .5rem .25rem;
+  padding: .35rem .25rem;
 }
-.ct-strip__num { font-size: 1.375rem; font-weight: 700; color: #fff; line-height: 1; letter-spacing: -.01em; }
-.ct-strip__lbl { font-size: .4rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); margin-top: 3px; }
+.ct-strip__num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -.01em; }
+.ct-strip__lbl { font-size: .5rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.7); margin-top: 4px; }
 
 /* ═══════════════════════════════════════════════
    WINNER CARD
