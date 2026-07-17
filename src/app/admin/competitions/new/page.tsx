@@ -21,6 +21,8 @@ export default function NewCompetitionPage() {
   const [status, setStatus] = useState('active')
   const [featured, setFeatured] = useState(false)
   const [sortOrder, setSortOrder] = useState('0')
+  const [type, setType] = useState('standard')
+  const [instantPrizes, setInstantPrizes] = useState('[\n  { "amount": 100, "total": 2 },\n  { "amount": 50, "total": 4 },\n  { "amount": 25, "total": 8 },\n  { "amount": 10, "total": 20 },\n  { "amount": 5, "total": 40 },\n  { "amount": 1, "total": 100 }\n]')
 
   const [images, setImages] = useState<string[]>([])
   const [urlInput, setUrlInput] = useState('')
@@ -76,7 +78,7 @@ export default function NewCompetitionPage() {
       const res = await fetch('/api/admin/competitions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, subtitle, description, prizeValue, ticketPrice, maxTickets, drawDate, status, featured, sortOrder, images: JSON.stringify(images) }),
+        body: JSON.stringify({ title, subtitle, description, prizeValue, ticketPrice, maxTickets, drawDate, status, featured, sortOrder, type, instantPrizes, images: JSON.stringify(images) }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Failed to create'); return }
@@ -191,6 +193,24 @@ export default function NewCompetitionPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+        </section>
+
+        <section className="nc-card">
+          <h2 className="nc-section-title">Competition Type</h2>
+          <div>
+            <label className="field-label">Type</label>
+            <select className="iv-input" value={type} onChange={e => setType(e.target.value)}>
+              <option value="standard">Standard — raffle draw</option>
+              <option value="instant">Instant Win — spin &amp; win instantly</option>
+            </select>
+          </div>
+          {type === 'instant' && (
+            <div>
+              <label className="field-label">Instant Prizes (JSON — amount &amp; total count of each)</label>
+              <textarea className="iv-input" rows={8} value={instantPrizes} onChange={e => setInstantPrizes(e.target.value)} style={{ resize: 'vertical', fontFamily: 'monospace', fontSize: '.8125rem' }} />
+              <p className="nc-hint">Each spin bought costs the ticket price. Winning spins credit the amount to the player&apos;s account. &quot;total&quot; is how many of that prize exist.</p>
             </div>
           )}
         </section>

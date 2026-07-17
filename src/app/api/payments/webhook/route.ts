@@ -8,6 +8,16 @@ import Stripe from 'stripe'
 async function recordPurchase(userId: string, competitionId: string, qty: number, paymentRef: string) {
   if (!userId || !competitionId || !qty) return
 
+  // Instant-win competition: create N unrevealed spins instead of a raffle ticket
+  const comp = await prisma.competition.findUnique({ where: { id: competitionId }, select: { type: true } })
+  if (comp?.type === 'instant') {
+    await prisma.instantSpin.createMany({
+      data: Array.from({ length: qty }, () => ({ userId, competitionId })),
+    })
+    await prisma.competition.update({ where: { id: competitionId }, data: { ticketsSold: { increment: qty } } })
+    return
+  }
+
   await prisma.ticket.create({
     data: { userId, competitionId, quantity: qty, stripePaymentId: paymentRef },
   })

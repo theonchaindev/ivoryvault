@@ -15,7 +15,7 @@ interface Competition {
 
 const ease = [0.22, 1, 0.36, 1] as const
 
-export default function CompetitionDetail({ competition }: { competition: Competition }) {
+export default function CompetitionDetail({ competition, isInstant = false, instantSpins = 0 }: { competition: Competition; isInstant?: boolean; instantSpins?: number }) {
   const [activeImg, setActiveImg] = useState(0)
   const remaining = competition.maxTickets - competition.ticketsSold
   const pct = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
@@ -96,9 +96,18 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         >
           {/* Title */}
           <div className="cdp__title-block">
+            {isInstant && <span className="cdp__instant-badge">⚡ Spin &amp; Win Instantly</span>}
             <h1 className="cdp__title">{competition.title}</h1>
             {competition.subtitle && <p className="cdp__subtitle">{competition.subtitle}</p>}
           </div>
+
+          {/* Instant-win reveal banner */}
+          {isInstant && instantSpins > 0 && (
+            <a href={`/instant/${competition.slug}`} className="cdp__reveal-banner">
+              You have {instantSpins} instant spin{instantSpins === 1 ? '' : 's'} ready
+              <span>Reveal Instant Spin Results →</span>
+            </a>
+          )}
 
           {/* Progress */}
           <div className="cdp__progress-card">
@@ -230,6 +239,10 @@ export default function CompetitionDetail({ competition }: { competition: Compet
         .cdp__title-block {}
         .cdp__title { font-family: var(--font-cormorant,serif); font-size: clamp(1.875rem,3.5vw,3rem); font-weight: 700; color: var(--ink); line-height: 1; letter-spacing: -.02em; margin-bottom: .375rem; }
         .cdp__subtitle { font-family: var(--font-cormorant,serif); font-style: italic; font-size: 1rem; color: var(--ink3); }
+        .cdp__instant-badge { display: inline-block; background: var(--gold-pale); border: 1px solid var(--gold); color: var(--gold); font-size: .55rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; padding: .35rem .8rem; border-radius: 999px; margin-bottom: .75rem; }
+        .cdp__reveal-banner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; background: var(--gold); color: #fff; border-radius: var(--r-card); padding: 1rem 1.25rem; text-decoration: none; font-weight: 700; font-size: .875rem; box-shadow: 0 8px 24px rgba(37,99,235,.3); transition: background .2s, transform .15s; }
+        .cdp__reveal-banner:hover { background: var(--gold-d); transform: translateY(-1px); }
+        .cdp__reveal-banner span { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .95; }
 
         /* Progress */
         .cdp__progress-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); padding: 1.25rem; }

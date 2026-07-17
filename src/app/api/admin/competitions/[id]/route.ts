@@ -52,6 +52,8 @@ export async function PUT(
         status: data.status,
         featured: data.featured !== undefined ? Boolean(data.featured) : undefined,
         sortOrder: data.sortOrder !== undefined ? parseInt(data.sortOrder) : undefined,
+        type: data.type !== undefined ? (data.type === 'instant' ? 'instant' : 'standard') : undefined,
+        instantPrizes: data.type !== undefined ? (data.type === 'instant' ? (data.instantPrizes || '[]') : null) : undefined,
       },
     })
 

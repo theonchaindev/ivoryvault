@@ -23,6 +23,7 @@ model User {
   tickets       Ticket[]
   winners       Winner[]
   notifications Notification[]
+  instantSpins  InstantSpin[]
 }
 
 model Notification {
@@ -40,25 +41,40 @@ model Notification {
 }
 
 model Competition {
-  id          String    @id @default(cuid())
-  slug        String    @unique
-  title       String
-  subtitle    String?
-  description String
-  prizeValue  Float
-  ticketPrice Float
-  maxTickets  Int
-  ticketsSold Int       @default(0)
-  images      String
-  drawDate    DateTime?
-  status      String    @default("draft")
-  featured    Boolean   @default(false)
-  sortOrder   Int       @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  title         String
+  subtitle      String?
+  description   String
+  prizeValue    Float
+  ticketPrice   Float
+  maxTickets    Int
+  ticketsSold   Int       @default(0)
+  images        String
+  drawDate      DateTime?
+  status        String    @default("draft")
+  featured      Boolean   @default(false)
+  sortOrder     Int       @default(0)
+  type          String    @default("standard") // "standard" | "instant"
+  instantPrizes String?   // JSON: [{ "amount": 1000, "total": 3 }, ...]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  tickets Ticket[]
-  winner  Winner?
+  tickets      Ticket[]
+  instantSpins InstantSpin[]
+  winner       Winner?
+}
+
+model InstantSpin {
+  id            String   @id @default(cuid())
+  userId        String
+  competitionId String
+  revealed      Boolean  @default(false)
+  prizeAmount   Float    @default(0)
+  createdAt     DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  competition Competition @relation(fields: [competitionId], references: [id])
 }
 
 model Ticket {

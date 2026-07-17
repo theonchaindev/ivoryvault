@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
     const {
       title, subtitle, description, prizeValue, ticketPrice,
       maxTickets, images, drawDate, status, featured, sortOrder,
+      type, instantPrizes,
     } = data
 
     if (!title || !description || !prizeValue || !ticketPrice || !maxTickets) {
@@ -59,6 +60,8 @@ export async function POST(request: NextRequest) {
         status: status || 'draft',
         featured: Boolean(featured),
         sortOrder: parseInt(sortOrder) || 0,
+        type: type === 'instant' ? 'instant' : 'standard',
+        instantPrizes: type === 'instant' ? (instantPrizes || '[]') : null,
       },
     })
 

@@ -1,6 +1,9 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/lib/auth'
 import CompetitionDetail from './CompetitionDetail'
+
+export const dynamic = 'force-dynamic'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -31,20 +34,35 @@ export default async function CompetitionPage({ params }: PageProps) {
 
   const images = (() => { try { return JSON.parse(competition.images) as string[] } catch { return [] } })()
 
+  const isInstant = competition.type === 'instant'
+  let instantSpins = 0
+  if (isInstant) {
+    const session = await getSession()
+    if (session) {
+      instantSpins = await prisma.instantSpin.count({
+        where: { userId: session.userId, competitionId: competition.id, revealed: false },
+      })
+    }
+  }
+
   return (
-    <CompetitionDetail competition={{
-      id: competition.id,
-      slug: competition.slug,
-      title: competition.title,
-      subtitle: competition.subtitle ?? null,
-      description: competition.description,
-      prizeValue: competition.prizeValue,
-      ticketPrice: competition.ticketPrice,
-      maxTickets: competition.maxTickets,
-      ticketsSold: competition.ticketsSold,
-      status: competition.status,
-      drawDate: competition.drawDate ?? null,
-      images,
-    }} />
+    <CompetitionDetail
+      isInstant={isInstant}
+      instantSpins={instantSpins}
+      competition={{
+        id: competition.id,
+        slug: competition.slug,
+        title: competition.title,
+        subtitle: competition.subtitle ?? null,
+        description: competition.description,
+        prizeValue: competition.prizeValue,
+        ticketPrice: competition.ticketPrice,
+        maxTickets: competition.maxTickets,
+        ticketsSold: competition.ticketsSold,
+        status: competition.status,
+        drawDate: competition.drawDate ?? null,
+        images,
+      }}
+    />
   )
 }
