@@ -88,7 +88,7 @@ function timeAgo(iso: string): string {
 }
 
 export default function AccountClient({
-  name, email, siteCredit, freeSpins, totalTickets, totalEntries, activeEntries,
+  name, email, siteCredit, totalTickets, totalEntries, activeEntries,
   tier, nextTier, progressPct, tickets, notifications,
 }: Props) {
   const [view, setView] = useState<View>('overview')
@@ -130,7 +130,6 @@ export default function AccountClient({
             Site Credit
             <span className="acc__credit-q" title="Credit can be used towards any competition entry at checkout.">?</span>
             <strong>{formatCurrency(siteCredit)}</strong>
-            {freeSpins > 0 && <Link href="/spin" className="acc__credit-spin">🎡 {freeSpins} free spin{freeSpins === 1 ? '' : 's'} →</Link>}
           </p>
         </motion.div>
 
