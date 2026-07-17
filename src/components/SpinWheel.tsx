@@ -111,8 +111,8 @@ export default function SpinWheel({ freeSpins, startCredit }: { freeSpins: numbe
             {/* Coloured segments */}
             {WHEEL_SEGMENTS.map((seg, i) => {
               const mid = i * SEG + SEG / 2
-              // radial label — runs along the spoke so long words fit narrow wedges
-              const inner = polar(cx, cy, rSeg * 0.34, mid)
+              // radial label — starts beyond the central SPIN button and runs outward
+              const inner = polar(cx, cy, rSeg * 0.48, mid)
               const flip = mid > 90 && mid < 270 // keep bottom-half text upright
               const rot = flip ? mid + 90 : mid - 90
               const anchor = flip ? 'end' : 'start'
