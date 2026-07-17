@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { AnimatePresence, motion } from 'motion/react'
 import { useCart } from '@/context/CartContext'
 
-interface User { id: string; name: string; role: string }
+interface User { id: string; name: string; role: string; siteCredit?: number }
 
 function BasketIcon({ count }: { count: number }) {
   return (
@@ -74,6 +74,10 @@ export default function Navbar() {
             {user ? (
               <>
                 {user.role === 'admin' && <Link href="/admin" className="nav__link nav__link--gold">Admin</Link>}
+                <Link href="/account" className="nav__credit" title="Your site credit">
+                  <span className="nav__credit-label">Credit</span>
+                  £{(user.siteCredit ?? 0).toFixed(2)}
+                </Link>
                 <AccountIcon />
                 <BasketIcon count={count} />
                 <button className="nav__btn-ghost" onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); window.location.href = '/' }}>Sign Out</button>
@@ -110,6 +114,11 @@ export default function Navbar() {
                 <Image src="/logo.png" alt="Ivory Vault" width={92} height={92} />
                 <span className="nav__drawer-logo-text">IVORY VAULT</span>
               </div>
+              {user && (
+                <Link href="/account" onClick={() => setOpen(false)} className="nav__drawer-credit">
+                  <span>Site Credit</span> £{(user.siteCredit ?? 0).toFixed(2)}
+                </Link>
+              )}
               <nav>
                 {[{ href: '/', label: 'Home' }, ...NAV].map((l, i) => (
                   <motion.div key={l.href} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }}>
