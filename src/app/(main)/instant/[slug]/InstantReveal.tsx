@@ -97,40 +97,52 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         </div>
       ) : (
         <>
-          {/* Blue wheel card */}
+          {/* Blue wheel card — bottom-anchored wheel (7Days style) */}
           <div className="iw-card">
             <span className="iw-spins">{spins} Spin{spins === 1 ? '' : 's'} left</span>
+            <div className="iw-gift">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="16" height="11" rx="1" stroke="#fff" strokeWidth="1.6"/><rect x="3" y="6" width="18" height="4" rx="1" stroke="#fff" strokeWidth="1.6"/><path d="M12 6v14" stroke="#fff" strokeWidth="1.6"/><path d="M12 6s-3.5-4-5.5-2 2 2 5.5 2Zm0 0s3.5-4 5.5-2-2 2-5.5 2Z" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round"/></svg>
+            </div>
 
-            <div className="iw-stage">
-              {/* Pointer */}
-              <div className="iw-arrow" />
-
-              {/* Rotating wheel */}
+            {/* Rotating wheel (centre anchored at card bottom) */}
+            <div className="iw-wheel-pos">
               <motion.div className="iw-wheel" animate={{ rotate: rotation }} transition={{ duration: 4.4, ease: [0.15, 0.9, 0.2, 1] }}>
                 <svg viewBox="0 0 300 300" width="100%" height="100%">
                   {SEGMENTS.map((s, i) => {
                     const mid = i * SEG + SEG / 2
                     const win = s === 'WINNER'
                     const flip = mid > 90 && mid < 270
-                    const lp = polar(cx, cy, r * 0.66, mid)
+                    const lp = polar(cx, cy, r * 0.68, mid)
                     return (
                       <g key={i}>
-                        <path d={segPath(i, cx, cy, r)} fill={win ? '#2f6bf0' : (i % 2 ? '#eef4fd' : '#dbe8fb')} stroke="#fff" strokeWidth="2.5" />
-                        <text x={lp.x} y={lp.y} fill={win ? '#fff' : '#8ba6cf'} fontSize="12" fontWeight="800"
+                        <path d={segPath(i, cx, cy, r)} fill={win ? '#eaf1fd' : (i % 2 ? '#f4f8fe' : '#e2ecfb')} stroke="#fff" strokeWidth="2.5" />
+                        <text x={lp.x} y={lp.y} fill={win ? '#1d4ed8' : '#a9bdda'} fontSize="12" fontWeight="800"
                           textAnchor={flip ? 'end' : 'start'} dominantBaseline="middle"
                           transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`}>{s}</text>
                       </g>
                     )
                   })}
-                  <circle cx={cx} cy={cy} r={r} fill="none" stroke="#fff" strokeWidth="4" />
+                  <circle cx={cx} cy={cy} r={r} fill="none" stroke="#fff" strokeWidth="5" />
                 </svg>
               </motion.div>
-
-              {/* Central tap-to-spin button (static) */}
-              <button className="iw-center" onClick={spin} disabled={spinning || spins < 1} aria-label="Tap to spin">
-                {spinning ? '…' : <>TAP<br />TO<br />SPIN</>}
-              </button>
             </div>
+
+            {/* White hub */}
+            <div className="iw-hub" />
+
+            {/* Fixed pointer wedge — tap to spin */}
+            <button className="iw-pointer" onClick={spin} disabled={spinning || spins < 1} aria-label="Tap to spin">
+              <svg viewBox="0 0 132 262" width="100%" height="100%">
+                <polygon points="8,4 124,4 66,256" fill="#152134" stroke="#0d1726" strokeWidth="2" strokeLinejoin="round"/>
+                {!spinning && (
+                  <>
+                    <text x="66" y="66" fill="#fff" fontSize="22" fontWeight="900" textAnchor="middle">TAP</text>
+                    <text x="66" y="92" fill="#9fc0ff" fontSize="13" fontWeight="800" textAnchor="middle">TO</text>
+                    <text x="66" y="122" fill="#fff" fontSize="25" fontWeight="900" textAnchor="middle">SPIN</text>
+                  </>
+                )}
+              </svg>
+            </button>
           </div>
 
           <AnimatePresence mode="wait">
@@ -186,17 +198,19 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         .ir__reveal-btn { display: inline-block; background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 1.125rem 2.5rem; border-radius: var(--r-btn); text-decoration: none; box-shadow: 0 10px 28px rgba(37,99,235,.35); transition: background .2s, transform .15s; }
         .ir__reveal-btn:hover { background: var(--gold-d); transform: translateY(-2px); }
 
-        /* Blue wheel card */
-        .iw-card { position: relative; margin: 2rem auto 0; width: 100%; max-width: 420px; background: linear-gradient(180deg,#2f6bf0,#1f5fe0); border-radius: 20px; padding: 3rem 1.5rem 2.25rem; box-shadow: 0 20px 50px rgba(31,95,224,.35); }
+        /* Blue wheel card — wheel centre anchored at the card bottom */
+        .iw-card { position: relative; margin: 2rem auto 0; width: 100%; max-width: 420px; height: 380px; overflow: hidden; background: linear-gradient(180deg,#2f6bf0,#1f5fe0); border-radius: 20px; box-shadow: 0 20px 50px rgba(31,95,224,.35); }
         .iw-spins { position: absolute; top: 14px; right: 14px; z-index: 6; background: #eef4ff; color: var(--ink); font-weight: 800; font-size: .75rem; padding: .35rem .75rem; border-radius: 999px; }
+        .iw-gift { position: absolute; top: 26px; left: 50%; margin-left: -36px; z-index: 5; width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; }
 
-        .iw-stage { position: relative; width: min(300px,80vw); aspect-ratio: 1; margin: 0 auto; }
-        .iw-arrow { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); z-index: 3; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 26px solid #152134; filter: drop-shadow(0 2px 3px rgba(0,0,0,.3)); }
-        .iw-wheel { width: 100%; height: 100%; border-radius: 50%; box-shadow: 0 10px 30px rgba(0,0,0,.25), 0 0 0 6px #fff, 0 0 0 8px rgba(255,255,255,.4); }
-        .iw-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 2; width: 33%; aspect-ratio: 1; border-radius: 50%; background: #152134; color: #fff; border: 5px solid #fff; font-family: inherit; font-weight: 900; font-size: clamp(.65rem,2.6vw,.85rem); line-height: 1.05; letter-spacing: .02em; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.35); transition: transform .12s; padding: 0; }
-        .iw-center:hover:not(:disabled) { transform: translate(-50%,-50%) scale(1.06); }
-        .iw-center:active:not(:disabled) { transform: translate(-50%,-50%) scale(.95); }
-        .iw-center:disabled { cursor: default; opacity: .9; }
+        .iw-wheel-pos { position: absolute; left: 50%; top: 100%; width: 520px; height: 520px; margin-left: -260px; margin-top: -260px; z-index: 1; }
+        .iw-wheel { width: 100%; height: 100%; }
+        .iw-hub { position: absolute; left: 50%; top: 100%; width: 84px; height: 84px; margin-left: -42px; margin-top: -42px; border-radius: 50%; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.25); z-index: 3; }
+
+        .iw-pointer { position: absolute; left: 50%; top: 116px; width: 132px; height: 262px; margin-left: -66px; z-index: 4; background: none; border: none; padding: 0; cursor: pointer; filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); transition: transform .12s; }
+        .iw-pointer:hover:not(:disabled) { transform: scale(1.03); }
+        .iw-pointer:active:not(:disabled) { transform: scale(.97); }
+        .iw-pointer:disabled { cursor: default; }
 
         .ir__result { margin-top: 1.25rem; }
         .ir__result-big { font-size: 1.375rem; font-weight: 800; color: var(--ink); }
