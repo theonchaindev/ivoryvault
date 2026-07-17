@@ -13,9 +13,14 @@ interface Props {
   status: PrizeStatus[]
 }
 
-// 8-segment wheel like 7Days: WINNER / LUCKY / UNLUCKY
-const SEGMENTS = ['WINNER', 'UNLUCKY', 'LUCKY', 'UNLUCKY', 'WINNER', 'UNLUCKY', 'LUCKY', 'UNLUCKY']
-const N = SEGMENTS.length
+// 8 decorative segments: alternating cash-credit / UNLUCKY
+const SEG_DATA: { win: boolean; amt?: number }[] = [
+  { win: true, amt: 1 }, { win: false },
+  { win: true, amt: 5 }, { win: false },
+  { win: true, amt: 10 }, { win: false },
+  { win: true, amt: 25 }, { win: false },
+]
+const N = SEG_DATA.length
 const SEG = 360 / N
 
 function polar(cx: number, cy: number, r: number, deg: number) {
@@ -28,17 +33,17 @@ function segPath(i: number, cx: number, cy: number, r: number) {
 }
 
 export default function InstantReveal({ competitionId, slug, title, spinsLeft: initial, status: initialStatus }: Props) {
-  const [started, setStarted] = useState(false)
   const [spins, setSpins] = useState(initial)
   const [status, setStatus] = useState(initialStatus)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<{ win: boolean; amount: number } | null>(null)
+  const [highlight, setHighlight] = useState(0)
   const [error, setError] = useState('')
 
-  const cx = 150, cy = 150, r = 148
-  const winIdx = SEGMENTS.map((s, i) => (s === 'WINNER' ? i : -1)).filter(i => i >= 0)
-  const loseIdx = SEGMENTS.map((s, i) => (s !== 'WINNER' ? i : -1)).filter(i => i >= 0)
+  const cx = 150, cy = 150, r = 146
+  const winIdx = SEG_DATA.map((s, i) => (s.win ? i : -1)).filter(i => i >= 0)
+  const loseIdx = SEG_DATA.map((s, i) => (!s.win ? i : -1)).filter(i => i >= 0)
 
   const spin = async () => {
     if (spinning || spins < 1) return
@@ -55,15 +60,16 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
       const pool = data.win ? winIdx : loseIdx
       const target = pool[Math.floor(Math.random() * pool.length)]
       const segCentre = target * SEG + SEG / 2
-      // 6 full turns then decelerate onto the target segment at the top pointer
       const final = rotation + 6 * 360 + ((360 - (rotation % 360)) - segCentre + 360) % 360
       setRotation(final)
+      setHighlight(-1)
       setTimeout(() => {
         setResult({ win: data.win, amount: data.amount })
+        setHighlight(data.win ? target : -1)
         setSpins(data.spinsLeft ?? Math.max(0, spins - 1))
         if (data.status) setStatus(data.status)
         setSpinning(false)
-      }, 4600)
+      }, 4400)
     } catch {
       setError('Something went wrong. Please try again.')
       setSpinning(false)
@@ -76,92 +82,93 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
   return (
     <div className="ir">
       <div className="ir__head">
-        <span className="ir__badge">Instant Spin</span>
-        <h1 className="ir__title">{title}</h1>
-        <p className="ir__sub">Spin &amp; win instantly — prizes drop straight into your account as site credit.</p>
+        <span className="ir__badge">⚡ Instant Spin</span>
+        <h1 className="ir__title">{title.replace(/!$/, '')}</h1>
+        <p className="ir__sub">Spin the wheel and win instant cash prizes.<br />Prizes are added to your site credit instantly.</p>
       </div>
 
-      {!started ? (
-        <div className="ir__gate">
-          {spins > 0 ? (
-            <>
-              <p className="ir__gate-count">{spins} instant spin{spins === 1 ? '' : 's'} ready</p>
-              <button className="ir__reveal-btn" onClick={() => setStarted(true)}>Reveal Instant Spin Results</button>
-            </>
-          ) : (
-            <>
-              <p className="ir__gate-count">You have no spins for this competition.</p>
-              <Link href={`/competitions/${slug}`} className="btn-gold" style={{ marginTop: '1rem' }}>Buy Spins</Link>
-            </>
-          )}
+      {/* Wheel card */}
+      <div className="iw2-card">
+        <div className="iw2-topbar">
+          <span className="iw2-gift">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="16" height="11" rx="1" stroke="var(--gold)" strokeWidth="1.7"/><rect x="3" y="6" width="18" height="4" rx="1" stroke="var(--gold)" strokeWidth="1.7"/><path d="M12 6v14" stroke="var(--gold)" strokeWidth="1.7"/><path d="M12 6s-3.2-3.6-5-2 1.8 2 5 2Zm0 0s3.2-3.6 5-2-1.8 2-5 2Z" stroke="var(--gold)" strokeWidth="1.7" strokeLinejoin="round"/></svg>
+          </span>
+          <div className="iw2-spins">
+            <span className="iw2-spins-l">Spins Left</span>
+            <span className="iw2-spins-n">{spins}</span>
+          </div>
         </div>
-      ) : (
-        <>
-          {/* Blue wheel card — bottom-anchored wheel (7Days style) */}
-          <div className="iw-card">
-            <span className="iw-spins">{spins} Spin{spins === 1 ? '' : 's'} left</span>
-            <div className="iw-gift">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="16" height="11" rx="1" stroke="#fff" strokeWidth="1.6"/><rect x="3" y="6" width="18" height="4" rx="1" stroke="#fff" strokeWidth="1.6"/><path d="M12 6v14" stroke="#fff" strokeWidth="1.6"/><path d="M12 6s-3.5-4-5.5-2 2 2 5.5 2Zm0 0s3.5-4 5.5-2-2 2-5.5 2Z" stroke="#fff" strokeWidth="1.6" strokeLinejoin="round"/></svg>
-            </div>
 
-            {/* Rotating wheel (centre anchored at card bottom) */}
-            <div className="iw-wheel-pos">
-              <motion.div className="iw-wheel" animate={{ rotate: rotation }} transition={{ duration: 4.4, ease: [0.15, 0.9, 0.2, 1] }}>
-                <svg viewBox="0 0 300 300" width="100%" height="100%">
-                  {SEGMENTS.map((s, i) => {
-                    const mid = i * SEG + SEG / 2
-                    const win = s === 'WINNER'
-                    const flip = mid > 90 && mid < 270
-                    const lp = polar(cx, cy, r * 0.68, mid)
-                    return (
-                      <g key={i}>
-                        <path d={segPath(i, cx, cy, r)} fill={win ? '#eaf1fd' : (i % 2 ? '#f4f8fe' : '#e2ecfb')} stroke="#fff" strokeWidth="2.5" />
-                        <text x={lp.x} y={lp.y} fill={win ? '#1d4ed8' : '#a9bdda'} fontSize="12" fontWeight="800"
-                          textAnchor={flip ? 'end' : 'start'} dominantBaseline="middle"
-                          transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`}>{s}</text>
-                      </g>
-                    )
-                  })}
-                  <circle cx={cx} cy={cy} r={r} fill="none" stroke="#fff" strokeWidth="5" />
-                </svg>
-              </motion.div>
-            </div>
-
-            {/* White hub */}
-            <div className="iw-hub" />
-
-            {/* Fixed pointer wedge — tap to spin */}
-            <button className="iw-pointer" onClick={spin} disabled={spinning || spins < 1} aria-label="Tap to spin">
-              <svg viewBox="0 0 132 262" width="100%" height="100%">
-                <polygon points="8,4 124,4 66,256" fill="#152134" stroke="#0d1726" strokeWidth="2" strokeLinejoin="round"/>
-                {!spinning && (
-                  <>
-                    <text x="66" y="66" fill="#fff" fontSize="22" fontWeight="900" textAnchor="middle">TAP</text>
-                    <text x="66" y="92" fill="#9fc0ff" fontSize="13" fontWeight="800" textAnchor="middle">TO</text>
-                    <text x="66" y="122" fill="#fff" fontSize="25" fontWeight="900" textAnchor="middle">SPIN</text>
-                  </>
-                )}
-              </svg>
-            </button>
+        <div className="iw2-wheelbox">
+          {/* Pin pointer */}
+          <div className="iw2-pin">
+            <svg width="38" height="48" viewBox="0 0 40 50" fill="none"><path d="M20 49C20 49 34 29 34 17A14 14 0 1 0 6 17C6 29 20 49 20 49Z" fill="var(--gold)"/><circle cx="20" cy="17" r="6" fill="#fff"/></svg>
           </div>
 
-          <AnimatePresence mode="wait">
-            {result && (
-              <motion.div key={result.win ? 'w' : 'l'} className={`ir__result ${result.win ? 'win' : ''}`}
-                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
-                {result.win
-                  ? <p className="ir__result-big">🎉 You won {formatPrize(result.amount)}!</p>
-                  : <p className="ir__result-big">No prize this time</p>}
-                <p className="ir__result-sub">{result.win ? 'Added to your site credit.' : 'Thanks for playing — try your next spin!'}</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Wheel (centre anchored at box bottom) */}
+          <div className="iw2-wheel-pos">
+            <motion.div className="iw2-wheel" animate={{ rotate: rotation }} transition={{ duration: 4.2, ease: [0.16, 0.9, 0.2, 1] }}>
+              <svg viewBox="0 0 300 300" width="100%" height="100%">
+                {SEG_DATA.map((s, i) => {
+                  const mid = i * SEG + SEG / 2
+                  const flip = mid > 90 && mid < 270
+                  const lp = polar(cx, cy, r * 0.64, mid)
+                  const hot = s.win && i === highlight
+                  const fill = s.win ? (hot ? '#2f6bf0' : '#e9f0fd') : (i % 2 ? '#f1f4f9' : '#e9edf3')
+                  return (
+                    <g key={i}>
+                      <path d={segPath(i, cx, cy, r)} fill={fill} stroke="#fff" strokeWidth="2.5" />
+                      <g transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`} textAnchor="middle" dominantBaseline="middle">
+                        {s.win ? (
+                          <>
+                            <text x={lp.x} y={lp.y - 6} fill={hot ? '#fff' : '#1d4ed8'} fontSize="17" fontWeight="900">£{s.amt}</text>
+                            <text x={lp.x} y={lp.y + 10} fill={hot ? 'rgba(255,255,255,.8)' : '#7d97c4'} fontSize="7.5" fontWeight="800" letterSpacing="1">CREDIT</text>
+                          </>
+                        ) : (
+                          <text x={lp.x} y={lp.y} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".5">UNLUCKY</text>
+                        )}
+                      </g>
+                    </g>
+                  )
+                })}
+                {/* rim dots */}
+                {Array.from({ length: N }).map((_, i) => {
+                  const p = polar(cx, cy, r - 6, i * SEG)
+                  return <circle key={i} cx={p.x} cy={p.y} r="2.4" fill="#c3d0e4" />
+                })}
+                <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e4eaf2" strokeWidth="3" />
+              </svg>
+            </motion.div>
+          </div>
 
-          {error && <p className="ir__error">{error}</p>}
-        </>
+          {/* TAP TO SPIN hub button */}
+          <button className="iw2-tap" onClick={spin} disabled={spinning || spins < 1}>
+            {spinning ? <span className="iw2-tap-dots">…</span> : <><strong>TAP</strong><span>TO SPIN</span></>}
+          </button>
+        </div>
+      </div>
+
+      {/* Result banner */}
+      <AnimatePresence mode="wait">
+        {result && (
+          <motion.div key={result.win ? 'w' : 'l'} className={`iw2-banner ${result.win ? 'win' : 'lose'}`}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
+            <span className="iw2-banner-icon">{result.win ? '✓' : '×'}</span>
+            <div>
+              <p className="iw2-banner-title">{result.win ? `You won ${formatPrize(result.amount)}!` : 'No win this time'}</p>
+              <p className="iw2-banner-sub">{result.win ? 'Added to your site credit.' : 'Thanks for playing — try your next spin.'}</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {error && <p className="ir__error">{error}</p>}
+      {spins < 1 && !spinning && (
+        <div className="iw2-outofspins">
+          <Link href={`/competitions/${slug}`} className="ir__reveal-btn">Buy More Spins</Link>
+        </div>
       )}
 
-      {/* Prizes available — list */}
+      {/* Prizes available */}
       {totalPrizeCount > 0 && (
         <div className="ir__prizes">
           <div className="ir__prizes-head">
@@ -177,53 +184,56 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
               </li>
             ))}
           </ul>
-        </div>
-      )}
-
-      {started && spins < 1 && (
-        <div className="ir__done">
-          <Link href={`/competitions/${slug}`} className="ir__reveal-btn">Buy More Spins</Link>
-          <Link href="/account" className="ir__done-link">View my account →</Link>
+          <p className="ir__prizes-foot">Prizes and odds may vary. Rewards are non-transferable.</p>
         </div>
       )}
 
       <style>{`
         .ir { max-width: 560px; margin: 0 auto; padding: 2.5rem clamp(1.25rem,3vw,2rem) 4rem; text-align: center; }
         .ir__badge { display: inline-block; background: var(--gold-pale); border: 1px solid var(--gold); color: var(--gold); font-size: .55rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; padding: .35rem .9rem; border-radius: 999px; }
-        .ir__title { font-size: clamp(1.75rem,4.5vw,2.75rem); font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin-top: .875rem; line-height: 1.05; }
-        .ir__sub { font-size: .9375rem; color: var(--ink3); line-height: 1.6; max-width: 440px; margin: .875rem auto 0; }
-
-        .ir__gate { margin-top: 2.5rem; }
-        .ir__gate-count { font-size: 1.125rem; font-weight: 700; color: var(--ink); margin-bottom: 1rem; }
-        .ir__reveal-btn { display: inline-block; background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 1.125rem 2.5rem; border-radius: var(--r-btn); text-decoration: none; box-shadow: 0 10px 28px rgba(37,99,235,.35); transition: background .2s, transform .15s; }
+        .ir__title { font-size: clamp(1.9rem,5vw,3rem); font-weight: 800; letter-spacing: -.02em; color: var(--ink); margin-top: .875rem; line-height: 1.02; }
+        .ir__sub { font-size: .9375rem; color: var(--ink3); line-height: 1.6; margin: .875rem auto 0; }
+        .ir__error { color: #c0392b; font-size: .8125rem; margin-top: .75rem; }
+        .ir__reveal-btn { display: inline-block; background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 1rem 2.25rem; border-radius: var(--r-btn); text-decoration: none; box-shadow: 0 10px 28px rgba(37,99,235,.3); transition: background .2s, transform .15s; }
         .ir__reveal-btn:hover { background: var(--gold-d); transform: translateY(-2px); }
 
-        /* Blue wheel card — wheel centre anchored at the card bottom */
-        .iw-card { position: relative; margin: 2rem auto 0; width: 100%; max-width: 420px; height: 380px; overflow: hidden; background: linear-gradient(180deg,#2f6bf0,#1f5fe0); border-radius: 20px; box-shadow: 0 20px 50px rgba(31,95,224,.35); }
-        .iw-spins { position: absolute; top: 14px; right: 14px; z-index: 6; background: #eef4ff; color: var(--ink); font-weight: 800; font-size: .75rem; padding: .35rem .75rem; border-radius: 999px; }
-        .iw-gift { position: absolute; top: 26px; left: 50%; margin-left: -36px; z-index: 5; width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,.16); display: flex; align-items: center; justify-content: center; }
+        /* Wheel card */
+        .iw2-card { position: relative; margin: 1.75rem auto 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem 1.5rem 3rem; box-shadow: var(--shadow-md); }
+        .iw2-topbar { display: flex; align-items: center; gap: .75rem; }
+        .iw2-gift { width: 44px; height: 44px; border-radius: 50%; background: var(--gold-pale); display: flex; align-items: center; justify-content: center; }
+        .iw2-spins { display: flex; flex-direction: column; text-align: left; line-height: 1; }
+        .iw2-spins-l { font-size: .5rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); }
+        .iw2-spins-n { font-size: 1.375rem; font-weight: 900; color: var(--ink); margin-top: 3px; }
 
-        .iw-wheel-pos { position: absolute; left: 50%; top: 100%; width: 520px; height: 520px; margin-left: -260px; margin-top: -260px; z-index: 1; }
-        .iw-wheel { width: 100%; height: 100%; }
-        .iw-hub { position: absolute; left: 50%; top: 100%; width: 84px; height: 84px; margin-left: -42px; margin-top: -42px; border-radius: 50%; background: #fff; box-shadow: 0 3px 12px rgba(0,0,0,.25); z-index: 3; }
+        .iw2-wheelbox { position: relative; width: 100%; padding-bottom: 54%; margin-top: .5rem; overflow: hidden; }
+        .iw2-pin { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); z-index: 5; filter: drop-shadow(0 3px 4px rgba(0,0,0,.18)); }
+        .iw2-wheel-pos { position: absolute; left: 0; bottom: 0; width: 100%; aspect-ratio: 1; transform: translateY(50%); }
+        .iw2-wheel { width: 100%; height: 100%; }
+        .iw2-tap { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); z-index: 6; width: 30%; max-width: 118px; aspect-ratio: 1; border-radius: 50%; background: #fff; border: 3px solid var(--gold-pale); box-shadow: 0 6px 18px rgba(20,28,42,.18); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: inherit; transition: transform .12s, border-color .2s; }
+        .iw2-tap:hover:not(:disabled) { transform: translate(-50%,50%) scale(1.05); border-color: var(--gold); }
+        .iw2-tap:active:not(:disabled) { transform: translate(-50%,50%) scale(.96); }
+        .iw2-tap:disabled { cursor: default; }
+        .iw2-tap strong { font-size: clamp(.8rem,3vw,1.05rem); font-weight: 900; color: var(--ink); letter-spacing: .02em; }
+        .iw2-tap span { font-size: clamp(.42rem,1.6vw,.55rem); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+        .iw2-tap-dots { font-size: 1.5rem; color: var(--gold); font-weight: 900; }
 
-        .iw-pointer { position: absolute; left: 50%; top: 116px; width: 132px; height: 262px; margin-left: -66px; z-index: 4; background: none; border: none; padding: 0; cursor: pointer; filter: drop-shadow(0 4px 8px rgba(0,0,0,.3)); transition: transform .12s; }
-        .iw-pointer:hover:not(:disabled) { transform: scale(1.03); }
-        .iw-pointer:active:not(:disabled) { transform: scale(.97); }
-        .iw-pointer:disabled { cursor: default; }
+        /* Result banner */
+        .iw2-banner { display: flex; align-items: center; gap: .875rem; text-align: left; margin: 1.25rem auto 0; padding: .875rem 1.125rem; border-radius: 14px; }
+        .iw2-banner.win { background: #ecfdf3; border: 1px solid #b7f0cf; }
+        .iw2-banner.lose { background: var(--bg2); border: 1px solid var(--border); }
+        .iw2-banner-icon { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff; font-size: 1.1rem; }
+        .iw2-banner.win .iw2-banner-icon { background: #16a34a; }
+        .iw2-banner.lose .iw2-banner-icon { background: var(--ink3); }
+        .iw2-banner-title { font-size: 1.0625rem; font-weight: 800; color: var(--ink); }
+        .iw2-banner-sub { font-size: .8125rem; color: var(--ink3); margin-top: 1px; }
+        .iw2-outofspins { margin-top: 1.5rem; }
 
-        .ir__result { margin-top: 1.25rem; }
-        .ir__result-big { font-size: 1.375rem; font-weight: 800; color: var(--ink); }
-        .ir__result.win .ir__result-big { color: var(--gold); }
-        .ir__result-sub { font-size: .875rem; color: var(--ink3); margin-top: .25rem; }
-        .ir__error { color: #c0392b; font-size: .8125rem; margin-top: .75rem; }
-
-        /* Prize list */
-        .ir__prizes { margin-top: 2.5rem; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); padding: 1.25rem 1.25rem 1rem; box-shadow: var(--shadow-sm); }
+        /* Prizes available */
+        .ir__prizes { margin-top: 1.75rem; text-align: left; background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); padding: 1.25rem 1.25rem 1rem; box-shadow: var(--shadow-sm); }
         .ir__prizes-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; }
         .ir__prizes-title { font-size: .6875rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); }
         .ir__prizes-meta { font-size: .6875rem; color: var(--ink3); font-weight: 600; }
-        .ir__prize-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+        .ir__prize-list { list-style: none; padding: 0; margin: 0; }
         .ir__prize-row { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: .875rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
         .ir__prize-row:last-child { border-bottom: none; }
         .ir__prize-row.gone { opacity: .45; }
@@ -232,9 +242,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         .ir__prize-bar { height: 6px; background: var(--bg2); border-radius: 999px; overflow: hidden; }
         .ir__prize-bar-fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }
         .ir__prize-count { font-size: .6875rem; color: var(--ink3); font-weight: 600; white-space: nowrap; }
-
-        .ir__done { margin-top: 2rem; display: flex; flex-direction: column; align-items: center; gap: .875rem; }
-        .ir__done-link { font-size: .8125rem; color: var(--gold); text-decoration: none; }
+        .ir__prizes-foot { font-size: .625rem; color: var(--ink3); margin-top: 1rem; }
       `}</style>
     </div>
   )
