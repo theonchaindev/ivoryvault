@@ -107,7 +107,8 @@ export default function Navbar() {
             >
               <button className="nav__drawer-close" onClick={() => setOpen(false)}>✕</button>
               <div className="nav__drawer-logo">
-                <Image src="/logo.png" alt="Ivory Vault" width={52} height={52} />
+                <Image src="/logo.png" alt="Ivory Vault" width={92} height={92} />
+                <span className="nav__drawer-logo-text">IVORY VAULT</span>
               </div>
               <nav>
                 {[{ href: '/', label: 'Home' }, ...NAV].map((l, i) => (
