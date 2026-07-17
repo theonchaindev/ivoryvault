@@ -21,6 +21,7 @@ export default function TicketSelector({ competition }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const [open, setOpen] = useState(false)   // mobile sheet open/closed
 
   const remaining = competition.maxTickets - competition.ticketsSold
   const maxSelect = Math.min(remaining, 50)
@@ -57,19 +58,41 @@ export default function TicketSelector({ competition }: Props) {
 
   if (competition.status !== 'active') {
     return (
-      <div className="ts">
+      <div className="ts ts--flat">
         <p className="ts__closed">This competition has closed</p>
       </div>
     )
   }
 
   return (
+    <>
+      {/* Mobile trigger — opens the sheet */}
+      {!open && (
+        <button className="ts-trigger" onClick={() => setOpen(true)}>
+          Enter This Competition
+          <span className="ts-trigger__price">from {formatCurrency(competition.ticketPrice)}</span>
+        </button>
+      )}
+
+      {/* Mobile backdrop — tap anywhere to close */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            className="ts-backdrop"
+            onClick={() => setOpen(false)}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </AnimatePresence>
+
     <motion.div
-      className="ts"
+      className={`ts${open ? ' ts--open' : ''}`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease }}
     >
+      <button className="ts__close" onClick={() => setOpen(false)} aria-label="Close">✕</button>
       <div className="ts__header">
         <h2 className="ts__title">Enter This Competition</h2>
         <span className="ts__remaining">{remaining.toLocaleString()} tickets left</span>
@@ -181,16 +204,43 @@ export default function TicketSelector({ competition }: Props) {
           display: flex; flex-direction: column; gap: 1.25rem;
           box-shadow: var(--shadow-sm);
         }
-        /* Sticky bottom on mobile */
+        /* Close (X) + trigger + backdrop hidden on desktop */
+        .ts__close { display: none; }
+        .ts-trigger { display: none; }
+        .ts-backdrop { display: none; }
+
+        /* Bottom-sheet on mobile */
         @media (max-width: 860px) {
           .ts {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-            border-radius: 16px 16px 0 0;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 60;
+            border-radius: 18px 18px 0 0;
             border-left: none; border-right: none; border-bottom: none;
-            box-shadow: 0 -4px 32px rgba(24,20,15,.12);
-            padding: 1rem 1.25rem;
+            box-shadow: 0 -6px 32px rgba(0,0,0,.22);
+            padding: 1.25rem 1.25rem calc(1.25rem + env(safe-area-inset-bottom));
             gap: .875rem;
+            transform: translateY(110%) !important;
+            transition: transform .32s cubic-bezier(.22,1,.36,1);
           }
+          .ts.ts--open { transform: translateY(0) !important; }
+          .ts--flat { position: static !important; transform: none !important; border: 1px solid var(--border); border-radius: var(--r-card); }
+
+          /* Backdrop */
+          .ts-backdrop { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(15,20,30,.45); backdrop-filter: blur(2px); }
+
+          /* Close X */
+          .ts__close { display: flex; align-items: center; justify-content: center; position: absolute; top: .75rem; right: .875rem; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); color: var(--ink2); font-size: .9rem; cursor: pointer; font-family: inherit; z-index: 2; }
+          .ts__close:hover { color: var(--ink); }
+
+          /* Trigger bar */
+          .ts-trigger {
+            display: flex; align-items: center; justify-content: center; gap: .5rem;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            padding: 1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));
+            background: var(--gold); color: #fff; border: none; cursor: pointer;
+            font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+            box-shadow: 0 -4px 24px rgba(0,0,0,.18);
+          }
+          .ts-trigger__price { font-weight: 600; opacity: .85; text-transform: none; letter-spacing: 0; }
           /* Hide only the least-critical elements on mobile sticky */
           .ts__quick-section, .ts__note { display: none; }
           .ts__header { margin-bottom: 0; }
@@ -251,5 +301,6 @@ export default function TicketSelector({ competition }: Props) {
         .ts__free-link:hover { text-decoration: underline; }
       `}</style>
     </motion.div>
+    </>
   )
 }
