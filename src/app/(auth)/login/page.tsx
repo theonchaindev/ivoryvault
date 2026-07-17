@@ -131,7 +131,7 @@ export default function LoginPage() {
         .auth-page { flex: 1; display: flex; align-items: center; justify-content: center; padding: 3rem 1.5rem; min-height: calc(100vh - 68px); background: var(--off); }
         .auth-wrap { width: 100%; max-width: 440px; }
         .auth-logo { text-align: center; margin-bottom: 2.5rem; }
-        .auth-logo__link { font-family: var(--font-cormorant,serif); font-size: 1.75rem; font-weight: 400; letter-spacing: .2em; color: var(--ink); text-decoration: none; }
+        .auth-logo__link { font-family: var(--font-cinzel), serif; font-size: 1.75rem; font-weight: 600; letter-spacing: .18em; color: var(--ink); text-decoration: none; }
         .auth-logo__rule { height: 1px; width: 80px; margin: .5rem auto 0; background: linear-gradient(90deg, transparent, var(--rg), transparent); }
         .auth-logo__tagline { font-family: var(--font-cormorant,serif); font-size: 1.0625rem; font-style: italic; color: var(--ink3); margin-top: .75rem; }
         .auth-card { background: #fff; border: 1px solid var(--border); padding: 2.5rem; }
