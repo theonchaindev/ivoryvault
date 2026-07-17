@@ -13,12 +13,12 @@ interface Props {
   status: PrizeStatus[]
 }
 
-// 8 decorative segments: alternating cash-credit / UNLUCKY
-const SEG_DATA: { win: boolean; amt?: number }[] = [
-  { win: true, amt: 1 }, { win: false },
-  { win: true, amt: 5 }, { win: false },
-  { win: true, amt: 10 }, { win: false },
-  { win: true, amt: 25 }, { win: false },
+// Simple wheel: alternating WINNER / NO WINNER segments
+const SEG_DATA: { win: boolean }[] = [
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+  { win: true }, { win: false },
+  { win: true }, { win: false },
 ]
 const N = SEG_DATA.length
 const SEG = 360 / N
@@ -37,7 +37,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
   const [status, setStatus] = useState(initialStatus)
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
-  const [result, setResult] = useState<{ win: boolean; amount: number } | null>(null)
+  const [result, setResult] = useState<{ win: boolean; amount: number; kind: 'credit' | 'cash' } | null>(null)
   const [highlight, setHighlight] = useState(0)
   const [error, setError] = useState('')
 
@@ -64,7 +64,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
       setRotation(final)
       setHighlight(-1)
       setTimeout(() => {
-        setResult({ win: data.win, amount: data.amount })
+        setResult({ win: data.win, amount: data.amount, kind: data.kind === 'cash' ? 'cash' : 'credit' })
         setHighlight(data.win ? target : -1)
         setSpins(data.spinsLeft ?? Math.max(0, spins - 1))
         if (data.status) setStatus(data.status)
@@ -112,7 +112,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
                 {SEG_DATA.map((s, i) => {
                   const mid = i * SEG + SEG / 2
                   const flip = mid > 90 && mid < 270
-                  const lp = polar(cx, cy, r * 0.64, mid)
+                  const lp = polar(cx, cy, r * 0.66, mid)
                   const hot = s.win && i === highlight
                   const fill = s.win ? (hot ? '#2f6bf0' : '#e9f0fd') : (i % 2 ? '#f1f4f9' : '#e9edf3')
                   return (
@@ -120,12 +120,12 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
                       <path d={segPath(i, cx, cy, r)} fill={fill} stroke="#fff" strokeWidth="2.5" />
                       <g transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`} textAnchor="middle" dominantBaseline="middle">
                         {s.win ? (
-                          <>
-                            <text x={lp.x} y={lp.y - 6} fill={hot ? '#fff' : '#1d4ed8'} fontSize="17" fontWeight="900">£{s.amt}</text>
-                            <text x={lp.x} y={lp.y + 10} fill={hot ? 'rgba(255,255,255,.8)' : '#7d97c4'} fontSize="7.5" fontWeight="800" letterSpacing="1">CREDIT</text>
-                          </>
+                          <text x={lp.x} y={lp.y} fill={hot ? '#fff' : '#1d4ed8'} fontSize="13" fontWeight="900" letterSpacing=".5">WINNER</text>
                         ) : (
-                          <text x={lp.x} y={lp.y} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".5">UNLUCKY</text>
+                          <>
+                            <text x={lp.x} y={lp.y - 5} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".3">NO</text>
+                            <text x={lp.x} y={lp.y + 8} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".3">WINNER</text>
+                          </>
                         )}
                       </g>
                     </g>
@@ -155,8 +155,8 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}>
             <span className="iw2-banner-icon">{result.win ? '✓' : '×'}</span>
             <div>
-              <p className="iw2-banner-title">{result.win ? `You won ${formatPrize(result.amount)}!` : 'No win this time'}</p>
-              <p className="iw2-banner-sub">{result.win ? 'Added to your site credit.' : 'Thanks for playing — try your next spin.'}</p>
+              <p className="iw2-banner-title">{result.win ? `You won ${formatPrize(result.amount)}${result.kind === 'cash' ? ' cash' : ''}!` : 'No win this time'}</p>
+              <p className="iw2-banner-sub">{result.win ? (result.kind === 'cash' ? "We'll be in touch to arrange your cash payment." : 'Added to your site credit.') : 'Thanks for playing — try your next spin.'}</p>
             </div>
           </motion.div>
         )}
@@ -177,8 +177,11 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
           </div>
           <ul className="ir__prize-list">
             {status.map(t => (
-              <li key={t.amount} className={`ir__prize-row${t.left === 0 ? ' gone' : ''}`}>
-                <span className="ir__prize-amt">{formatPrize(t.amount)}</span>
+              <li key={`${t.amount}:${t.kind}`} className={`ir__prize-row${t.left === 0 ? ' gone' : ''}`}>
+                <span className="ir__prize-amt">
+                  {formatPrize(t.amount)}
+                  <span className={`ir__prize-kind ${t.kind}`}>{t.kind === 'cash' ? 'cash' : 'credit'}</span>
+                </span>
                 <span className="ir__prize-bar"><span className="ir__prize-bar-fill" style={{ width: `${(t.left / t.total) * 100}%` }} /></span>
                 <span className="ir__prize-count">{t.left} / {t.total} to be won</span>
               </li>
@@ -234,10 +237,13 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         .ir__prizes-title { font-size: .6875rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink2); }
         .ir__prizes-meta { font-size: .6875rem; color: var(--ink3); font-weight: 600; }
         .ir__prize-list { list-style: none; padding: 0; margin: 0; }
-        .ir__prize-row { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: .875rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
+        .ir__prize-row { display: grid; grid-template-columns: 92px 1fr auto; align-items: center; gap: .875rem; padding: .75rem 0; border-bottom: 1px solid var(--border); }
         .ir__prize-row:last-child { border-bottom: none; }
         .ir__prize-row.gone { opacity: .45; }
-        .ir__prize-amt { font-size: 1.25rem; font-weight: 800; color: var(--gold); }
+        .ir__prize-amt { font-size: 1.25rem; font-weight: 800; color: var(--gold); display: flex; flex-direction: column; align-items: flex-start; line-height: 1.1; }
+        .ir__prize-kind { font-size: .5rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; margin-top: 3px; }
+        .ir__prize-kind.credit { background: var(--gold-pale); color: var(--gold-d); }
+        .ir__prize-kind.cash { background: #dcfce7; color: #15803d; }
         .ir__prize-row.gone .ir__prize-amt { color: var(--ink3); text-decoration: line-through; }
         .ir__prize-bar { height: 6px; background: var(--bg2); border-radius: 999px; overflow: hidden; }
         .ir__prize-bar-fill { display: block; height: 100%; background: var(--gold); border-radius: 999px; }

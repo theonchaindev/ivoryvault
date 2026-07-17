@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { parsePrizes, prizeStatus, resolveOutcome, formatPrize } from '@/lib/instant'
+import { parsePrizes, prizeStatus, resolveOutcome, formatPrize, prizeKey } from '@/lib/instant'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,45 +21,61 @@ export async function POST(request: NextRequest) {
       })
       if (!spin) return { error: 'no-spins' as const }
 
-      // Amounts already won across the whole competition
+      // Prizes already won across the whole competition, keyed by amount + type
       const wonRows = await tx.instantSpin.groupBy({
-        by: ['prizeAmount'],
+        by: ['prizeAmount', 'prizeType'],
         where: { competitionId: comp.id, revealed: true, prizeAmount: { gt: 0 } },
         _count: { _all: true },
       })
-      const wonByAmount: Record<string, number> = {}
-      wonRows.forEach(r => { wonByAmount[String(r.prizeAmount)] = r._count._all })
+      const wonByKey: Record<string, number> = {}
+      wonRows.forEach(r => { wonByKey[prizeKey(r.prizeAmount, r.prizeType === 'cash' ? 'cash' : 'credit')] = r._count._all })
 
-      const status = prizeStatus(prizes, wonByAmount)
-      const unrevealedTotal = await tx.instantSpin.count({ where: { competitionId: comp.id, revealed: false } })
+      const status = prizeStatus(prizes, wonByKey)
+      // Drip the prize pool across every entry in the competition, not just the ones sold so far.
+      const revealedCount = await tx.instantSpin.count({ where: { competitionId: comp.id, revealed: true } })
+      const remainingEntries = Math.max(1, comp.maxTickets - revealedCount)
 
-      let { win, amount } = resolveOutcome(status, unrevealedTotal)
+      let { win, amount, kind } = resolveOutcome(status, remainingEntries)
       // Guard: never over-award a tier
       if (win) {
-        const tier = status.find(s => s.amount === amount)
+        const tier = status.find(s => s.amount === amount && s.kind === kind)
         if (!tier || tier.left <= 0) { win = false; amount = 0 }
       }
 
-      await tx.instantSpin.update({ where: { id: spin.id }, data: { revealed: true, prizeAmount: amount } })
+      await tx.instantSpin.update({
+        where: { id: spin.id },
+        data: { revealed: true, prizeAmount: win ? amount : 0, prizeType: win ? kind : 'credit' },
+      })
 
       if (win && amount > 0) {
-        await tx.user.update({ where: { id: session.userId }, data: { siteCredit: { increment: amount } } })
-        await tx.notification.create({
-          data: {
-            userId: session.userId,
-            title: `Instant win — ${formatPrize(amount)}!`,
-            body: `Your ${comp.title} spin won ${formatPrize(amount)} in instant site credit.`,
-            icon: 'win',
-          },
-        })
+        if (kind === 'credit') {
+          await tx.user.update({ where: { id: session.userId }, data: { siteCredit: { increment: amount } } })
+          await tx.notification.create({
+            data: {
+              userId: session.userId,
+              title: `Instant win — ${formatPrize(amount)} credit!`,
+              body: `Your ${comp.title} spin won ${formatPrize(amount)} in instant site credit.`,
+              icon: 'win',
+            },
+          })
+        } else {
+          await tx.notification.create({
+            data: {
+              userId: session.userId,
+              title: `Instant win — ${formatPrize(amount)} cash!`,
+              body: `Your ${comp.title} spin won a ${formatPrize(amount)} cash prize. We'll be in touch to arrange payment.`,
+              icon: 'win',
+            },
+          })
+        }
       }
 
       // Recompute status + remaining after this reveal
-      if (win && amount > 0) wonByAmount[String(amount)] = (wonByAmount[String(amount)] || 0) + 1
-      const newStatus = prizeStatus(prizes, wonByAmount)
+      if (win && amount > 0) wonByKey[prizeKey(amount, kind)] = (wonByKey[prizeKey(amount, kind)] || 0) + 1
+      const newStatus = prizeStatus(prizes, wonByKey)
       const spinsLeft = await tx.instantSpin.count({ where: { userId: session.userId, competitionId: comp.id, revealed: false } })
 
-      return { win, amount, spinsLeft, status: newStatus }
+      return { win, amount, kind, spinsLeft, status: newStatus }
     })
 
     if ('error' in result) return NextResponse.json(result, { status: 409 })

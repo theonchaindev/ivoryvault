@@ -71,6 +71,7 @@ model InstantSpin {
   competitionId String
   revealed      Boolean  @default(false)
   prizeAmount   Float    @default(0)
+  prizeType     String   @default("credit") // "credit" | "cash"
   createdAt     DateTime @default(now())
 
   user        User        @relation(fields: [userId], references: [id])
