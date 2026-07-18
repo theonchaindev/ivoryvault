@@ -295,12 +295,12 @@ a { color: inherit; }
 .cc__enter-btn {
   display: block; width: 100%; text-align: center;
   margin-top: .75rem; padding: .8125rem 1rem;
-  background: var(--ink); color: #fff;
+  background: var(--gold); color: #fff;
   font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
   border-radius: var(--r-btn);
   transition: background .2s, transform .15s, box-shadow .2s;
 }
-.cc:hover .cc__enter-btn { background: var(--ink2); box-shadow: 0 6px 18px rgba(20,28,42,.3); }
+.cc:hover .cc__enter-btn { background: var(--gold-d); box-shadow: 0 6px 18px rgba(37,99,235,.3); }
 
 /* ═══════════════════════════════════════════════
    COUNTDOWN TIMER

@@ -256,12 +256,12 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
         .hh__card-per { font-size: .625rem; color: var(--ink3); font-weight: 500; }
         .hh__card-btn {
           display: block; width: 100%; text-align: center;
-          background: var(--ink); color: #fff;
+          background: var(--gold); color: #fff;
           font-size: .6875rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
           padding: .8125rem; border-radius: var(--r-btn); text-decoration: none;
           transition: background .2s;
         }
-        .hh__card-btn:hover { background: var(--ink2); }
+        .hh__card-btn:hover { background: var(--gold-d); }
 
         /* Nav row */
         .hh__nav { display: flex; align-items: center; justify-content: center; gap: .75rem; margin-top: 1.25rem; }
