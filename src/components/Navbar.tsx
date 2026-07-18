@@ -34,7 +34,6 @@ function AccountIcon() {
 const NAV = [
   { href: '/competitions', label: 'Competitions' },
   { href: '/how-it-works', label: 'How It Works' },
-  { href: '/winners', label: 'Winners' },
   { href: '/contact', label: 'Contact' },
 ]
 

@@ -130,7 +130,8 @@ export default async function Home() {
         { v: '48hrs', l: 'Prize Delivery' },
       ]} /> */}
 
-      {winners.length > 0 && (
+      {/* Winners hidden for now — re-enable once we have winners to show */}
+      {false && winners.length > 0 && (
         <section className="page-section page-section--cream">
           <div className="section-inner">
             <AnimatedSection>
