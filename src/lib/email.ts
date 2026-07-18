@@ -60,13 +60,51 @@ function shell(heading: string, bodyHtml: string, cta?: { label: string; href: s
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v.toLocaleString() : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** Welcome email on signup. */
+/** Welcome email on signup — dark, branded template. */
 export function sendWelcomeEmail(to: string, name: string) {
-  const body = `
-    <p style="margin:0 0 12px;">Welcome to Ivory Vault, ${esc(name.split(' ')[0] || name)} — your account is ready.</p>
-    <p style="margin:0 0 12px;">Browse our live competitions for a chance to win luxury watches, cash, tech and once-in-a-lifetime experiences. Every entry earns rewards, and climbing the ranks unlocks free spins and site credit.</p>
-    <p style="margin:0;">Good luck!</p>`
-  return send({ to, subject: 'Welcome to Ivory Vault', html: shell('You\'re in 🎉', body, { label: 'View Competitions', href: `${SITE_URL}/competitions` }) })
+  const GOLD = '#c2a24e'
+  const badge = (icon: string, label: string, first = false) => `
+    <td align="center" valign="middle" style="padding:4px 14px;${first ? '' : 'border-left:1px solid rgba(255,255,255,.12);'}font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.05em;color:rgba(255,255,255,.6);white-space:nowrap;">
+      <span style="color:#4a86e8;font-size:12px;">${icon}</span>&nbsp; ${label}</td>`
+
+  const html = `
+  <div style="margin:0;padding:0;background:#0a0e1a;">
+    <div style="max-width:600px;margin:0 auto;padding:36px 20px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+      <!-- Header -->
+      <div style="text-align:center;padding-bottom:28px;">
+        <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="72" height="72" style="display:inline-block;border:0;outline:none;text-decoration:none;margin-bottom:8px;" />
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:.24em;color:#ffffff;">IVORY VAULT</div>
+        <div style="font-size:11px;letter-spacing:.34em;color:${GOLD};margin-top:8px;">— COMPETITIONS —</div>
+      </div>
+
+      <!-- Card -->
+      <div style="background:#0e1526;border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:38px 36px;">
+        <h1 style="margin:0 0 20px;font-size:30px;font-weight:800;color:#ffffff;letter-spacing:-.01em;">YOU'RE <span style="color:#2f6bf0;">IN!</span> 🎉</h1>
+        <p style="margin:0 0 18px;font-size:16px;line-height:1.65;color:rgba(255,255,255,.72);">Welcome to Ivory Vault, ${esc(name.split(' ')[0] || name)} — your account is ready.</p>
+        <p style="margin:0 0 18px;font-size:16px;line-height:1.65;color:rgba(255,255,255,.72);">Browse our live competitions for a chance to win luxury watches, cash, tech and once-in-a-lifetime experiences. Every entry earns rewards, and climbing the ranks unlocks free spins and site credit.</p>
+        <p style="margin:0;font-size:16px;line-height:1.65;color:rgba(255,255,255,.72);">Good luck!</p>
+        <div style="text-align:center;margin-top:32px;">
+          <a href="${SITE_URL}/competitions" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:16px 40px;border-radius:12px;">View Competitions</a>
+        </div>
+      </div>
+
+      <!-- Trust badges -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 0;"><tr>
+        ${badge('✓', 'UK REGULATED', true)}
+        ${badge('🎟', 'FREE ENTRY')}
+        ${badge('▶', 'LIVE DRAWS')}
+        ${badge('18+', 'ONLY')}
+      </tr></table>
+
+      <!-- Footer -->
+      <div style="text-align:center;padding:24px 12px 0;font-size:12px;color:rgba(255,255,255,.4);line-height:1.7;">
+        Ivory Vault Competitions Ltd &nbsp;·&nbsp; 18+ only &nbsp;·&nbsp; UK residents only &nbsp;·&nbsp; Play responsibly<br/>
+        Questions? Reply to this email or contact <a href="mailto:${SUPPORT_EMAIL}" style="color:#4a86e8;text-decoration:none;">${SUPPORT_EMAIL}</a>
+      </div>
+    </div>
+  </div>`
+
+  return send({ to, subject: 'Welcome to Ivory Vault', html })
 }
 
 /** Order confirmation after a successful checkout. */
