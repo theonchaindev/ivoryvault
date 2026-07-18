@@ -38,6 +38,7 @@ function shell(heading: string, bodyHtml: string, cta?: { label: string; href: s
   <div style="margin:0;padding:0;background:#f2f4f7;">
     <div style="max-width:560px;margin:0 auto;padding:32px 20px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:${INK};">
       <div style="text-align:center;padding-bottom:24px;">
+        <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="60" height="60" style="display:inline-block;border:0;outline:none;text-decoration:none;margin-bottom:10px;" />
         <div style="font-size:20px;font-weight:800;letter-spacing:.22em;color:${INK};">IVORY VAULT</div>
         <div style="font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:${BLUE};margin-top:4px;">Luxury Prize Competitions</div>
       </div>
