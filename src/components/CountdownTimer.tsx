@@ -93,15 +93,15 @@ export default function CountdownTimer({
     )
   }
 
-  /* ── Full block (default / competition detail) ── */
+  /* ── Full block (default / competition detail) — stretches full width ── */
   return (
-    <div style={{ display: 'flex', gap: '.625rem' }}>
+    <div style={{ display: 'flex', gap: '.625rem', width: '100%' }}>
       {units.map(u => (
         <div key={u.l} style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           background: light ? 'rgba(255,255,255,.12)' : 'var(--ink)',
           border: `1px solid ${light ? 'rgba(255,255,255,.2)' : 'rgba(255,255,255,.08)'}`,
-          padding: '.75rem 1rem', minWidth: '62px',
+          padding: '.75rem 1rem', flex: 1, minWidth: 0,
           borderRadius: '10px',
         }}>
           <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '2rem', fontWeight: 600, color: '#fff', lineHeight: 1 }}>

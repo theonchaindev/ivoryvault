@@ -53,10 +53,12 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
 
             {hot && <span className="cdp__hot">🔥 Selling Fast</span>}
 
-            <div className="cdp__prize-chip">
-              <span className="cdp__prize-chip-label">Prize Value</span>
-              <span className="cdp__prize-chip-val">{formatCurrency(competition.prizeValue)}</span>
-            </div>
+            {!isInstant && (
+              <div className="cdp__prize-chip">
+                <span className="cdp__prize-chip-label">Prize Value</span>
+                <span className="cdp__prize-chip-val">{formatCurrency(competition.prizeValue)}</span>
+              </div>
+            )}
           </div>
 
           {/* Thumbnails */}
