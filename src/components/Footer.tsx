@@ -42,7 +42,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div style={{ margin: '0 0 1.75rem' }}><StarDivider dark /></div>
+        <div className="site-footer__divider"><StarDivider dark /></div>
 
         <div className="site-footer__bottom">
           <p>© {year} Ivory Vault Ltd. All rights reserved.</p>
