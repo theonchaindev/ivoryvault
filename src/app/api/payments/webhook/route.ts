@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { syncEarnedSpins } from '@/lib/spins'
@@ -19,7 +19,7 @@ async function emailConfirmation(userId: string, items: { id: string; qty: numbe
   const total = totalPence != null
     ? totalPence / 100
     : items.reduce((s, i) => s + (byId.get(i.id)?.ticketPrice || 0) * i.qty, 0)
-  void sendPurchaseConfirmation(user.email, user.name, lines, total)
+  await sendPurchaseConfirmation(user.email, user.name, lines, total)
 }
 
 /** Record a single competition purchase: create ticket, bump count, auto-draw if sold out. */
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       const { competitionId, userId, quantity } = pi.metadata
       const qty = parseInt(quantity, 10)
       await recordPurchase(userId, competitionId, qty, pi.id)
-      await emailConfirmation(userId, [{ id: competitionId, qty }], pi.amount)
+      after(() => emailConfirmation(userId, [{ id: competitionId, qty }], pi.amount))
     }
 
     // Multi-item basket checkout
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       for (const item of items) {
         await recordPurchase(userId, item.id, item.qty, session.id)
       }
-      await emailConfirmation(userId, items, session.amount_total)
+      after(() => emailConfirmation(userId, items, session.amount_total))
     }
   } catch (error) {
     console.error('Webhook processing error:', error)

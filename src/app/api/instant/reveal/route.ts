@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePrizes, prizeStatus, resolveOutcome, formatPrize, prizeKey } from '@/lib/instant'
@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
 
     if ('error' in result) return NextResponse.json(result, { status: 409 })
 
-    // Win email (best-effort — never blocks the response)
+    // Win email — runs after the response is sent.
     if (result.win && result.amount > 0 && session.email) {
-      void sendInstantWinEmail(session.email, session.name || 'there', result.amount, result.kind)
+      after(() => sendInstantWinEmail(session.email, session.name || 'there', result.amount, result.kind))
     }
 
     return NextResponse.json(result)

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { createSession } from '@/lib/auth'
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Welcome email (best-effort — never blocks signup)
-    void sendWelcomeEmail(user.email, user.name)
+    // Welcome email — runs after the response is sent, so it can't be killed early.
+    after(() => sendWelcomeEmail(user.email, user.name))
 
     const token = await createSession({
       userId: user.id,
