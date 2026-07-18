@@ -97,7 +97,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
           {/* Title */}
           <div className="cdp__title-block">
             {isInstant && <span className="cdp__instant-badge">⚡ Spin &amp; Win Instantly</span>}
-            <h1 className="cdp__title">{competition.title}</h1>
+            {!isInstant && <h1 className="cdp__title">{competition.title}</h1>}
             {competition.subtitle && <p className="cdp__subtitle">{competition.subtitle}</p>}
           </div>
 
@@ -245,10 +245,10 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
         .cdp__reveal-banner span { font-size: .75rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .95; }
 
         /* Progress */
-        .cdp__progress-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); padding: 1.25rem; }
+        .cdp__progress-card { background: linear-gradient(180deg, var(--card), var(--gold-pale)); border: 1.5px solid var(--gold); border-radius: var(--r-card); padding: 1.5rem; box-shadow: 0 8px 22px rgba(37,99,235,.1); }
         .cdp__progress-stats { display: flex; justify-content: space-between; margin-bottom: .875rem; }
-        .cdp__stat-label { font-size: .5375rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink3); margin-bottom: .25rem; }
-        .cdp__stat-val { font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 400; color: var(--ink); line-height: 1; }
+        .cdp__stat-label { font-size: .5875rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); margin-bottom: .25rem; font-weight: 600; }
+        .cdp__stat-val { font-family: var(--font-cormorant,serif); font-size: 2.25rem; font-weight: 600; color: var(--ink); line-height: 1; }
         .cdp__stat-val--gold { color: var(--gold); }
         .cdp__track { height: 6px; background: var(--track); border-radius: var(--r-pill); overflow: hidden; margin-bottom: .5rem; }
         .cdp__fill { height: 100%; background: var(--gold); border-radius: var(--r-pill); }

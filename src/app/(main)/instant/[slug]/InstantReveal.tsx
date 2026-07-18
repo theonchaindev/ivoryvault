@@ -23,6 +23,11 @@ const SEG_DATA: { win: boolean }[] = [
 const N = SEG_DATA.length
 const SEG = 360 / N
 
+// Vibrant casino-wheel segment colours (index 0 = top, going clockwise)
+const SEG_COLORS = ['#e23140', '#6c3ce0', '#f5871f', '#159fd0', '#33a852', '#f2b70c', '#c62bb0', '#2f57d8']
+const GOLD = '#e6b422'
+const BULBS = 16
+
 function polar(cx: number, cy: number, r: number, deg: number) {
   const rad = ((deg - 90) * Math.PI) / 180
   return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) }
@@ -38,7 +43,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
   const [rotation, setRotation] = useState(0)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<{ win: boolean; amount: number; kind: 'credit' | 'cash' } | null>(null)
-  const [highlight, setHighlight] = useState(0)
+  const [highlight, setHighlight] = useState(-1)
   const [error, setError] = useState('')
 
   const cx = 150, cy = 150, r = 146
@@ -102,48 +107,59 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         <div className="iw2-wheelbox">
           {/* Pin pointer */}
           <div className="iw2-pin">
-            <svg width="38" height="48" viewBox="0 0 40 50" fill="none"><path d="M20 49C20 49 34 29 34 17A14 14 0 1 0 6 17C6 29 20 49 20 49Z" fill="var(--gold)"/><circle cx="20" cy="17" r="6" fill="#fff"/></svg>
+            <svg width="40" height="50" viewBox="0 0 40 50" fill="none">
+              <path d="M20 49C20 49 34 29 34 17A14 14 0 1 0 6 17C6 29 20 49 20 49Z" fill={GOLD} stroke="#a9791c" strokeWidth="1.5"/>
+              <circle cx="20" cy="17" r="6" fill="#fff"/>
+            </svg>
           </div>
 
           {/* Wheel (centre anchored at box bottom) */}
           <div className="iw2-wheel-pos">
             <motion.div className="iw2-wheel" animate={{ rotate: rotation }} transition={{ duration: 4.2, ease: [0.16, 0.9, 0.2, 1] }}>
               <svg viewBox="0 0 300 300" width="100%" height="100%">
+                <defs>
+                  <linearGradient id="iw2gold" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#ffe9a8" />
+                    <stop offset=".5" stopColor="#e6b422" />
+                    <stop offset="1" stopColor="#a9791c" />
+                  </linearGradient>
+                </defs>
                 {SEG_DATA.map((s, i) => {
                   const mid = i * SEG + SEG / 2
                   const flip = mid > 90 && mid < 270
-                  const lp = polar(cx, cy, r * 0.66, mid)
-                  const hot = s.win && i === highlight
-                  const fill = s.win ? (hot ? '#2f6bf0' : '#e9f0fd') : (i % 2 ? '#f1f4f9' : '#e9edf3')
+                  const lp = polar(cx, cy, r * 0.62, mid)
+                  const hot = i === highlight
+                  const fill = SEG_COLORS[i % SEG_COLORS.length]
                   return (
                     <g key={i}>
-                      <path d={segPath(i, cx, cy, r)} fill={fill} stroke="#fff" strokeWidth="2.5" />
-                      <g transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`} textAnchor="middle" dominantBaseline="middle">
+                      <path d={segPath(i, cx, cy, r)} fill={fill} stroke={hot ? '#fff' : '#d9b64a'} strokeWidth={hot ? 3 : 1.5} />
+                      <g transform={`rotate(${flip ? mid + 90 : mid - 90} ${lp.x} ${lp.y})`} textAnchor="middle" dominantBaseline="middle" style={{ filter: 'drop-shadow(0 1px 1.5px rgba(0,0,0,.45))' }}>
                         {s.win ? (
-                          <text x={lp.x} y={lp.y} fill={hot ? '#fff' : '#1d4ed8'} fontSize="13" fontWeight="900" letterSpacing=".5">WINNER</text>
+                          <text x={lp.x} y={lp.y} fill="#fff" fontSize="13" fontWeight="900" letterSpacing=".5">WINNER</text>
                         ) : (
                           <>
-                            <text x={lp.x} y={lp.y - 5} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".3">NO</text>
-                            <text x={lp.x} y={lp.y + 8} fill="#aab6c8" fontSize="10.5" fontWeight="800" letterSpacing=".3">WINNER</text>
+                            <text x={lp.x} y={lp.y - 5} fill="#fff" fontSize="10.5" fontWeight="800" letterSpacing=".3">NO</text>
+                            <text x={lp.x} y={lp.y + 8} fill="#fff" fontSize="10.5" fontWeight="800" letterSpacing=".3">WIN</text>
                           </>
                         )}
                       </g>
                     </g>
                   )
                 })}
-                {/* rim dots */}
-                {Array.from({ length: N }).map((_, i) => {
-                  const p = polar(cx, cy, r - 6, i * SEG)
-                  return <circle key={i} cx={p.x} cy={p.y} r="2.4" fill="#c3d0e4" />
+                {/* gold rim + bulbs */}
+                <circle cx={cx} cy={cy} r={r - 5} fill="none" stroke="url(#iw2gold)" strokeWidth="10" />
+                <circle cx={cx} cy={cy} r={r - 10} fill="none" stroke="#8a6d1e" strokeWidth="1" opacity=".5" />
+                {Array.from({ length: BULBS }).map((_, i) => {
+                  const p = polar(cx, cy, r - 5, (360 / BULBS) * i)
+                  return <circle key={i} cx={p.x} cy={p.y} r="2.8" fill="#fff7dd" stroke="#a9791c" strokeWidth=".8" />
                 })}
-                <circle cx={cx} cy={cy} r={r} fill="none" stroke="#e4eaf2" strokeWidth="3" />
               </svg>
             </motion.div>
           </div>
 
-          {/* TAP TO SPIN hub button */}
+          {/* SPIN hub button */}
           <button className="iw2-tap" onClick={spin} disabled={spinning || spins < 1}>
-            {spinning ? <span className="iw2-tap-dots">…</span> : <><strong>TAP</strong><span>TO SPIN</span></>}
+            {spinning ? <span className="iw2-tap-dots">…</span> : <strong>SPIN!</strong>}
           </button>
         </div>
       </div>
@@ -212,13 +228,12 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         .iw2-pin { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); z-index: 5; filter: drop-shadow(0 3px 4px rgba(0,0,0,.18)); }
         .iw2-wheel-pos { position: absolute; left: 0; bottom: 0; width: 100%; aspect-ratio: 1; transform: translateY(50%); }
         .iw2-wheel { width: 100%; height: 100%; }
-        .iw2-tap { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); z-index: 6; width: 30%; max-width: 118px; aspect-ratio: 1; border-radius: 50%; background: #fff; border: 3px solid var(--gold-pale); box-shadow: 0 6px 18px rgba(20,28,42,.18); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: inherit; transition: transform .12s, border-color .2s; }
-        .iw2-tap:hover:not(:disabled) { transform: translate(-50%,50%) scale(1.05); border-color: var(--gold); }
+        .iw2-tap { position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 50%); z-index: 6; width: 30%; max-width: 118px; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 50% 38%, #ff5a5a, #d61f2b 62%, #a3121c); border: 5px solid #e6b422; box-shadow: 0 6px 18px rgba(20,28,42,.28), inset 0 2px 6px rgba(255,255,255,.35); cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: inherit; transition: transform .12s, filter .2s; }
+        .iw2-tap:hover:not(:disabled) { transform: translate(-50%,50%) scale(1.05); filter: brightness(1.08); }
         .iw2-tap:active:not(:disabled) { transform: translate(-50%,50%) scale(.96); }
-        .iw2-tap:disabled { cursor: default; }
-        .iw2-tap strong { font-size: clamp(.8rem,3vw,1.05rem); font-weight: 900; color: var(--ink); letter-spacing: .02em; }
-        .iw2-tap span { font-size: clamp(.42rem,1.6vw,.55rem); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
-        .iw2-tap-dots { font-size: 1.5rem; color: var(--gold); font-weight: 900; }
+        .iw2-tap:disabled { cursor: default; opacity: .85; }
+        .iw2-tap strong { font-size: clamp(.85rem,3.2vw,1.15rem); font-weight: 900; color: #fff; letter-spacing: .02em; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+        .iw2-tap-dots { font-size: 1.5rem; color: #fff; font-weight: 900; }
 
         /* Result banner */
         .iw2-banner { display: flex; align-items: center; gap: .875rem; text-align: left; margin: 1.25rem auto 0; padding: .875rem 1.125rem; border-radius: 14px; }

@@ -199,10 +199,10 @@ export default function TicketSelector({ competition }: Props) {
 
       <style>{`
         .ts {
-          background: var(--card); border: 1px solid var(--border);
-          border-radius: var(--r-card); padding: 1.5rem;
+          background: var(--card); border: 2px solid var(--gold);
+          border-radius: var(--r-card); padding: 1.75rem;
           display: flex; flex-direction: column; gap: 1.25rem;
-          box-shadow: var(--shadow-sm);
+          box-shadow: 0 14px 36px rgba(37,99,235,.16);
         }
         /* Close (X) + trigger + backdrop hidden on desktop */
         .ts__close { display: none; }
@@ -256,7 +256,7 @@ export default function TicketSelector({ competition }: Props) {
           .ts__max { display: none; }
         }
         .ts__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-        .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.5rem; font-weight: 500; color: var(--ink); }
+        .ts__title { font-family: var(--font-cormorant,serif); font-size: 1.875rem; font-weight: 600; color: var(--ink); }
         .ts__remaining { font-size: .625rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gold); font-weight: 600; white-space: nowrap; }
         .ts__closed { font-family: var(--font-cormorant,serif); font-size: 1.25rem; color: var(--ink3); text-align: center; padding: 1rem 0; }
         .ts__price-row { display: flex; justify-content: space-between; align-items: center; background: var(--gold-pale); border: 1px solid rgba(31,122,224,.25); border-radius: 10px; padding: .875rem 1rem; }
