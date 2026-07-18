@@ -7,7 +7,7 @@ const ease = [0.22, 1, 0.36, 1] as const
 const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
 
 const INFO = [
-  { icon: '✉', label: 'Email', value: 'hello@ivoryvault.co.uk' },
+  { icon: '✉', label: 'Email', value: 'support@ivoryvaultcompetitions.co.uk' },
   { icon: '⏱', label: 'Response Time', value: 'Within 24 hours' },
   { icon: '📍', label: 'Location', value: 'United Kingdom' },
 ]
