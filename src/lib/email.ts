@@ -95,6 +95,15 @@ export function sendInstantWinEmail(to: string, name: string, amount: number, ki
   return send({ to, subject: `You won ${money(amount)}${kind === 'cash' ? ' cash' : ''}! 🎉`, html: shell('Instant win!', body, { label: 'Go to My Account', href: `${SITE_URL}/account` }) })
 }
 
+/** Password reset link. */
+export function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
+  const body = `
+    <p style="margin:0 0 12px;">Hi ${esc(name.split(' ')[0] || name)}, we received a request to reset your Ivory Vault password.</p>
+    <p style="margin:0 0 12px;">Click the button below to choose a new password. This link expires in <strong>1 hour</strong>.</p>
+    <p style="margin:0;color:#6b7684;font-size:13px;">If you didn't request this, you can safely ignore this email — your password won't change.</p>`
+  return send({ to, subject: 'Reset your Ivory Vault password', html: shell('Password reset', body, { label: 'Reset Password', href: resetUrl }) })
+}
+
 /** Contact-form receipt — goes to support, replies route back to the sender. */
 export function sendContactReceipt(data: { name: string; email: string; subject?: string | null; message: string }) {
   const body = `

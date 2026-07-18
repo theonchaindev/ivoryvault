@@ -74,7 +74,12 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease, delay: 0.35 + i * 0.08 }}
               >
-                <label htmlFor={field.id} className="auth-label">{field.label}</label>
+                <div className="auth-label-row">
+                  <label htmlFor={field.id} className="auth-label">{field.label}</label>
+                  {field.key === 'password' && (
+                    <Link href="/forgot-password" className="auth-forgot-link">Forgot?</Link>
+                  )}
+                </div>
                 <input
                   id={field.id}
                   type={field.type}
@@ -139,6 +144,9 @@ export default function LoginPage() {
         .auth-sub { font-size: .85rem; color: var(--ink3); margin-bottom: 2rem; }
         .auth-form { display: flex; flex-direction: column; gap: 1.25rem; }
         .auth-label { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); margin-bottom: .5rem; }
+        .auth-label-row { display: flex; align-items: baseline; justify-content: space-between; }
+        .auth-forgot-link { font-size: .6875rem; color: var(--rg); text-decoration: none; font-weight: 500; }
+        .auth-forgot-link:hover { text-decoration: underline; }
         .auth-error { padding: .75rem 1rem; background: rgba(184,104,122,.08); border: 1px solid rgba(184,104,122,.2); color: #8a4f58; font-size: .85rem; overflow: hidden; }
         .auth-btn { width: 100%; margin-top: .25rem; }
         .auth-spinner-row { display: flex; align-items: center; justify-content: center; gap: .5rem; }

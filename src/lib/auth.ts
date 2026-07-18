@@ -46,3 +46,29 @@ export async function requireAdmin(): Promise<SessionPayload> {
   if (session.role !== 'admin') throw new Error('Forbidden')
   return session
 }
+
+// ── Password reset (stateless, signed) ────────────────────────────────
+// A short-lived JWT carrying the user id + a slice of the current password
+// hash. Because the slice changes when the password is reset, an old link
+// stops working after a successful reset. No DB table required.
+
+export function pwVersion(passwordHash: string): string {
+  return passwordHash.slice(-12)
+}
+
+export async function createResetToken(userId: string, pv: string): Promise<string> {
+  return new SignJWT({ userId, pv, purpose: 'pwreset' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('1h')
+    .sign(secret)
+}
+
+export async function verifyResetToken(token: string): Promise<{ userId: string; pv: string } | null> {
+  try {
+    const { payload } = await jwtVerify(token, secret)
+    if (payload.purpose !== 'pwreset' || typeof payload.userId !== 'string' || typeof payload.pv !== 'string') return null
+    return { userId: payload.userId, pv: payload.pv }
+  } catch {
+    return null
+  }
+}
