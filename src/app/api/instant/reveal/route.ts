@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { parsePrizes, prizeStatus, resolveOutcome, formatPrize, prizeKey } from '@/lib/instant'
+import { sendInstantWinEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,6 +80,12 @@ export async function POST(request: NextRequest) {
     })
 
     if ('error' in result) return NextResponse.json(result, { status: 409 })
+
+    // Win email (best-effort — never blocks the response)
+    if (result.win && result.amount > 0 && session.email) {
+      void sendInstantWinEmail(session.email, session.name || 'there', result.amount, result.kind)
+    }
+
     return NextResponse.json(result)
   } catch (err) {
     console.error('Instant reveal error:', err)

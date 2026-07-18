@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { createSession } from '@/lib/auth'
+import { sendWelcomeEmail } from '@/lib/email'
 import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
@@ -31,6 +32,9 @@ export async function POST(request: NextRequest) {
         role: 'user',
       },
     })
+
+    // Welcome email (best-effort — never blocks signup)
+    void sendWelcomeEmail(user.email, user.name)
 
     const token = await createSession({
       userId: user.id,

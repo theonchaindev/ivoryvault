@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendContactReceipt } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,9 @@ export async function POST(request: NextRequest) {
     const contact = await prisma.contact.create({
       data: { name, email, subject: subject || null, message },
     })
+
+    // Notify support (best-effort — never blocks the submission)
+    void sendContactReceipt({ name, email, subject, message })
 
     return NextResponse.json({ success: true, id: contact.id }, { status: 201 })
   } catch (error) {
