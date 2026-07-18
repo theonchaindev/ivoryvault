@@ -264,11 +264,11 @@ a { color: inherit; }
   border-radius: var(--r-card);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border);
+  border: 1.5px solid var(--gold);
   transition: transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s, border-color .3s;
   display: flex; flex-direction: column; height: 100%;
 }
-.cc:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--gold); }
+.cc:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); border-color: var(--gold-d); }
 .cc__link { display: flex; flex-direction: column; text-decoration: none; flex: 1; }
 .cc__img-wrap { position: relative; aspect-ratio: 1/1; overflow: hidden; background: var(--bg2); border-radius: var(--r-card) var(--r-card) 0 0; }
 .cc__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.22,1,.36,1); }

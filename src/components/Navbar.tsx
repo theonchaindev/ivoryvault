@@ -114,11 +114,6 @@ export default function Navbar() {
                 <Image src="/logo.png" alt="Ivory Vault" width={92} height={92} />
                 <span className="nav__drawer-logo-text">IVORY VAULT</span>
               </div>
-              {user && (
-                <Link href="/account" onClick={() => setOpen(false)} className="nav__drawer-credit">
-                  <span>Site Credit</span> £{(user.siteCredit ?? 0).toFixed(2)}
-                </Link>
-              )}
               <nav>
                 {[{ href: '/', label: 'Home' }, ...NAV].map((l, i) => (
                   <motion.div key={l.href} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * .06 }}>

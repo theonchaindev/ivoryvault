@@ -13,11 +13,10 @@ export default function Footer() {
               <Image src="/logo.png" alt="Ivory Vault" width={52} height={52} />
               <div className="site-footer__logo-text">
                 <span>IVORY VAULT</span>
-                <span className="site-footer__logo-sub">Luxury Rewards. Elevated.</span>
               </div>
             </div>
             <p className="site-footer__tagline">Where luxury meets chance</p>
-            <p className="site-footer__desc">Premium prize competitions for watches, cash & electronics. UK regulated, fully transparent draws.</p>
+            <p className="site-footer__desc">Luxury competitions with extraordinary prizes. From everyday rewards to once-in-a-lifetime experiences. UK regulated and fully transparent.</p>
             <div className="site-footer__badge">
               <span className="site-footer__badge-dot" />
               UK Competition Law Compliant

@@ -163,7 +163,7 @@ export default function FeaturedGrid({ competitions }: { competitions: Comp[] })
         .fg-card__from { font-size: .5rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); }
         .fg-card__price { font-family: var(--font-cormorant,serif); font-size: 1.375rem; font-weight: 500; color: var(--ink); }
         .fg-card__per { font-size: .5rem; color: var(--ink3); }
-        .fg-card__cta { font-size: .5875rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; color: var(--rg); display: inline-block; }
+        .fg-card__cta { font-size: .5875rem; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; color: var(--ink); display: inline-block; }
       `}</style>
     </section>
   )
