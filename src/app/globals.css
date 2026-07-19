@@ -302,6 +302,14 @@ a { color: inherit; }
 }
 .cc:hover .cc__enter-btn { background: var(--gold-d); box-shadow: 0 6px 18px rgba(37,99,235,.3); }
 
+/* Coming soon variant */
+.cc--soon { cursor: default; }
+.cc--soon:hover { transform: none; box-shadow: var(--shadow-sm); border-color: var(--gold); }
+.cc__soon-tag { position: absolute; top: .75rem; left: .75rem; z-index: 2; background: var(--ink); color: #fff; font-size: .5rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; padding: .35rem .75rem; border-radius: var(--r-pill); }
+.cc__soon-text { font-size: .8125rem; color: var(--ink3); line-height: 1.5; margin: .25rem 0 auto; }
+.cc__enter-btn--soon { background: var(--bg2); color: var(--ink3); cursor: default; margin-top: 1rem; }
+.cc--soon:hover .cc__enter-btn--soon { background: var(--bg2); box-shadow: none; }
+
 /* ═══════════════════════════════════════════════
    COUNTDOWN TIMER
 ═══════════════════════════════════════════════ */

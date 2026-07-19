@@ -21,6 +21,30 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
   const pct = Math.min(100, Math.round((c.ticketsSold / c.maxTickets) * 100))
   const remaining = c.maxTickets - c.ticketsSold
   const hot = pct >= 80
+  const comingSoon = c.status === 'coming_soon'
+
+  // ── Coming soon: graphic + label, not clickable ──
+  if (comingSoon) {
+    return (
+      <motion.article
+        ref={ref}
+        className="cc cc--soon"
+        initial={{ opacity: 0, y: 24 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
+      >
+        <div className="cc__img-wrap">
+          {img ? <img src={img} alt="Coming soon" className="cc__img" /> : <div className="cc__placeholder" />}
+          <span className="cc__soon-tag">Coming Soon</span>
+        </div>
+        <div className="cc__body">
+          <h3 className="cc__title">{c.title}</h3>
+          <p className="cc__soon-text">A new competition is dropping soon — stay tuned.</p>
+          <span className="cc__enter-btn cc__enter-btn--soon">Coming Soon</span>
+        </div>
+      </motion.article>
+    )
+  }
 
   return (
     <motion.article

@@ -5,7 +5,7 @@ import CompetitionsClient from './CompetitionsClient'
 
 async function getCompetitions() {
   try {
-    return await prisma.competition.findMany({ where: { status: 'active' }, orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }] })
+    return await prisma.competition.findMany({ where: { status: { in: ['active', 'coming_soon'] } }, orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }] })
   } catch { return [] }
 }
 

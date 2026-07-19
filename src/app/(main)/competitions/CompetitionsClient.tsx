@@ -26,7 +26,7 @@ export default function CompetitionsClient({ competitions }: { competitions: Com
           transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
           <div>
-            <p className="section-head__label">Live Now — {competitions.length} Active</p>
+            <p className="section-head__label">Live Now — {competitions.filter(c => c.status === 'active').length} Active</p>
             <h1 className="section-head__title">All Competitions</h1>
           </div>
         </motion.div>
