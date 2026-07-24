@@ -75,7 +75,13 @@ export async function DELETE(
     await requireAdmin()
     const { id } = await params
 
-    await prisma.competition.delete({ where: { id } })
+    // Cascade — remove dependent rows first so a comp with entries can be deleted.
+    await prisma.$transaction([
+      prisma.ticket.deleteMany({ where: { competitionId: id } }),
+      prisma.instantSpin.deleteMany({ where: { competitionId: id } }),
+      prisma.winner.deleteMany({ where: { competitionId: id } }),
+      prisma.competition.delete({ where: { id } }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (err) {
