@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useState } from 'react'
 import CountdownTimer from '@/components/CountdownTimer'
 import TicketSelector from './TicketSelector'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/utils'
 
 interface Competition {
   id: string; slug: string; title: string; subtitle?: string | null
@@ -52,13 +52,6 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
             </AnimatePresence>
 
             {hot && <span className="cdp__hot">🔥 Selling Fast</span>}
-
-            {!isInstant && (
-              <div className="cdp__prize-chip">
-                <span className="cdp__prize-chip-label">Prize Value</span>
-                <span className="cdp__prize-chip-val">{formatCurrency(competition.prizeValue)}</span>
-              </div>
-            )}
           </div>
 
           {/* Thumbnails */}
