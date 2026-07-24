@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { SOCIAL } from '@/lib/social'
 
 const ease = [0.22, 1, 0.36, 1] as const
 const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
@@ -86,6 +87,18 @@ export default function ContactPage() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+
+            <div className="cp__social">
+              <p className="cp__social-label">Follow Us</p>
+              <div className="cp__social-icons">
+                <a href={SOCIAL.facebook} target="_blank" rel="noopener noreferrer" aria-label="Ivory Vault on Facebook">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13.5 22v-8h2.7l.4-3.1h-3.1V8.9c0-.9.25-1.5 1.53-1.5H16.7V4.7c-.3 0-1.32-.1-2.5-.1-2.47 0-4.16 1.5-4.16 4.28v2.02H7.3V14h2.74v8h3.46Z"/></svg>
+                </a>
+                <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" aria-label="Ivory Vault on Instagram">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+                </a>
+              </div>
             </div>
           </motion.div>
 
@@ -191,6 +204,11 @@ export default function ContactPage() {
         .cp__grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.6fr); gap: clamp(3rem,5vw,5rem); align-items: start; }
         .cp__info-title { font-family: var(--font-cormorant,serif); font-size: clamp(1.5rem,3vw,2rem); font-weight: 400; color: var(--ink); margin-bottom: 1.25rem; }
         .cp__info-body { font-size: .9rem; color: var(--ink2); line-height: 1.8; margin-bottom: 2.5rem; }
+        .cp__social { margin-top: 2.5rem; }
+        .cp__social-label { font-size: .5875rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink3); font-weight: 700; margin-bottom: .875rem; }
+        .cp__social-icons { display: flex; gap: .75rem; }
+        .cp__social-icons a { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 50%; color: var(--ink2); transition: background .2s, border-color .2s, color .2s, transform .15s; }
+        .cp__social-icons a:hover { background: var(--gold); border-color: var(--gold); color: #fff; transform: translateY(-2px); }
         .cp__contacts { display: flex; flex-direction: column; gap: 1.75rem; }
         .cp__contact-item { display: flex; gap: 1rem; align-items: flex-start; }
         .cp__contact-icon { font-size: 1.25rem; margin-top: 2px; flex-shrink: 0; }
