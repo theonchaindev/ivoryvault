@@ -13,8 +13,9 @@ export async function GET() {
         name: true,
         email: true,
         role: true,
+        siteCredit: true,
         createdAt: true,
-        _count: { select: { tickets: true } },
+        _count: { select: { tickets: true, instantSpins: true } },
       },
     })
 
