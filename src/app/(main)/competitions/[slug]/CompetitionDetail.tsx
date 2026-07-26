@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'motion/react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import CountdownTimer from '@/components/CountdownTimer'
 import TicketSelector from './TicketSelector'
 import { formatDate } from '@/lib/utils'
@@ -20,6 +20,20 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
   const remaining = competition.maxTickets - competition.ticketsSold
   const pct = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
   const hot = pct >= 80
+
+  // Mobile: an in-page "Enter Now" button opens the ticket sheet; the sticky
+  // bottom bar only appears once that button has scrolled out of view.
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const enterBtnRef = useRef<HTMLButtonElement>(null)
+  const [topEnterVisible, setTopEnterVisible] = useState(true)
+
+  useEffect(() => {
+    const el = enterBtnRef.current
+    if (!el) return
+    const io = new IntersectionObserver(([entry]) => setTopEnterVisible(entry.isIntersecting), { threshold: 0 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
 
   return (
     <div className={"cdp"}>
@@ -70,6 +84,13 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
                 </motion.button>
               ))}
             </div>
+          )}
+
+          {/* Mobile-only Enter Now button, above the countdown */}
+          {competition.status === 'active' && (
+            <button ref={enterBtnRef} className="cdp__mobile-enter" onClick={() => setSheetOpen(true)}>
+              Enter Now
+            </button>
           )}
 
           {/* Draw info card */}
@@ -128,16 +149,20 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
           </div>
 
           {/* Ticket selector */}
-          <TicketSelector competition={{
-            id: competition.id,
-            slug: competition.slug,
-            title: competition.title,
-            image: competition.images[0] ?? null,
-            ticketPrice: competition.ticketPrice,
-            maxTickets: competition.maxTickets,
-            ticketsSold: competition.ticketsSold,
-            status: competition.status,
-          }} />
+          <TicketSelector
+            open={sheetOpen}
+            onOpenChange={setSheetOpen}
+            hideTrigger={topEnterVisible}
+            competition={{
+              id: competition.id,
+              slug: competition.slug,
+              title: competition.title,
+              image: competition.images[0] ?? null,
+              ticketPrice: competition.ticketPrice,
+              maxTickets: competition.maxTickets,
+              ticketsSold: competition.ticketsSold,
+              status: competition.status,
+            }} />
 
           {/* Description */}
           <div className="cdp__desc-card">
@@ -224,6 +249,17 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
         .cdp__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
         /* Draw info */
+        /* Mobile-only in-page Enter Now button (above the countdown) */
+        .cdp__mobile-enter { display: none; }
+        @media (max-width: 860px) {
+          .cdp__mobile-enter {
+            display: block; width: 100%; background: var(--gold); color: #fff; border: none; cursor: pointer;
+            font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+            padding: 1rem; border-radius: var(--r-btn); box-shadow: 0 8px 22px rgba(37,99,235,.28);
+            transition: background .2s, transform .15s;
+          }
+          .cdp__mobile-enter:active { transform: scale(.98); background: var(--gold-d); }
+        }
         .cdp__draw-info { background: var(--card); border: 1px solid var(--border); border-radius: var(--r-card); padding: 1.25rem; }
         .cdp__draw-label { font-size: .5375rem; letter-spacing: .16em; text-transform: uppercase; color: var(--ink3); margin-bottom: .75rem; font-weight: 500; }
         .cdp__draw-date { font-size: .8125rem; color: var(--ink3); margin-top: .75rem; }

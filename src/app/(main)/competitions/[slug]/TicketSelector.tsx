@@ -11,17 +11,22 @@ interface Props {
     id: string; slug: string; title: string; image: string | null; ticketPrice: number
     maxTickets: number; ticketsSold: number; status: string
   }
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  hideTrigger?: boolean
 }
 
 const spring = { type: 'spring', stiffness: 400, damping: 28 } as const
 const ease = [0.22, 1, 0.36, 1] as const
 
-export default function TicketSelector({ competition }: Props) {
+export default function TicketSelector({ competition, open: controlledOpen, onOpenChange, hideTrigger = false }: Props) {
   const router = useRouter()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
-  const [open, setOpen] = useState(false)   // mobile sheet open/closed
+  const [internalOpen, setInternalOpen] = useState(false)   // mobile sheet open/closed
+  const open = controlledOpen ?? internalOpen
+  const setOpen = (v: boolean) => { if (onOpenChange) onOpenChange(v); else setInternalOpen(v) }
 
   const remaining = competition.maxTickets - competition.ticketsSold
   const maxSelect = Math.min(remaining, 50)
@@ -66,8 +71,8 @@ export default function TicketSelector({ competition }: Props) {
 
   return (
     <>
-      {/* Mobile trigger — opens the sheet */}
-      {!open && (
+      {/* Mobile trigger — opens the sheet (hidden while the in-page Enter Now button is visible) */}
+      {!open && !hideTrigger && (
         <button className="ts-trigger" onClick={() => setOpen(true)}>
           Enter This Competition
           <span className="ts-trigger__price">from {formatCurrency(competition.ticketPrice)}</span>

@@ -82,6 +82,19 @@ a { color: inherit; }
   transition: background .2s, transform .15s, box-shadow .2s;
   white-space: nowrap;
 }
+
+/* Primary CTA — matches the Enter Now buttons (used on auth pages) */
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--gold); color: #fff;
+  font-size: .8125rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  padding: 1rem 2rem; border-radius: var(--r-btn);
+  text-decoration: none; border: none; cursor: pointer;
+  box-shadow: 0 8px 22px rgba(37,99,235,.28);
+  transition: background .2s, transform .15s, box-shadow .2s;
+}
+.btn-primary:hover:not(:disabled) { background: var(--gold-d); transform: translateY(-1px); box-shadow: 0 10px 26px rgba(37,99,235,.36); }
+.btn-primary:disabled { opacity: .7; cursor: default; }
 .btn-gold:hover { background: var(--gold-d); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(31,122,224,.35); }
 
 .btn-dark {
