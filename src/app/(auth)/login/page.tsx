@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
@@ -8,11 +8,25 @@ import { motion, AnimatePresence } from 'motion/react'
 const ease = [0.22, 1, 0.36, 1] as const
 const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
 
+// Only allow internal redirects (e.g. /basket), never external URLs.
+function safeFrom(): string {
+  if (typeof window === 'undefined') return '/'
+  const from = new URLSearchParams(window.location.search).get('from')
+  return from && from.startsWith('/') && !from.startsWith('//') ? from : '/'
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fromQuery, setFromQuery] = useState('')
+
+  // Preserve ?from across the "Sign up" link so the basket flow survives switching pages.
+  useEffect(() => {
+    const dest = safeFrom()
+    if (dest !== '/') setFromQuery(`?from=${encodeURIComponent(dest)}`)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -25,7 +39,7 @@ export default function LoginPage() {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Login failed'); return }
-      router.push('/'); router.refresh()
+      router.push(safeFrom()); router.refresh()
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -126,7 +140,7 @@ export default function LoginPage() {
           <div className="auth-divider">
             <p className="auth-foot-text">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="auth-foot-link">Sign up</Link>
+              <Link href={`/signup${fromQuery}`} className="auth-foot-link">Sign up</Link>
             </p>
           </div>
         </motion.div>

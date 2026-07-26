@@ -1,12 +1,19 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'motion/react'
 
 const ease = [0.22, 1, 0.36, 1] as const
 const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
+
+// Only allow internal redirects (e.g. /basket), never external URLs.
+function safeFrom(): string {
+  if (typeof window === 'undefined') return '/'
+  const from = new URLSearchParams(window.location.search).get('from')
+  return from && from.startsWith('/') && !from.startsWith('//') ? from : '/'
+}
 
 const fields = [
   { id: 'name', label: 'Full Name', type: 'text', placeholder: 'Your name', key: 'name' as const },
@@ -20,6 +27,13 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fromQuery, setFromQuery] = useState('')
+
+  // Preserve ?from across the "Sign in" link so the basket flow survives switching pages.
+  useEffect(() => {
+    const dest = safeFrom()
+    if (dest !== '/') setFromQuery(`?from=${encodeURIComponent(dest)}`)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,8 +49,8 @@ export default function SignupPage() {
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Signup failed'); return }
-      // New members land on the homepage
-      router.push('/'); router.refresh()
+      // Land back where they came from (e.g. their basket), else the homepage
+      router.push(safeFrom()); router.refresh()
     } catch {
       setError('Something went wrong. Please try again.')
     } finally {
@@ -137,7 +151,7 @@ export default function SignupPage() {
           <div className="auth-divider">
             <p className="auth-foot-text">
               Already have an account?{' '}
-              <Link href="/login" className="auth-foot-link">Sign in</Link>
+              <Link href={`/login${fromQuery}`} className="auth-foot-link">Sign in</Link>
             </p>
           </div>
         </motion.div>
