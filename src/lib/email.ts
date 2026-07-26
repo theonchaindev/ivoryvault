@@ -97,6 +97,16 @@ export function sendWelcomeEmail(to: string, name: string) {
   return send({ to, subject: 'Welcome to Ivory Vault', html: shell(`YOU'RE <span style="color:#2f6bf0;">IN!</span> 🎉`, body, { label: 'View Competitions', href: `${SITE_URL}/competitions` }) })
 }
 
+/** Internal alert to the team when a new member signs up. */
+export function sendNewSignupAlert(name: string, email: string) {
+  const body = `
+    <p style="margin:0 0 12px;">A new member just created an account:</p>
+    <p style="margin:0 0 6px;"><strong style="color:#fff;">Name:</strong> ${esc(name)}</p>
+    <p style="margin:0 0 6px;"><strong style="color:#fff;">Email:</strong> ${esc(email)}</p>
+    <p style="margin:0;color:${FOOT};font-size:13px;">${new Date().toUTCString()}</p>`
+  return send({ to: SUPPORT_EMAIL, subject: `New signup — ${name}`, html: shell('New member 🎉', body, undefined, { badges: false }) })
+}
+
 /** Order confirmation after a successful checkout. */
 export function sendPurchaseConfirmation(to: string, name: string, items: { title: string; qty: number }[], total: number) {
   const rows = items.map(i => `

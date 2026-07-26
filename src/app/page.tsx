@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import CompetitionCard from '@/components/CompetitionCard'
 import HomeHero from '@/components/HomeHero'
+import GiveawayBanner from '@/components/GiveawayBanner'
 import HowItWorks from '@/components/HowItWorks'
 // import StatsCounter from '@/components/StatsCounter' // hidden for now
 import WinnerCard from '@/components/WinnerCard'
@@ -74,6 +75,7 @@ export default async function Home() {
 
       {/* Crystal Comps-style carousel hero */}
       <div style={{ paddingTop: '68px' }}>
+        <GiveawayBanner />
         <HomeHero comps={heroComps} />
       </div>
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { SOCIAL } from '@/lib/social'
 
 // Temporary promo banner — remove this component (and its use in the (main)
 // layout) once the giveaway ends.
@@ -58,7 +57,7 @@ export default function GiveawayBanner() {
             <p className="gwm__prizes"><b>3</b> PRIZES. <b>3</b> WINNERS.</p>
             <p className="gwm__ann">Winners announced 12th August live on <b className="b">Instagram</b>.</p>
 
-            <a href={SOCIAL.instagram} target="_blank" rel="noopener noreferrer" className="gwm__cta">
+            <a href="/api/giveaway" target="_blank" rel="noopener noreferrer" className="gwm__cta">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.8"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
               View Giveaway Post
             </a>
@@ -68,15 +67,14 @@ export default function GiveawayBanner() {
 
       <style>{`
         /* ── Banner ── */
-        .gwb { position: relative; z-index: 1; display: flex; align-items: center; gap: .75rem; width: 100%; border: none; cursor: pointer;
-          background: linear-gradient(90deg,#15307a,#2a4fbf); color: #fff; padding: .7rem 1rem; overflow: hidden;
+        .gwb { position: relative; z-index: 1; display: flex; align-items: center; gap: .85rem; width: 100%; border: none; cursor: pointer;
+          background: linear-gradient(90deg,#15307a,#2a4fbf); color: #fff; padding: .9rem 1.1rem; overflow: hidden;
           border-top: 1px solid rgba(255,255,255,.1); border-bottom: 1px solid rgba(0,0,0,.25); font-family: inherit; }
-        .gwb::before, .gwb::after { content: ''; position: absolute; top: 0; bottom: 0; width: 42px; z-index: 2; pointer-events: none; }
-        .gwb::before { left: 34px; background: linear-gradient(90deg,#1b378f,rgba(27,55,143,0)); }
-        .gwb::after { right: 34px; background: linear-gradient(270deg,#274ab3,rgba(39,74,179,0)); }
-        .gwb__gift { flex-shrink: 0; font-size: 1.15rem; filter: drop-shadow(0 0 6px rgba(230,180,34,.6)); }
+        .gwb__gift { flex-shrink: 0; font-size: 1.2rem; line-height: 1; filter: drop-shadow(0 0 6px rgba(230,180,34,.6)); }
         .gwb__arrow { flex-shrink: 0; font-size: 1.5rem; font-weight: 700; color: #ffd873; line-height: 1; }
-        .gwb__marquee { flex: 1; overflow: hidden; -webkit-mask-image: none; }
+        .gwb__marquee { flex: 1; overflow: hidden;
+          -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 6%, #000 94%, transparent 100%); }
         .gwb__track { display: inline-flex; white-space: nowrap; will-change: transform; animation: gwb-scroll 22s linear infinite; }
         .gwb__item { display: inline-flex; align-items: center; font-size: .8125rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
         .gwb__sep { color: #ffd873; margin: 0 1.5rem; font-size: .7rem; }

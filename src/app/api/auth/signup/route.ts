@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { createSession } from '@/lib/auth'
-import { sendWelcomeEmail } from '@/lib/email'
+import { sendWelcomeEmail, sendNewSignupAlert } from '@/lib/email'
 import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
@@ -33,8 +33,9 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Welcome email — runs after the response is sent, so it can't be killed early.
+    // Emails — run after the response is sent, so they can't be killed early.
     after(() => sendWelcomeEmail(user.email, user.name))
+    after(() => sendNewSignupAlert(user.name, user.email))
 
     const token = await createSession({
       userId: user.id,
