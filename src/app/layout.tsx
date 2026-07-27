@@ -1,7 +1,10 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import { Montserrat, Cinzel } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/context/CartContext'
+
+const GA_ID = 'G-VY0D6ECGYP'
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -26,6 +29,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${montserrat.variable} ${cinzel.variable}`}>
       <body style={{ fontFamily: 'var(--font-montserrat), system-ui, sans-serif' }}>
         <CartProvider>{children}</CartProvider>
+
+        {/* Google Analytics (gtag.js) */}
+        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${GA_ID}');`}
+        </Script>
       </body>
     </html>
   )
