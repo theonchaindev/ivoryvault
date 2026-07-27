@@ -29,19 +29,15 @@ export default function EntrantsViewer() {
       .finally(() => setLoading(false))
   }, [])
 
-  const th: React.CSSProperties = { textAlign: 'left', padding: '.75rem 1rem', fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', borderBottom: '1px solid var(--border)' }
-  const td: React.CSSProperties = { padding: '.75rem 1rem', borderBottom: '1px solid var(--border)', fontSize: '.85rem' }
-
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: 'clamp(1.5rem,4vw,3rem)', fontFamily: 'var(--font-montserrat), system-ui, sans-serif' }}>
-      <div style={{ maxWidth: '820px', margin: '0 auto' }}>
+    <div className="ent">
+      <div className="ent__inner">
         <div style={{ marginBottom: '1.5rem' }}>
           <div style={{ fontFamily: 'var(--font-cinzel), Georgia, serif', fontSize: '1.4rem', letterSpacing: '.14em', color: 'var(--ink)' }}>IVORY VAULT</div>
           <p style={{ color: 'var(--ink3)', fontSize: '.85rem', marginTop: '.25rem' }}>Competition entrants — read only</p>
         </div>
 
-        <select value={selected} onChange={e => load(e.target.value)}
-          style={{ width: '100%', maxWidth: '460px', padding: '.75rem 1rem', borderRadius: '10px', border: '1px solid var(--border)', background: '#fff', fontSize: '.9rem', fontFamily: 'inherit', marginBottom: '1.25rem' }}>
+        <select className="ent__select" value={selected} onChange={e => load(e.target.value)}>
           <option value="">Select a competition…</option>
           {comps.map(c => (
             <option key={c.id} value={c.id}>{c.title}{c.status !== 'active' ? ` (${c.status})` : ''}</option>
@@ -54,30 +50,27 @@ export default function EntrantsViewer() {
           </p>
         )}
 
-        <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden' }}>
+        <div className="ent__card">
           {loading ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--ink3)' }}>Loading…</div>
+            <div className="ent__empty">Loading…</div>
           ) : !selected ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--ink3)' }}>Choose a competition above to see who&apos;s entered.</div>
+            <div className="ent__empty">Choose a competition above to see who&apos;s entered.</div>
           ) : entrants.length === 0 ? (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--ink3)' }}>No entrants yet for this competition.</div>
+            <div className="ent__empty">No entrants yet for this competition.</div>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table className="ent__table">
               <thead>
                 <tr>
-                  <th style={th}>Name</th>
-                  <th style={th}>Email</th>
-                  <th style={th}>Entries</th>
-                  <th style={th}>First entry</th>
+                  <th>Name</th><th>Email</th><th>Entries</th><th>First entry</th>
                 </tr>
               </thead>
               <tbody>
                 {entrants.map((e, i) => (
                   <tr key={i}>
-                    <td style={{ ...td, color: 'var(--ink)', fontWeight: 500 }}>{e.name}</td>
-                    <td style={{ ...td, color: 'var(--ink3)', fontFamily: 'monospace', fontSize: '.78rem' }}>{e.email}</td>
-                    <td style={{ ...td, color: 'var(--ink)', fontWeight: 600 }}>{e.entries}</td>
-                    <td style={{ ...td, color: 'var(--ink3)', fontSize: '.78rem' }}>{date(e.first)}</td>
+                    <td data-label="Name" className="ent__name">{e.name}</td>
+                    <td data-label="Email" className="ent__email">{e.email}</td>
+                    <td data-label="Entries" className="ent__entries">{e.entries}</td>
+                    <td data-label="First entry" className="ent__date">{date(e.first)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -89,6 +82,30 @@ export default function EntrantsViewer() {
           Emails are partially masked for privacy. This page is read-only and shared under a separate access password.
         </p>
       </div>
+
+      <style>{`
+        .ent { min-height: 100vh; background: var(--bg); padding: clamp(1.25rem,4vw,3rem); font-family: var(--font-montserrat), system-ui, sans-serif; }
+        .ent__inner { max-width: 820px; margin: 0 auto; }
+        .ent__select { width: 100%; max-width: 460px; padding: .75rem 1rem; border-radius: 10px; border: 1px solid var(--border); background: #fff; font-size: .9rem; font-family: inherit; margin-bottom: 1.25rem; }
+        .ent__card { background: #fff; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .ent__empty { padding: 3rem; text-align: center; color: var(--ink3); }
+        .ent__table { width: 100%; border-collapse: collapse; }
+        .ent__table th { text-align: left; padding: .75rem 1rem; font-size: .62rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); border-bottom: 1px solid var(--border); }
+        .ent__table td { padding: .75rem 1rem; border-bottom: 1px solid var(--border); font-size: .85rem; }
+        .ent__name { color: var(--ink); font-weight: 500; }
+        .ent__email { color: var(--ink3); font-family: monospace; font-size: .78rem; word-break: break-all; }
+        .ent__entries { color: var(--ink); font-weight: 700; }
+        .ent__date { color: var(--ink3); font-size: .78rem; }
+
+        /* Mobile: stack each entrant into a labelled card so nothing is clipped */
+        @media (max-width: 620px) {
+          .ent__table thead { display: none; }
+          .ent__table tbody tr { display: block; padding: .5rem 0; border-bottom: 6px solid var(--bg2); }
+          .ent__table td { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .4rem 1rem; border: none; text-align: right; }
+          .ent__table td::before { content: attr(data-label); font-size: .6rem; letter-spacing: .08em; text-transform: uppercase; color: var(--ink3); font-weight: 700; text-align: left; }
+          .ent__entries { font-size: 1.05rem; }
+        }
+      `}</style>
     </div>
   )
 }
