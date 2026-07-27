@@ -72,3 +72,21 @@ export async function verifyResetToken(token: string): Promise<{ userId: string;
     return null
   }
 }
+
+// ── Entrants viewer (password-gated read-only page) ───────────────────
+export async function createEntrantsToken(): Promise<string> {
+  return new SignJWT({ scope: 'entrants' })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setExpirationTime('7d')
+    .sign(secret)
+}
+
+export async function verifyEntrantsToken(token: string | undefined): Promise<boolean> {
+  if (!token) return false
+  try {
+    const { payload } = await jwtVerify(token, secret)
+    return payload.scope === 'entrants'
+  } catch {
+    return false
+  }
+}
