@@ -19,7 +19,8 @@ export async function GET(request: NextRequest) {
   }
 
   const competitions = await prisma.competition.findMany({
-    orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+    where: { status: 'active' },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     select: { id: true, title: true, type: true, ticketsSold: true, status: true },
   })
 
