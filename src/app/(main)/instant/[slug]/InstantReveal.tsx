@@ -81,8 +81,6 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
     }
   }
 
-  const totalPrizeCount = status.reduce((s, t) => s + t.total, 0)
-  const prizesLeft = status.reduce((s, t) => s + t.left, 0)
 
   return (
     <div className="ir">
@@ -184,28 +182,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         </div>
       )}
 
-      {/* Prizes available */}
-      {totalPrizeCount > 0 && (
-        <div className="ir__prizes">
-          <div className="ir__prizes-head">
-            <p className="ir__prizes-title">Prizes Available</p>
-            <span className="ir__prizes-meta">{prizesLeft} of {totalPrizeCount} left</span>
-          </div>
-          <ul className="ir__prize-list">
-            {status.map(t => (
-              <li key={`${t.amount}:${t.kind}`} className={`ir__prize-row${t.left === 0 ? ' gone' : ''}`}>
-                <span className="ir__prize-amt">
-                  {formatPrize(t.amount)}
-                  <span className={`ir__prize-kind ${t.kind}`}>{t.kind === 'cash' ? 'cash' : 'credit'}</span>
-                </span>
-                <span className="ir__prize-bar"><span className="ir__prize-bar-fill" style={{ width: `${(t.left / t.total) * 100}%` }} /></span>
-                <span className="ir__prize-count">{t.left} / {t.total} to be won</span>
-              </li>
-            ))}
-          </ul>
-          <p className="ir__prizes-foot">Prizes and odds may vary. Rewards are non-transferable.</p>
-        </div>
-      )}
+      {/* Prize breakdown intentionally hidden from customers — pool logic still runs server-side. */}
 
       <style>{`
         .ir { max-width: 560px; margin: 0 auto; padding: 2.5rem clamp(1.25rem,3vw,2rem) 4rem; text-align: center; }
