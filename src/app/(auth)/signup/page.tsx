@@ -28,6 +28,7 @@ export default function SignupPage() {
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [agreed, setAgreed] = useState(false)
   const [fromQuery, setFromQuery] = useState('')
 
   // Preserve ?from across the "Sign in" link so the basket flow survives switching pages.
@@ -41,6 +42,7 @@ export default function SignupPage() {
     setError('')
     if (form.password !== form.confirm) { setError('Passwords do not match'); return }
     if (form.password.length < 8) { setError('Password must be at least 8 characters'); return }
+    if (!agreed) { setError('Please confirm you are 18 or over and agree to the Terms and Privacy Policy'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/signup', {
@@ -129,23 +131,26 @@ export default function SignupPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease, delay: 0.7 }}
             >
+              <label className="auth-agree">
+                <input type="checkbox" checked={agreed} onChange={e => setAgreed(e.target.checked)} />
+                <span>I confirm I am 18 or over and agree to the{' '}
+                  <Link href="/terms" className="auth-terms-link">Terms &amp; Conditions</Link> and{' '}
+                  <Link href="/privacy" className="auth-terms-link">Privacy Policy</Link>.
+                </span>
+              </label>
               <motion.button
                 type="submit"
                 className="btn-primary auth-btn"
-                disabled={loading}
-                whileHover={!loading ? { scale: 1.02 } : {}}
-                whileTap={!loading ? { scale: 0.98 } : {}}
+                disabled={loading || !agreed}
+                whileHover={!loading && agreed ? { scale: 1.02 } : {}}
+                whileTap={!loading && agreed ? { scale: 0.98 } : {}}
                 transition={spring}
-                style={{ opacity: loading ? 0.7 : 1, transitionProperty: 'opacity' }}
+                style={{ opacity: loading || !agreed ? 0.6 : 1, transitionProperty: 'opacity' }}
               >
                 {loading ? (
                   <span className="auth-spinner-row"><span className="auth-spinner" /> Creating Account...</span>
                 ) : 'Create Account'}
               </motion.button>
-              <p className="auth-terms">
-                By signing up you agree to our{' '}
-                <Link href="/terms" className="auth-terms-link">Terms & Conditions</Link>
-              </p>
             </motion.div>
           </form>
 
@@ -172,9 +177,10 @@ export default function SignupPage() {
         .auth-label { display: block; font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink2); margin-bottom: .5rem; }
         .auth-error { padding: .75rem 1rem; background: rgba(184,104,122,.08); border: 1px solid rgba(184,104,122,.2); color: #8a4f58; font-size: .85rem; overflow: hidden; }
         .auth-btn { width: 100%; }
-        .auth-terms { font-size: .75rem; color: var(--ink3); text-align: center; margin-top: .875rem; }
         .auth-terms-link { color: var(--rg); text-decoration: none; }
         .auth-terms-link:hover { text-decoration: underline; }
+        .auth-agree { display: flex; align-items: flex-start; gap: .6rem; font-size: .78rem; color: var(--ink3); line-height: 1.5; margin-bottom: 1rem; cursor: pointer; }
+        .auth-agree input { margin-top: .15rem; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--gold); cursor: pointer; }
         .auth-spinner-row { display: flex; align-items: center; justify-content: center; gap: .5rem; }
         .auth-spinner { display: inline-block; width: 14px; height: 14px; border: 1.5px solid rgba(255,255,255,.25); border-top-color: #fff; border-radius: 50%; animation: auth-spin .6s linear infinite; }
         @keyframes auth-spin { to { transform: rotate(360deg); } }

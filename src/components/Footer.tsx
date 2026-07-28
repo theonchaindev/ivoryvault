@@ -44,7 +44,7 @@ export default function Footer() {
           <div>
             <p className="site-footer__col-head">Company</p>
             <nav className="site-footer__nav">
-              {[['/how-it-works','How It Works'],['/contact','Contact Us'],['/terms','Terms & Conditions'],['/free-entry','Privacy Policy']].map(([href,label]) => (
+              {[['/how-it-works','How It Works'],['/contact','Contact Us'],['/terms','Terms & Conditions'],['/privacy','Privacy Policy']].map(([href,label]) => (
                 <Link key={label} href={href} className="site-footer__link">{label}</Link>
               ))}
             </nav>
