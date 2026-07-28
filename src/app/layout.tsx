@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
-import Script from 'next/script'
 import { Montserrat, Cinzel } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/context/CartContext'
-
-const GA_ID = 'G-VY0D6ECGYP'
+import CookieConsent from '@/components/CookieConsent'
 
 const montserrat = Montserrat({
   variable: '--font-montserrat',
@@ -30,14 +28,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body style={{ fontFamily: 'var(--font-montserrat), system-ui, sans-serif' }}>
         <CartProvider>{children}</CartProvider>
 
-        {/* Google Analytics (gtag.js) */}
-        <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
-        <Script id="ga-init" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${GA_ID}');`}
-        </Script>
+        {/* Cookie consent — loads Google Analytics only after the user accepts */}
+        <CookieConsent />
       </body>
     </html>
   )
