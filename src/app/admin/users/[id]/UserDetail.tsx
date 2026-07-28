@@ -9,7 +9,7 @@ interface Spin { id: string; revealed: boolean; prizeAmount: number; prizeType: 
 interface Winner { id: string; prizeTitle: string | null; prizeValue: number | null; drawnAt: string; announced: boolean; title: string }
 interface Notif { id: string; title: string; body: string; read: boolean; createdAt: string }
 interface UserData {
-  id: string; name: string; email: string; role: string; siteCredit: number; freeSpins: number
+  id: string; name: string; email: string; phone: string | null; role: string; siteCredit: number; freeSpins: number
   createdAt: string; tier: string
   tickets: Ticket[]; spins: Spin[]; winners: Winner[]; notifications: Notif[]
   stats: { totalEntries: number; totalSpent: number; spinsUnrevealed: number; wonCount: number; wonTotal: number }
@@ -70,7 +70,7 @@ export default function UserDetail({ user, comps }: { user: UserData; comps: Com
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '0.75rem 0 1.5rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 700, color: 'var(--ink)' }}>{user.name}</h1>
-          <p style={{ color: 'var(--ink3)', fontSize: '0.875rem' }}>{user.email}</p>
+          <p style={{ color: 'var(--ink3)', fontSize: '0.875rem' }}>{user.email}{user.phone ? ` · ${user.phone}` : ''}</p>
         </div>
         <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '999px', padding: '3px 10px' }}>{user.tier} tier</span>
         {user.role === 'admin' && <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#b45309', border: '1px solid #f59e0b', borderRadius: '999px', padding: '3px 10px' }}>Admin</span>}

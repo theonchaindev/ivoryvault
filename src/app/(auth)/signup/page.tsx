@@ -18,13 +18,14 @@ function safeFrom(): string {
 const fields = [
   { id: 'name', label: 'Full Name', type: 'text', placeholder: 'Your name', key: 'name' as const },
   { id: 'email', label: 'Email Address', type: 'email', placeholder: 'your@email.com', key: 'email' as const },
+  { id: 'phone', label: 'Mobile Number', type: 'tel', placeholder: '07123 456789', key: 'phone' as const },
   { id: 'password', label: 'Password', type: 'password', placeholder: 'Min. 8 characters', key: 'password' as const },
   { id: 'confirm', label: 'Confirm Password', type: 'password', placeholder: 'Repeat your password', key: 'confirm' as const },
 ]
 
 export default function SignupPage() {
   const router = useRouter()
-  const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirm: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [fromQuery, setFromQuery] = useState('')
@@ -45,7 +46,7 @@ export default function SignupPage() {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+        body: JSON.stringify({ name: form.name, email: form.email, phone: form.phone, password: form.password }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error || 'Signup failed'); return }

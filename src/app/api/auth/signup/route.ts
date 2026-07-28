@@ -7,14 +7,19 @@ import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json()
+    const { name, email, password, phone } = await request.json()
 
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
+    if (!name || !email || !password || !phone) {
+      return NextResponse.json({ error: 'Name, email, mobile number and password are required' }, { status: 400 })
     }
 
     if (password.length < 8) {
       return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    }
+
+    const phoneDigits = String(phone).replace(/[^\d]/g, '')
+    if (phoneDigits.length < 10) {
+      return NextResponse.json({ error: 'Please enter a valid mobile number' }, { status: 400 })
     }
 
     const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
@@ -28,6 +33,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: name.trim(),
         email: email.toLowerCase().trim(),
+        phone: String(phone).trim(),
         password: hashed,
         role: 'user',
       },
@@ -35,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     // Emails — run after the response is sent, so they can't be killed early.
     after(() => sendWelcomeEmail(user.email, user.name))
-    after(() => sendNewSignupAlert(user.name, user.email))
+    after(() => sendNewSignupAlert(user.name, user.email, user.phone ?? undefined))
 
     const token = await createSession({
       userId: user.id,

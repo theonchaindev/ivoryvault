@@ -11,7 +11,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
-      id: true, name: true, email: true, role: true, siteCredit: true,
+      id: true, name: true, email: true, phone: true, role: true, siteCredit: true,
       freeSpins: true, createdAt: true,
       tickets: {
         orderBy: { purchasedAt: 'desc' },
@@ -49,7 +49,7 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
   const wonTotal = spinsWon.reduce((s, x) => s + x.prizeAmount, 0)
 
   const data = {
-    id: user.id, name: user.name, email: user.email, role: user.role,
+    id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role,
     siteCredit: user.siteCredit, freeSpins: user.freeSpins, createdAt: user.createdAt.toISOString(),
     tier: getTier(totalEntries).name,
     tickets: user.tickets.map(t => ({

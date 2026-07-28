@@ -98,11 +98,12 @@ export function sendWelcomeEmail(to: string, name: string) {
 }
 
 /** Internal alert to the team when a new member signs up. */
-export function sendNewSignupAlert(name: string, email: string) {
+export function sendNewSignupAlert(name: string, email: string, phone?: string) {
   const body = `
     <p style="margin:0 0 12px;">A new member just created an account:</p>
     <p style="margin:0 0 6px;"><strong style="color:#fff;">Name:</strong> ${esc(name)}</p>
     <p style="margin:0 0 6px;"><strong style="color:#fff;">Email:</strong> ${esc(email)}</p>
+    ${phone ? `<p style="margin:0 0 6px;"><strong style="color:#fff;">Mobile:</strong> ${esc(phone)}</p>` : ''}
     <p style="margin:0;color:${FOOT};font-size:13px;">${new Date().toUTCString()}</p>`
   return send({ to: SUPPORT_EMAIL, subject: `New signup — ${name}`, html: shell('New member 🎉', body, undefined, { badges: false }) })
 }
