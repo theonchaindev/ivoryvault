@@ -38,6 +38,19 @@ export default async function AccountPage() {
 
   const tickets = await getUserTickets(session.userId)
   const dbUser = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true, freeSpins: true } })
+
+  // Instant-win spins (grouped by competition) — these are entries too
+  const spins = await prisma.instantSpin.findMany({
+    where: { userId: session.userId },
+    include: { competition: { select: { title: true, slug: true } } },
+  })
+  const spinMap = new Map<string, { slug: string; title: string; total: number; unrevealed: number }>()
+  spins.forEach(s => {
+    const cur = spinMap.get(s.competition.slug)
+    if (cur) { cur.total++; if (!s.revealed) cur.unrevealed++ }
+    else spinMap.set(s.competition.slug, { slug: s.competition.slug, title: s.competition.title, total: 1, unrevealed: s.revealed ? 0 : 1 })
+  })
+  const instantSpins = Array.from(spinMap.values())
   const notifications = await prisma.notification.findMany({
     where: { userId: session.userId },
     orderBy: { createdAt: 'desc' },
@@ -77,6 +90,7 @@ export default async function AccountPage() {
         nextTier={nextTier}
         progressPct={progressPct}
         tickets={ticketData}
+        instantSpins={instantSpins}
         notifications={notifications.map(n => ({ id: n.id, title: n.title, body: n.body, icon: n.icon, read: n.read, createdAt: n.createdAt.toISOString() }))}
       />
     </>

@@ -49,6 +49,7 @@ interface Props {
   progressPct: number
   tickets: TicketEntry[]
   notifications: Notification[]
+  instantSpins: { slug: string; title: string; total: number; unrevealed: number }[]
 }
 
 type View = 'overview' | 'notifications' | 'addresses' | 'account' | 'communication' | 'safeplay'
@@ -89,7 +90,7 @@ function timeAgo(iso: string): string {
 
 export default function AccountClient({
   name, email, siteCredit, totalTickets, totalEntries, activeEntries,
-  tier, nextTier, progressPct, tickets, notifications,
+  tier, nextTier, progressPct, tickets, notifications, instantSpins,
 }: Props) {
   const [view, setView] = useState<View>('overview')
   const [filter, setFilter] = useState<Filter>('all')
@@ -181,6 +182,25 @@ export default function AccountClient({
                   </div>
                   <div className="acc__tier-track"><div className="acc__tier-fill" style={{ width: `${progressPct}%` }} /></div>
                 </div>
+
+                {/* Instant spins */}
+                {instantSpins.length > 0 && (
+                  <div className="acc__spins">
+                    {instantSpins.map(s => (
+                      <a key={s.slug} href={`/instant/${s.slug}`} className="acc__spin-card">
+                        <div>
+                          <p className="acc__spin-title">⚡ {s.title}</p>
+                          <p className="acc__spin-sub">
+                            {s.unrevealed > 0
+                              ? `${s.unrevealed} spin${s.unrevealed > 1 ? 's' : ''} ready to reveal`
+                              : `${s.total} spin${s.total > 1 ? 's' : ''} played`}
+                          </p>
+                        </div>
+                        <span className="acc__spin-cta">{s.unrevealed > 0 ? 'Reveal →' : 'View'}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
 
                 {/* Your Entries */}
                 <div className="acc__entries-head">
@@ -355,6 +375,12 @@ export default function AccountClient({
         .acc__tier-fill { height: 100%; background: var(--tier-color, var(--gold)); border-radius: 999px; }
 
         /* Your Entries */
+        .acc__spins { display: flex; flex-direction: column; gap: .75rem; margin-top: 2.5rem; }
+        .acc__spin-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: linear-gradient(180deg, var(--card), var(--gold-pale)); border: 1.5px solid var(--gold); border-radius: var(--r-card); padding: 1.125rem 1.5rem; text-decoration: none; transition: transform .15s, box-shadow .2s; }
+        .acc__spin-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(37,99,235,.16); }
+        .acc__spin-title { font-size: 1rem; font-weight: 800; color: var(--ink); }
+        .acc__spin-sub { font-size: .8125rem; color: var(--gold-d); font-weight: 600; margin-top: .2rem; }
+        .acc__spin-cta { flex-shrink: 0; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--gold); padding: .6rem 1rem; border-radius: var(--r-btn); white-space: nowrap; }
         .acc__entries-head { margin-top: 2.5rem; }
         .acc__h2 { font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -.01em; }
         .acc__entries-sub { font-size: .875rem; color: var(--ink3); margin-top: .25rem; }
