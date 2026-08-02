@@ -29,7 +29,7 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
   const setOpen = (v: boolean) => { if (onOpenChange) onOpenChange(v); else setInternalOpen(v) }
 
   const remaining = competition.maxTickets - competition.ticketsSold
-  const maxSelect = Math.min(remaining, 50)
+  const maxSelect = Math.max(1, remaining) // capped only by tickets remaining
   const total = competition.ticketPrice * quantity
 
   const setQty = (n: number) => setQuantity(Math.min(maxSelect, Math.max(1, n)))
@@ -164,7 +164,7 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
             +
           </motion.button>
         </div>
-        <p className="ts__max">Max {maxSelect} per order</p>
+        <p className="ts__max">{maxSelect.toLocaleString()} tickets available</p>
       </div>
 
       {/* Total */}

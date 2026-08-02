@@ -32,7 +32,7 @@ export default function TermsPage() {
               },
               {
                 title: '3. Ticket Purchases',
-                content: `All ticket purchases are final and non-refundable once a competition is live. Each ticket purchased is assigned a unique entry number. Tickets are limited to 50 per transaction. Ivory Vault reserves the right to limit the total number of tickets per person.`,
+                content: `All ticket purchases are final and non-refundable once a competition is live. Each ticket purchased is assigned a unique entry number. You may buy up to the number of tickets still available for each competition. Ivory Vault reserves the right to limit the total number of tickets per person.`,
               },
               {
                 title: '4. The Draw',
