@@ -12,12 +12,18 @@ type Consent = 'accepted' | 'rejected'
 export default function CookieConsent() {
   // undefined = not yet read (SSR/first paint); null = read, no choice made yet
   const [consent, setConsent] = useState<Consent | null | undefined>(undefined)
+  const [pixelId, setPixelId] = useState('')
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(KEY)
       setConsent(stored === 'accepted' ? 'accepted' : stored === 'rejected' ? 'rejected' : null)
     } catch { setConsent(null) }
+    // Fetch the admin-configured Meta Pixel ID (public value)
+    fetch('/api/site/meta-pixel')
+      .then(r => r.json())
+      .then(d => { if (d.pixelId && /^\d+$/.test(String(d.pixelId))) setPixelId(String(d.pixelId)) })
+      .catch(() => {})
   }, [])
 
   const choose = (v: Consent) => {
@@ -38,6 +44,15 @@ gtag('js', new Date());
 gtag('config', '${GA_ID}');`}
           </Script>
         </>
+      )}
+
+      {/* Meta Pixel — only after consent, only if an admin has configured a Pixel ID */}
+      {consent === 'accepted' && pixelId && (
+        <Script id="meta-pixel" strategy="afterInteractive">
+          {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '${pixelId}');
+fbq('track', 'PageView');`}
+        </Script>
       )}
 
       {consent === null && (

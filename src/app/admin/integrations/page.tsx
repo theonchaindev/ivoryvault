@@ -1,3 +1,6 @@
+import { getSetting } from '@/lib/settings'
+import MetaPixelForm from './MetaPixelForm'
+
 export const dynamic = 'force-dynamic'
 
 const GA_ID = 'G-VY0D6ECGYP'
@@ -32,7 +35,8 @@ function Row({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
   )
 }
 
-export default function AdminIntegrationsPage() {
+export default async function AdminIntegrationsPage() {
+  const metaPixelId = (await getSetting('metaPixelId')) || ''
   const sk = process.env.STRIPE_SECRET_KEY || ''
   const pk = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
   const stripeStatus: Status = sk.startsWith('sk_live_') ? 'live' : sk.startsWith('sk_test_') ? 'test' : 'off'
@@ -111,6 +115,16 @@ export default function AdminIntegrationsPage() {
         <Row k="Measurement ID" v={GA_ID} mono />
         <Row k="Consent-gated" v="Yes — via cookie banner" />
         <div style={codeBox}>{gaScript}</div>
+      </div>
+
+      {/* Meta Pixel */}
+      <div style={card}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div><p style={cat}>Advertising</p><p style={title}>Meta Pixel</p></div>
+          <StatusBadge status={metaPixelId ? 'live' : 'off'} />
+        </div>
+        <p style={desc}>Facebook/Instagram ads conversion tracking. Paste your Pixel ID (or the full Meta base code) below and save — it loads site-wide, gated behind cookie consent.</p>
+        <MetaPixelForm initial={metaPixelId} />
       </div>
 
       {/* Database */}
