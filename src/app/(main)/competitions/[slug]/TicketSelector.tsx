@@ -141,18 +141,19 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
           >
             −
           </motion.button>
-          <AnimatePresence mode="wait">
-            <motion.span
-              key={quantity}
-              className="ts__qty-val"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ duration: 0.15 }}
-            >
-              {quantity}
-            </motion.span>
-          </AnimatePresence>
+          <input
+            className="ts__qty-input"
+            type="text"
+            inputMode="numeric"
+            value={quantity}
+            onChange={e => {
+              const raw = e.target.value.replace(/[^0-9]/g, '')
+              if (raw === '') { setQuantity(1); return }
+              setQty(parseInt(raw, 10))
+            }}
+            onFocus={e => e.target.select()}
+            aria-label="Number of tickets"
+          />
           <motion.button
             className="ts__step-btn"
             onClick={() => setQty(quantity + 1)}
@@ -257,7 +258,7 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
           .ts__qty-section .ts__section-label { margin-bottom: 0; }
           .ts__stepper { height: 46px; }
           .ts__step-btn { width: 46px; height: 46px; font-size: 1.375rem; }
-          .ts__qty-val { min-width: 44px; font-size: 1.375rem; }
+          .ts__qty-input { font-size: 1.375rem; }
           .ts__max { display: none; }
         }
         .ts__header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
@@ -279,7 +280,9 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
         .ts__step-btn:disabled { opacity: .3; cursor: not-allowed; }
         .ts__step-btn:first-child { border-right: 1px solid var(--border); }
         .ts__step-btn:last-child { border-left: 1px solid var(--border); }
-        .ts__qty-val { flex: 1; text-align: center; font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 600; color: var(--ink); display: block; }
+        .ts__qty-input { flex: 1; width: 100%; min-width: 0; text-align: center; font-family: var(--font-cormorant,serif); font-size: 2rem; font-weight: 600; color: var(--ink); background: none; border: none; outline: none; padding: 0; -moz-appearance: textfield; }
+        .ts__qty-input::-webkit-outer-spin-button, .ts__qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .ts__qty-input:focus { color: var(--gold); }
         .ts__max { font-size: .6875rem; color: var(--ink3); margin-top: .375rem; }
         .ts__total-row { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 1rem 0; }
         .ts__total-label { font-size: .875rem; font-weight: 500; color: var(--ink2); }

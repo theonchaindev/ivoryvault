@@ -98,7 +98,18 @@ export default function BasketPage() {
                       <div className="bk__item-controls">
                         <div className="bk__stepper">
                           <button onClick={() => updateQty(item.competitionId, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Decrease">−</button>
-                          <span>{item.quantity}</span>
+                          <input
+                            className="bk__qty-input"
+                            type="text"
+                            inputMode="numeric"
+                            value={item.quantity}
+                            onChange={e => {
+                              const raw = e.target.value.replace(/[^0-9]/g, '')
+                              updateQty(item.competitionId, raw === '' ? 1 : Math.min(item.maxAvailable, Math.max(1, parseInt(raw, 10))))
+                            }}
+                            onFocus={e => e.target.select()}
+                            aria-label={`Quantity for ${item.title}`}
+                          />
                           <button onClick={() => updateQty(item.competitionId, item.quantity + 1)} disabled={item.quantity >= item.maxAvailable} aria-label="Increase">+</button>
                         </div>
                         <button className="bk__remove" onClick={() => removeItem(item.competitionId)}>Remove</button>
@@ -195,6 +206,9 @@ export default function BasketPage() {
         .bk__stepper button:hover:not(:disabled) { background: var(--bg2); color: var(--gold); }
         .bk__stepper button:disabled { opacity: .3; cursor: not-allowed; }
         .bk__stepper span { min-width: 36px; text-align: center; font-weight: 700; font-size: .9375rem; color: var(--ink); }
+        .bk__qty-input { width: 46px; text-align: center; font-weight: 700; font-size: .9375rem; color: var(--ink); background: none; border: none; outline: none; padding: 0; -moz-appearance: textfield; }
+        .bk__qty-input::-webkit-outer-spin-button, .bk__qty-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .bk__qty-input:focus { color: var(--gold); }
         .bk__remove { background: none; border: none; cursor: pointer; font-size: .6875rem; letter-spacing: .06em; text-transform: uppercase; color: var(--ink3); font-family: inherit; transition: color .2s; }
         .bk__remove:hover { color: #c0392b; }
         .bk__item-total { font-size: 1.125rem; font-weight: 800; color: var(--ink); white-space: nowrap; }
