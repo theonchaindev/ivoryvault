@@ -10,6 +10,7 @@ const navItems = [
   { href: '/admin/orders', label: 'Orders', icon: '◉' },
   { href: '/admin/winners', label: 'Winners', icon: '★' },
   { href: '/admin/contacts', label: 'Contacts', icon: '✉' },
+  { href: '/admin/integrations', label: 'Integrations', icon: '⚙' },
 ]
 
 export default function AdminNav() {
