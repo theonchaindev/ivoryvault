@@ -159,7 +159,7 @@ export default function AccountClient({
             transition={{ duration: 0.3, ease }}
           >
             {view === 'overview' && (
-              <>
+              <div className="acc__overview">
                 {/* Stats strip */}
                 <div className="acc__stats">
                   {[
@@ -262,7 +262,7 @@ export default function AccountClient({
                     <Link href="/competitions" className="btn-gold" style={{ marginTop: '1.5rem' }}>Browse Competitions</Link>
                   </div>
                 )}
-              </>
+              </div>
             )}
 
             {view === 'notifications' && (
@@ -381,6 +381,11 @@ export default function AccountClient({
         .acc__spin-title { font-size: 1rem; font-weight: 800; color: var(--ink); }
         .acc__spin-sub { font-size: .8125rem; color: var(--gold-d); font-weight: 600; margin-top: .2rem; }
         .acc__spin-cta { flex-shrink: 0; font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fff; background: var(--gold); padding: .6rem 1rem; border-radius: var(--r-btn); white-space: nowrap; }
+        /* On mobile, surface the spins card above the rewards/tier box */
+        @media (max-width: 700px) {
+          .acc__overview { display: flex; flex-direction: column; }
+          .acc__overview .acc__spins { order: -1; margin-top: 0; margin-bottom: 1.25rem; }
+        }
         .acc__entries-head { margin-top: 2.5rem; }
         .acc__h2 { font-size: 1.5rem; font-weight: 800; color: var(--ink); letter-spacing: -.01em; }
         .acc__entries-sub { font-size: .875rem; color: var(--ink3); margin-top: .25rem; }
