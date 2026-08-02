@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { useCart } from '@/context/CartContext'
 import { formatCurrency } from '@/lib/utils'
+import { applyCredit } from '@/lib/credit'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -12,6 +13,14 @@ export default function BasketPage() {
   const { items, total, count, updateQty, removeItem, clear } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [credit, setCredit] = useState(0)
+  const [useCredit, setUseCredit] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/auth/me').then(r => r.ok ? r.json() : null).then(d => { if (d?.user) setCredit(d.user.siteCredit || 0) }).catch(() => {})
+  }, [])
+
+  const applied = applyCredit(total, useCredit ? credit : 0)
 
   const handleCheckout = async () => {
     setLoading(true); setError('')
@@ -19,7 +28,7 @@ export default function BasketPage() {
       const res = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: items.map(i => ({ competitionId: i.competitionId, quantity: i.quantity })) }),
+        body: JSON.stringify({ items: items.map(i => ({ competitionId: i.competitionId, quantity: i.quantity })), useCredit }),
       })
       const data = await res.json()
       if (res.status === 401) { window.location.href = '/login?from=/basket'; return }
@@ -120,15 +129,29 @@ export default function BasketPage() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(total)}</span>
               </div>
+
+              {credit > 0 && (
+                <label className="bk__credit">
+                  <input type="checkbox" checked={useCredit} onChange={e => setUseCredit(e.target.checked)} />
+                  <span>Use site credit <b>({formatCurrency(credit)} available)</b></span>
+                </label>
+              )}
+              {applied.creditUsed > 0 && (
+                <div className="bk__summary-row" style={{ color: '#16a34a' }}>
+                  <span>Site credit</span>
+                  <span>−{formatCurrency(applied.creditUsed)}</span>
+                </div>
+              )}
+
               <div className="bk__summary-total">
                 <span>Total</span>
-                <span>{formatCurrency(total)}</span>
+                <span>{formatCurrency(applied.toPay)}</span>
               </div>
 
               {error && <p className="bk__error">{error}</p>}
 
               <button className="bk__checkout" onClick={handleCheckout} disabled={loading}>
-                {loading ? 'Starting checkout…' : 'Proceed to Checkout'}
+                {loading ? 'Starting checkout…' : applied.toPay <= 0 ? 'Complete Order — Free with Credit' : 'Proceed to Checkout'}
               </button>
               <Link href="/competitions" className="bk__continue">← Continue shopping</Link>
               <p className="bk__note">🔒 Secure checkout via Stripe. Free entry route available.</p>
@@ -191,6 +214,9 @@ export default function BasketPage() {
         .bk__summary-total { display: flex; justify-content: space-between; align-items: baseline; padding: 1rem 0; margin-top: .25rem; border-top: 1px solid var(--border); font-weight: 800; }
         .bk__summary-total span:last-child { font-size: 1.5rem; color: var(--ink); }
         .bk__summary-total span:first-child { font-size: .875rem; text-transform: uppercase; letter-spacing: .06em; }
+        .bk__credit { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; padding: .625rem .75rem; background: var(--gold-pale); border: 1px solid var(--gold); border-radius: 8px; cursor: pointer; font-size: .8rem; color: var(--ink2); }
+        .bk__credit input { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; }
+        .bk__credit b { color: var(--gold-d); }
         .bk__error { font-size: .8125rem; color: #c0392b; margin: .5rem 0; }
         .bk__checkout { width: 100%; margin-top: .5rem; padding: 1rem; border-radius: var(--r-btn); background: var(--gold); color: #fff; font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; border: none; cursor: pointer; font-family: inherit; transition: background .2s; }
         .bk__checkout:hover:not(:disabled) { background: var(--gold-d); }

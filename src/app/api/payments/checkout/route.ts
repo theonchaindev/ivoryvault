@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
+import { applyCredit } from '@/lib/credit'
+import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
 
 interface BasketLine { competitionId: string; quantity: number }
 
@@ -12,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { items } = await request.json() as { items: BasketLine[] }
+    const { items, useCredit } = await request.json() as { items: BasketLine[]; useCredit?: boolean }
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Your basket is empty' }, { status: 400 })
     }
@@ -20,6 +22,7 @@ export async function POST(request: NextRequest) {
     // Validate every line against the DB (never trust client prices)
     const lineItems = []
     const metaItems: { id: string; qty: number }[] = []
+    let orderTotal = 0
 
     for (const line of items) {
       if (!line.competitionId || !line.quantity || line.quantity < 1) {
@@ -49,20 +52,61 @@ export async function POST(request: NextRequest) {
         },
       })
       metaItems.push({ id: comp.id, qty: line.quantity })
+      orderTotal += comp.ticketPrice * line.quantity
     }
 
     const origin = request.headers.get('origin')
       || process.env.NEXT_PUBLIC_BASE_URL
       || 'https://ivoryvault.vercel.app'
 
+    // Apply site credit, if requested and available
+    let creditUsed = 0
+    const discounts: { coupon: string }[] = []
+    if (useCredit) {
+      const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true } })
+      const balance = user?.siteCredit ?? 0
+      if (balance > 0) {
+        const applied = applyCredit(orderTotal, balance)
+        creditUsed = applied.creditUsed
+
+        // Credit covers the whole order → process directly, no Stripe transaction
+        if (creditUsed > 0 && applied.toPay <= 0) {
+          const deduct = Math.min(creditUsed, balance)
+          await prisma.user.update({ where: { id: session.userId }, data: { siteCredit: { decrement: deduct } } })
+          for (const item of metaItems) {
+            await recordPurchase(session.userId, item.id, item.qty, `credit-${Date.now()}`)
+          }
+          await prisma.notification.create({
+            data: { userId: session.userId, title: `£${deduct.toFixed(2)} site credit used`, body: 'Your site credit covered your whole order — no payment needed.', icon: 'info' },
+          })
+          after(() => sendOrderConfirmation(session.userId, metaItems, 0))
+          return NextResponse.json({ url: `${origin}/checkout/success?free=1` })
+        }
+
+        // Partial credit → apply the remainder as a Stripe discount
+        if (creditUsed > 0) {
+          const coupon = await stripe.coupons.create({
+            amount_off: Math.round(creditUsed * 100),
+            currency: 'gbp',
+            duration: 'once',
+            max_redemptions: 1,
+            name: 'Site credit',
+          })
+          discounts.push({ coupon: coupon.id })
+        }
+      }
+    }
+
     const checkout = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items: lineItems,
+      ...(discounts.length ? { discounts } : {}),
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/basket`,
       metadata: {
         userId: session.userId,
         items: JSON.stringify(metaItems),
+        creditUsed: String(creditUsed),
       },
     })
 

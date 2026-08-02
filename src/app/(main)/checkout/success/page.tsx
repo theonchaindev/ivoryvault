@@ -9,14 +9,15 @@ const money = (pence: number) => `£${(pence / 100).toFixed(2)}`
 
 interface OrderLine { name: string; qty: number; amount: number }
 
-export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string }> }) {
-  const { session_id } = await searchParams
+export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{ session_id?: string; free?: string }> }) {
+  const { session_id, free } = await searchParams
   const auth = await getSession()
+  const freeOrder = free === '1'
 
   let lines: OrderLine[] = []
   let total: number | null = null
   let email: string | null = null
-  let paid = false
+  let paid = freeOrder
 
   if (session_id) {
     try {
@@ -48,11 +49,11 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
           </svg>
         </div>
 
-        <p className="cs__eyebrow">Payment {paid ? 'received' : 'processing'}</p>
+        <p className="cs__eyebrow">{freeOrder ? 'Paid with site credit' : `Payment ${paid ? 'received' : 'processing'}`}</p>
         <h1 className="cs__title">Order confirmed</h1>
         <p className="cs__sub">
           Thank you{auth?.name ? `, ${auth.name.split(' ')[0]}` : ''} — your entries are in the draw.
-          {email ? <> A confirmation has been sent to <strong>{email}</strong>.</> : <> A confirmation email is on its way.</>}
+          {freeOrder ? <> Your site credit covered the full order.</> : email ? <> A confirmation has been sent to <strong>{email}</strong>.</> : <> A confirmation email is on its way.</>}
         </p>
 
         {lines.length > 0 && (
