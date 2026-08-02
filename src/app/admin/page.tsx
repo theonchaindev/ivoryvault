@@ -4,14 +4,18 @@ import Link from 'next/link'
 
 async function getStats() {
   try {
-    const [users, competitions, tickets, winners] = await Promise.all([
+    const [users, competitions, tickets, winners, spins] = await Promise.all([
       prisma.user.count(),
       prisma.competition.count({ where: { status: 'active' } }),
       prisma.ticket.findMany({ include: { competition: { select: { ticketPrice: true } } } }),
       prisma.winner.count(),
+      prisma.instantSpin.findMany({ select: { competition: { select: { ticketPrice: true } } } }),
     ])
 
-    const revenue = tickets.reduce((sum, t) => sum + t.competition.ticketPrice * t.quantity, 0)
+    // Revenue = ticket purchases + instant-win spins (each spin = one ticketPrice)
+    const ticketRevenue = tickets.reduce((sum, t) => sum + t.competition.ticketPrice * t.quantity, 0)
+    const spinRevenue = spins.reduce((sum, s) => sum + s.competition.ticketPrice, 0)
+    const revenue = ticketRevenue + spinRevenue
 
     const recentOrders = await prisma.ticket.findMany({
       orderBy: { purchasedAt: 'desc' },
