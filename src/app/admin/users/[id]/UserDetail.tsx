@@ -74,6 +74,7 @@ export default function UserDetail({ user, comps }: { user: UserData; comps: Com
         </div>
         <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '999px', padding: '3px 10px' }}>{user.tier} tier</span>
         {user.role === 'admin' && <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#b45309', border: '1px solid #f59e0b', borderRadius: '999px', padding: '3px 10px' }}>Admin</span>}
+        {user.role === 'guest' && <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '999px', padding: '3px 10px' }}>Guest — unclaimed</span>}
         <span style={{ marginLeft: 'auto', fontSize: '0.78rem', color: 'var(--ink3)' }}>Joined {date(user.createdAt)}</span>
       </div>
 

@@ -15,7 +15,8 @@ export default function UsersTable({ users }: { users: U[] }) {
   const [q, setQ] = useState('')
   const query = q.trim().toLowerCase()
   const filtered = query ? users.filter(u => (`${u.name} ${u.email}`).toLowerCase().includes(query)) : users
-  const members = users.filter(u => u.role !== 'admin').length
+  const members = users.filter(u => u.role !== 'admin' && u.role !== 'guest').length
+  const guests = users.filter(u => u.role === 'guest').length
   const totalCredit = users.reduce((s, u) => s + u.siteCredit, 0)
 
   return (
@@ -24,7 +25,7 @@ export default function UsersTable({ users }: { users: U[] }) {
         <div>
           <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>Members</h1>
           <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-            {members} members · £{totalCredit.toFixed(2)} site credit outstanding
+            {members} members{guests > 0 ? ` · ${guests} guest${guests > 1 ? 's' : ''}` : ''} · £{totalCredit.toFixed(2)} site credit outstanding
           </p>
         </div>
         <input
@@ -51,6 +52,7 @@ export default function UsersTable({ users }: { users: U[] }) {
                   <Link href={`/admin/users/${u.id}`} style={{ display: 'block', textDecoration: 'none' }}>
                     <span style={{ fontWeight: 600, color: 'var(--ink)' }}>{u.name}</span>
                     {u.role === 'admin' && <span style={{ marginLeft: '.5rem', fontSize: '.6rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '999px', padding: '1px 6px' }}>Admin</span>}
+                    {u.role === 'guest' && <span style={{ marginLeft: '.5rem', fontSize: '.6rem', letterSpacing: '.08em', textTransform: 'uppercase', color: '#b45309', background: '#fef3c7', border: '1px solid #fcd34d', borderRadius: '999px', padding: '1px 6px' }}>Guest</span>}
                     <div style={{ fontSize: '0.75rem', color: 'var(--ink3)' }}>{u.email}</div>
                   </Link>
                 </td>
