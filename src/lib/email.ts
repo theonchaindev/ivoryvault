@@ -135,6 +135,14 @@ export function sendInstantWinEmail(to: string, name: string, amount: number, ki
   return send({ to, subject: `You won ${money(amount)}${kind === 'cash' ? ' cash' : ''}! 🎉`, html: shell(`Instant <span style="color:#2f6bf0;">win!</span> 🎉`, body, { label: 'Go to My Account', href: `${SITE_URL}/account` }) })
 }
 
+/** After a guest checkout — invite them to create/claim their account. */
+export function sendGuestCreateAccount(to: string, name: string) {
+  const body = `
+    <p style="margin:0 0 16px;">Thanks ${esc(name.split(' ')[0] || name)} — your order is confirmed and your entries are in the draw. 🎉</p>
+    <p style="margin:0 0 16px;">Create your free account to track your entries, reveal instant spins, and collect rewards & site credit. Use this same email address and <strong style="color:#fff;">your recent order will be there automatically</strong>.</p>`
+  return send({ to, subject: 'Create your Ivory Vault account', html: shell('Create your account', body, { label: 'Create My Account', href: `${SITE_URL}/signup?email=${encodeURIComponent(to)}` }) })
+}
+
 /** Password reset link. */
 export function sendPasswordResetEmail(to: string, name: string, resetUrl: string) {
   const body = `

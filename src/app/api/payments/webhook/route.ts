@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
+import { sendGuestCreateAccount } from '@/lib/email'
 import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
           await prisma.notification.create({
             data: { userId, title: `£${deduct.toFixed(2)} site credit used`, body: 'Your site credit was applied to your order.', icon: 'info' },
           })
+        }
+      }
+
+      // Guest checkout → invite them to create/claim their account
+      if (userId) {
+        const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, email: true, name: true } })
+        if (buyer?.role === 'guest' && buyer.email) {
+          after(() => sendGuestCreateAccount(buyer.email as string, buyer.name))
         }
       }
 

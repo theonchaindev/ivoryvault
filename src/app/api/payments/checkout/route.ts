@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from 'next/server'
+import bcrypt from 'bcryptjs'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
@@ -6,17 +7,40 @@ import { applyCredit } from '@/lib/credit'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
 
 interface BasketLine { competitionId: string; quantity: number }
+interface GuestDetails { name?: string; email?: string; phone?: string }
 
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { items, useCredit, guest } = await request.json() as { items: BasketLine[]; useCredit?: boolean; guest?: GuestDetails }
 
-    const { items, useCredit } = await request.json() as { items: BasketLine[]; useCredit?: boolean }
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Your basket is empty' }, { status: 400 })
+    }
+
+    // Resolve the buyer: logged-in user, or a guest (find-or-create by email)
+    let userId: string
+    if (session) {
+      userId = session.userId
+    } else {
+      const name = (guest?.name || '').trim()
+      const email = (guest?.email || '').toLowerCase().trim()
+      const phone = (guest?.phone || '').trim()
+      if (!name || !email) {
+        return NextResponse.json({ error: 'Please enter your name and email, or log in.' }, { status: 400 })
+      }
+      const existing = await prisma.user.findUnique({ where: { email } })
+      if (existing && existing.role !== 'guest') {
+        return NextResponse.json({ error: 'An account with this email already exists — please log in to continue.', needsLogin: true }, { status: 409 })
+      }
+      if (existing) {
+        await prisma.user.update({ where: { id: existing.id }, data: { name, phone: phone || existing.phone } })
+        userId = existing.id
+      } else {
+        const randomPw = await bcrypt.hash(crypto.randomUUID(), 12)
+        const created = await prisma.user.create({ data: { name, email, phone: phone || null, password: randomPw, role: 'guest' } })
+        userId = created.id
+      }
     }
 
     // Validate every line against the DB (never trust client prices)
@@ -63,7 +87,7 @@ export async function POST(request: NextRequest) {
     let creditUsed = 0
     const discounts: { coupon: string }[] = []
     if (useCredit) {
-      const user = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true } })
+      const user = await prisma.user.findUnique({ where: { id: userId }, select: { siteCredit: true } })
       const balance = user?.siteCredit ?? 0
       if (balance > 0) {
         const applied = applyCredit(orderTotal, balance)
@@ -72,14 +96,14 @@ export async function POST(request: NextRequest) {
         // Credit covers the whole order → process directly, no Stripe transaction
         if (creditUsed > 0 && applied.toPay <= 0) {
           const deduct = Math.min(creditUsed, balance)
-          await prisma.user.update({ where: { id: session.userId }, data: { siteCredit: { decrement: deduct } } })
+          await prisma.user.update({ where: { id: userId }, data: { siteCredit: { decrement: deduct } } })
           for (const item of metaItems) {
-            await recordPurchase(session.userId, item.id, item.qty, `credit-${Date.now()}`)
+            await recordPurchase(userId, item.id, item.qty, `credit-${Date.now()}`)
           }
           await prisma.notification.create({
-            data: { userId: session.userId, title: `£${deduct.toFixed(2)} site credit used`, body: 'Your site credit covered your whole order — no payment needed.', icon: 'info' },
+            data: { userId: userId, title: `£${deduct.toFixed(2)} site credit used`, body: 'Your site credit covered your whole order — no payment needed.', icon: 'info' },
           })
-          after(() => sendOrderConfirmation(session.userId, metaItems, 0))
+          after(() => sendOrderConfirmation(userId, metaItems, 0))
           return NextResponse.json({ url: `${origin}/checkout/success?free=1` })
         }
 
@@ -104,7 +128,7 @@ export async function POST(request: NextRequest) {
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/basket`,
       metadata: {
-        userId: session.userId,
+        userId: userId,
         items: JSON.stringify(metaItems),
         creditUsed: String(creditUsed),
       },

@@ -31,10 +31,12 @@ export default function SignupPage() {
   const [agreed, setAgreed] = useState(false)
   const [fromQuery, setFromQuery] = useState('')
 
-  // Preserve ?from across the "Sign in" link so the basket flow survives switching pages.
+  // Preserve ?from across the "Sign in" link; prefill email from a guest-checkout link.
   useEffect(() => {
     const dest = safeFrom()
     if (dest !== '/') setFromQuery(`?from=${encodeURIComponent(dest)}`)
+    const email = new URLSearchParams(window.location.search).get('email')
+    if (email) setForm(p => ({ ...p, email }))
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {

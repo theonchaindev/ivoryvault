@@ -23,25 +23,34 @@ export async function POST(request: NextRequest) {
     }
 
     const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } })
-    if (existing) {
+    if (existing && existing.role !== 'guest') {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
     }
 
     const hashed = await bcrypt.hash(password, 12)
 
-    const user = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        email: email.toLowerCase().trim(),
-        phone: String(phone).trim(),
-        password: hashed,
-        role: 'user',
-      },
-    })
+    let user
+    if (existing) {
+      // Claim an existing guest account — their previous order(s) come with it
+      user = await prisma.user.update({
+        where: { id: existing.id },
+        data: { name: name.trim(), phone: String(phone).trim(), password: hashed, role: 'user' },
+      })
+    } else {
+      user = await prisma.user.create({
+        data: {
+          name: name.trim(),
+          email: email.toLowerCase().trim(),
+          phone: String(phone).trim(),
+          password: hashed,
+          role: 'user',
+        },
+      })
+    }
 
     // Emails — run after the response is sent, so they can't be killed early.
     after(() => sendWelcomeEmail(user.email, user.name))
-    after(() => sendNewSignupAlert(user.name, user.email, user.phone ?? undefined))
+    if (!existing) after(() => sendNewSignupAlert(user.name, user.email, user.phone ?? undefined))
 
     const token = await createSession({
       userId: user.id,

@@ -15,20 +15,36 @@ export default function BasketPage() {
   const [error, setError] = useState('')
   const [credit, setCredit] = useState(0)
   const [useCredit, setUseCredit] = useState(true)
+  const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+  const [guest, setGuest] = useState({ name: '', email: '', phone: '' })
+  const [guestAgree, setGuestAgree] = useState(false)
 
   useEffect(() => {
-    fetch('/api/auth/me').then(r => r.ok ? r.json() : null).then(d => { if (d?.user) setCredit(d.user.siteCredit || 0) }).catch(() => {})
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.user) { setLoggedIn(true); setCredit(d.user.siteCredit || 0) } else setLoggedIn(false) })
+      .catch(() => setLoggedIn(false))
   }, [])
 
-  const applied = applyCredit(total, useCredit ? credit : 0)
+  const applied = applyCredit(total, loggedIn && useCredit ? credit : 0)
 
   const handleCheckout = async () => {
-    setLoading(true); setError('')
+    setError('')
+    if (loggedIn === false) {
+      if (!guest.name.trim() || !guest.email.trim()) { setError('Please enter your name and email.'); return }
+      if (!/^\S+@\S+\.\S+$/.test(guest.email.trim())) { setError('Please enter a valid email address.'); return }
+      if (!guestAgree) { setError('Please confirm you are 18 or over and agree to the Terms & Privacy Policy.'); return }
+    }
+    setLoading(true)
     try {
       const res = await fetch('/api/payments/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: items.map(i => ({ competitionId: i.competitionId, quantity: i.quantity })), useCredit }),
+        body: JSON.stringify({
+          items: items.map(i => ({ competitionId: i.competitionId, quantity: i.quantity })),
+          useCredit: loggedIn ? useCredit : false,
+          ...(loggedIn === false ? { guest } : {}),
+        }),
       })
       const data = await res.json()
       if (res.status === 401) { window.location.href = '/login?from=/basket'; return }
@@ -141,7 +157,7 @@ export default function BasketPage() {
                 <span>{formatCurrency(total)}</span>
               </div>
 
-              {credit > 0 && (
+              {loggedIn && credit > 0 && (
                 <label className="bk__credit">
                   <input type="checkbox" checked={useCredit} onChange={e => setUseCredit(e.target.checked)} />
                   <span>Use site credit <b>({formatCurrency(credit)} available)</b></span>
@@ -159,10 +175,28 @@ export default function BasketPage() {
                 <span>{formatCurrency(applied.toPay)}</span>
               </div>
 
+              {/* Guest details (shown when not logged in) */}
+              {loggedIn === false && (
+                <div className="bk__guest">
+                  <p className="bk__guest-title">Checkout as guest</p>
+                  <input className="bk__guest-input" placeholder="Full name" value={guest.name} onChange={e => setGuest(g => ({ ...g, name: e.target.value }))} />
+                  <input className="bk__guest-input" type="email" placeholder="Email address" value={guest.email} onChange={e => setGuest(g => ({ ...g, email: e.target.value }))} />
+                  <input className="bk__guest-input" type="tel" placeholder="Mobile number" value={guest.phone} onChange={e => setGuest(g => ({ ...g, phone: e.target.value }))} />
+                  <label className="bk__guest-agree">
+                    <input type="checkbox" checked={guestAgree} onChange={e => setGuestAgree(e.target.checked)} />
+                    <span>I confirm I am 18 or over and agree to the <Link href="/terms">Terms</Link> &amp; <Link href="/privacy">Privacy Policy</Link>.</span>
+                  </label>
+                  <p className="bk__guest-login">Have an account? <Link href="/login?from=/basket">Log in</Link></p>
+                </div>
+              )}
+
               {error && <p className="bk__error">{error}</p>}
 
-              <button className="bk__checkout" onClick={handleCheckout} disabled={loading}>
-                {loading ? 'Starting checkout…' : applied.toPay <= 0 ? 'Complete Order — Free with Credit' : 'Proceed to Checkout'}
+              <button className="bk__checkout" onClick={handleCheckout} disabled={loading || loggedIn === null}>
+                {loading ? 'Starting checkout…'
+                  : loggedIn && applied.toPay <= 0 ? 'Complete Order — Free with Credit'
+                  : loggedIn === false ? 'Checkout as Guest'
+                  : 'Proceed to Checkout'}
               </button>
               <Link href="/competitions" className="bk__continue">← Continue shopping</Link>
               <p className="bk__note">🔒 Secure checkout via Stripe. Free entry route available.</p>
@@ -231,6 +265,15 @@ export default function BasketPage() {
         .bk__credit { display: flex; align-items: center; gap: .5rem; margin: .5rem 0; padding: .625rem .75rem; background: var(--gold-pale); border: 1px solid var(--gold); border-radius: 8px; cursor: pointer; font-size: .8rem; color: var(--ink2); }
         .bk__credit input { width: 16px; height: 16px; accent-color: var(--gold); cursor: pointer; flex-shrink: 0; }
         .bk__credit b { color: var(--gold-d); }
+        .bk__guest { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: .6rem; }
+        .bk__guest-title { font-size: .6875rem; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); font-weight: 700; }
+        .bk__guest-input { width: 100%; padding: .7rem .85rem; border: 1px solid var(--border); border-radius: 8px; font-size: .875rem; font-family: inherit; color: var(--ink); }
+        .bk__guest-input:focus { outline: none; border-color: var(--gold); }
+        .bk__guest-agree { display: flex; align-items: flex-start; gap: .5rem; font-size: .72rem; color: var(--ink3); line-height: 1.4; }
+        .bk__guest-agree input { margin-top: .1rem; width: 15px; height: 15px; accent-color: var(--gold); flex-shrink: 0; }
+        .bk__guest-agree a { color: var(--gold); text-decoration: none; }
+        .bk__guest-login { font-size: .75rem; color: var(--ink3); }
+        .bk__guest-login a { color: var(--gold); text-decoration: none; font-weight: 600; }
         .bk__error { font-size: .8125rem; color: #c0392b; margin: .5rem 0; }
         .bk__checkout { width: 100%; margin-top: .5rem; padding: 1rem; border-radius: var(--r-btn); background: var(--gold); color: #fff; font-size: .75rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; border: none; cursor: pointer; font-family: inherit; transition: background .2s; }
         .bk__checkout:hover:not(:disabled) { background: var(--gold-d); }
