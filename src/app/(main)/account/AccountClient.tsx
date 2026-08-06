@@ -323,7 +323,7 @@ export default function AccountClient({
             {view === 'safeplay' && (
               <div className="acc__panel">
                 <h2 className="acc__h2">Safe Play</h2>
-                <p className="acc__panel-note">We&apos;re committed to fun, fair play. Competitions are 18+. If gambling stops being fun, take a break — set personal limits or self-exclude any time by contacting <Link href="/contact">support</Link>.</p>
+                <p className="acc__panel-note">Our competitions are open to UK residents aged 18+. Please only participate if you can afford to do so. A free postal entry route is available for every competition in accordance with our <Link href="/terms">Terms &amp; Conditions</Link>. If you ever feel you&rsquo;re spending more than you intended, we encourage you to take a break.</p>
                 <p className="acc__panel-note">Free help: <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a></p>
               </div>
             )}
