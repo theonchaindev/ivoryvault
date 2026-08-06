@@ -88,6 +88,71 @@ function shell(heading: string, bodyHtml: string, cta?: { label: string; href: s
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v.toLocaleString() : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
+/** Marketing broadcast — "new competition now active". */
+function newCompetitionHtml(): string {
+  return `
+  <div style="margin:0;padding:0;background:${BG};">
+    <div style="max-width:600px;margin:0 auto;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+      <!-- Header -->
+      <div style="text-align:center;padding:36px 20px 22px;">
+        <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="72" height="72" style="display:inline-block;border:0;outline:none;text-decoration:none;margin-bottom:8px;" />
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:.24em;color:${HEADING};">IVORY VAULT</div>
+        <div style="font-size:11px;letter-spacing:.34em;color:${GOLD};margin-top:8px;">— COMPETITIONS —</div>
+      </div>
+      <div style="height:1px;background:rgba(255,255,255,.09);margin:0 24px;"></div>
+
+      <!-- Hero -->
+      <div style="text-align:center;padding:34px 24px 12px;">
+        <h1 style="margin:0;font-size:38px;line-height:1.04;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION<br/><span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
+        <p style="margin:18px auto 0;max-width:420px;font-size:16px;line-height:1.6;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
+        <div style="margin-top:28px;">
+          <a href="${SITE_URL}/competitions" style="display:inline-block;background:${BLUE};color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:16px 46px;border-radius:12px;">Visit Our Website</a>
+        </div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 4px;"><tr>
+          ${badgeCell('✓', 'UK REGULATED', true)}
+          ${badgeCell('✓', 'FREE ENTRY')}
+          ${badgeCell('✓', 'LIVE DRAWS')}
+          ${badgeCell('✓', '18+')}
+        </tr></table>
+      </div>
+
+      <!-- Light footer -->
+      <div style="background:#f2f4f7;text-align:center;padding:34px 24px;">
+        <div style="font-size:26px;">🌐</div>
+        <p style="margin:10px 0 0;font-size:16px;line-height:1.6;color:#3a4553;">Visit <a href="${SITE_URL}/competitions" style="color:${BLUE};text-decoration:none;font-weight:700;">${SITE_URL.replace(/^https?:\/\//, '')}</a><br/>to enter now!</p>
+      </div>
+
+      <!-- Compliance footer -->
+      <div style="background:${BG};text-align:center;padding:20px 24px 32px;font-size:12px;color:${FOOT};line-height:1.7;">
+        You're receiving this because you have an Ivory Vault account. 18+ only · UK residents · Play responsibly.<br/>
+        <a href="mailto:${SUPPORT_EMAIL}?subject=Unsubscribe" style="color:${FOOT};text-decoration:underline;">Unsubscribe</a>
+      </div>
+    </div>
+  </div>`
+}
+
+const NEW_COMP_SUBJECT = '🎉 New competition now active — Ivory Vault'
+
+export function sendNewCompetitionEmail(to: string) {
+  return send({ to, subject: NEW_COMP_SUBJECT, html: newCompetitionHtml() })
+}
+
+/** Mass-send the new-competition email in batches of 100. */
+export async function broadcastNewCompetition(emails: string[]): Promise<{ sent: number; failed: number }> {
+  if (!resend || emails.length === 0) return { sent: 0, failed: 0 }
+  const html = newCompetitionHtml()
+  let sent = 0, failed = 0
+  for (let i = 0; i < emails.length; i += 100) {
+    const chunk = emails.slice(i, i + 100)
+    try {
+      const res = await resend.batch.send(chunk.map(to => ({ from: EMAIL_FROM, to, subject: NEW_COMP_SUBJECT, html })))
+      if (res.error) { failed += chunk.length; console.error('[email] batch error:', res.error) }
+      else sent += chunk.length
+    } catch (e) { failed += chunk.length; console.error('[email] batch threw:', e) }
+  }
+  return { sent, failed }
+}
+
 /** Welcome email on signup. */
 export function sendWelcomeEmail(to: string, name: string) {
   const body = `
