@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { createResetToken, pwVersion } from '@/lib/auth'
 import { sendPasswordResetEmail } from '@/lib/email'
 
-const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://ivoryvault.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ivoryvaultcompetitions.co.uk'
 
 export async function POST(request: NextRequest) {
   try {

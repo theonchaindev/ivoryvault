@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     const origin = request.headers.get('origin')
       || process.env.NEXT_PUBLIC_BASE_URL
-      || 'https://ivoryvault.vercel.app'
+      || 'https://www.ivoryvaultcompetitions.co.uk'
 
     // Apply site credit, if requested and available
     let creditUsed = 0

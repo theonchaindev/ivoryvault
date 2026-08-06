@@ -5,7 +5,7 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 // Sending domain must be verified in Resend for this to deliver.
 export const EMAIL_FROM = process.env.EMAIL_FROM || 'Ivory Vault <support@ivoryvaultcompetitions.co.uk>'
 export const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@ivoryvaultcompetitions.co.uk'
-const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://ivoryvault.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ivoryvaultcompetitions.co.uk'
 
 // Dark brand palette (shared by every email)
 const BG = '#0a0e1a'

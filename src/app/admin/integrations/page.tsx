@@ -4,7 +4,7 @@ import MetaPixelForm from './MetaPixelForm'
 export const dynamic = 'force-dynamic'
 
 const GA_ID = 'G-VY0D6ECGYP'
-const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://ivoryvault.vercel.app'
+const SITE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ivoryvaultcompetitions.co.uk'
 
 type Status = 'live' | 'test' | 'off'
 
