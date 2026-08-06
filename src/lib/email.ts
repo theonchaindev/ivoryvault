@@ -90,62 +90,44 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
 
 export interface FeaturedComp { title: string; image: string | null; price: number; slug: string; prizeValue?: number }
 
-/** Marketing broadcast — "new competition now active", with a featured comp card. */
+/** Marketing broadcast — "new competition now active", featuring the latest comp graphic. */
 function newCompetitionHtml(comp: FeaturedComp | null): string {
-  const price = comp ? (comp.price % 1 === 0 ? `£${comp.price}` : `£${comp.price.toFixed(2)}`) : ''
-
-  // Text column
-  const textCol = `
-    <h1 style="margin:0;font-size:30px;line-height:1.06;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION <span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
-    <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
-    <div style="margin-top:22px;">
-      <a href="${SITE_URL}/competitions" style="display:inline-block;background:${BLUE};color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:15px 34px;border-radius:12px;">Visit Our Website</a>
+  const badges = `<div style="margin-top:18px;font-size:12px;color:rgba(255,255,255,.6);line-height:1.4;">
+      <span style="color:${BLUE_LT};">✓</span> UK Regulated &nbsp;<span style="color:rgba(255,255,255,.25);">|</span>&nbsp; <span style="color:${BLUE_LT};">✓</span> Free Entry &nbsp;<span style="color:rgba(255,255,255,.25);">|</span>&nbsp; <span style="color:${BLUE_LT};">✓</span> Live Draws &nbsp;<span style="color:rgba(255,255,255,.25);">|</span>&nbsp; <span style="color:${BLUE_LT};">✓</span> 18+
     </div>`
 
-  // Featured comp card column
-  const cardCol = comp ? `
-    <div style="background:#0e1526;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;text-align:left;">
-      ${comp.image ? `<img src="${comp.image}" alt="${esc(comp.title)}" width="280" style="display:block;width:100%;height:auto;border:0;" />` : ''}
-      <div style="padding:16px 18px 18px;">
-        <p style="margin:0;font-size:15px;font-weight:800;color:#fff;line-height:1.3;">${esc(comp.title)}</p>
-        <p style="margin:6px 0 14px;font-size:13px;color:${GOLD};font-weight:700;">Tickets from ${price}</p>
-        <a href="${SITE_URL}/competitions/${comp.slug}" style="display:block;text-align:center;background:${BLUE};color:#fff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:13px;border-radius:10px;">Enter Now</a>
-      </div>
-    </div>` : ''
+  // Left column: logo + heading + text + button + badges (all left-aligned)
+  const leftCol = `
+    <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="58" height="58" style="display:block;border:0;outline:none;margin-bottom:8px;" />
+    <div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;letter-spacing:.2em;color:${HEADING};">IVORY VAULT</div>
+    <div style="font-size:10px;letter-spacing:.3em;color:${GOLD};margin-top:6px;">— COMPETITIONS —</div>
+    <h1 style="margin:26px 0 0;font-size:32px;line-height:1.04;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION <span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
+    <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
+    <a href="${SITE_URL}/competitions" style="display:block;text-align:center;background:${BLUE};color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:16px;border-radius:12px;margin-top:22px;">Visit Our Website</a>
+    ${badges}`
 
-  // Two columns: side-by-side on desktop, auto-stacking on mobile (fluid inline-block + MSO ghost table)
-  const twoCol = comp ? `
-    <div style="text-align:center;font-size:0;padding:6px 16px 8px;">
-      <!--[if mso]><table role="presentation" width="536" align="center" cellpadding="0" cellspacing="0"><tr><td width="268" valign="middle" style="padding:0 8px;"><![endif]-->
-      <div style="display:inline-block;vertical-align:middle;width:100%;max-width:268px;font-size:16px;text-align:left;padding:0 8px 20px;box-sizing:border-box;">${textCol}</div>
-      <!--[if mso]></td><td width="268" valign="middle" style="padding:0 8px;"><![endif]-->
-      <div style="display:inline-block;vertical-align:middle;width:100%;max-width:268px;font-size:16px;text-align:left;padding:0 8px 20px;box-sizing:border-box;">${cardCol}</div>
+  // Right column: the competition's promo graphic, linked
+  const rightCol = comp && comp.image ? `
+    <a href="${SITE_URL}/competitions/${comp.slug}" style="text-decoration:none;">
+      <img src="${comp.image}" alt="${esc(comp.title)}" width="280" style="display:block;width:100%;height:auto;border:0;border-radius:14px;" />
+    </a>` : ''
+
+  const body = comp && comp.image ? `
+    <div style="text-align:center;font-size:0;padding:36px 18px 20px;">
+      <!--[if mso]><table role="presentation" width="560" align="center" cellpadding="0" cellspacing="0"><tr><td width="270" valign="top" style="padding:0 10px;"><![endif]-->
+      <div style="display:inline-block;vertical-align:top;width:100%;max-width:270px;font-size:16px;text-align:left;padding:0 10px 24px;box-sizing:border-box;">${leftCol}</div>
+      <!--[if mso]></td><td width="270" valign="top" style="padding:0 10px;"><![endif]-->
+      <div style="display:inline-block;vertical-align:top;width:100%;max-width:270px;font-size:16px;text-align:left;padding:0 10px 24px;box-sizing:border-box;">${rightCol}</div>
       <!--[if mso]></td></tr></table><![endif]-->
-    </div>` : `<div style="text-align:center;padding:20px 24px;">${textCol}</div>`
+    </div>` : `<div style="padding:36px 24px 20px;max-width:420px;margin:0 auto;">${leftCol}</div>`
 
   return `
   <div style="margin:0;padding:0;background:${BG};">
     <div style="max-width:600px;margin:0 auto;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
-      <!-- Header -->
-      <div style="text-align:center;padding:36px 20px 22px;">
-        <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="72" height="72" style="display:inline-block;border:0;outline:none;text-decoration:none;margin-bottom:8px;" />
-        <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:.24em;color:${HEADING};">IVORY VAULT</div>
-        <div style="font-size:11px;letter-spacing:.34em;color:${GOLD};margin-top:8px;">— COMPETITIONS —</div>
-      </div>
-      <div style="height:1px;background:rgba(255,255,255,.09);margin:0 24px 8px;"></div>
-
-      ${twoCol}
-
-      <!-- Badges -->
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;"><tr>
-        ${badgeCell('✓', 'UK REGULATED', true)}
-        ${badgeCell('✓', 'FREE ENTRY')}
-        ${badgeCell('✓', 'LIVE DRAWS')}
-        ${badgeCell('✓', '18+')}
-      </tr></table>
+      ${body}
 
       <!-- Light footer -->
-      <div style="background:#f2f4f7;text-align:center;padding:34px 24px;margin-top:20px;">
+      <div style="background:#f2f4f7;text-align:center;padding:34px 24px;">
         <div style="font-size:26px;">🌐</div>
         <p style="margin:10px 0 0;font-size:16px;line-height:1.6;color:#3a4553;">Visit <a href="${SITE_URL}/competitions" style="color:${BLUE};text-decoration:none;font-weight:700;">${SITE_URL.replace(/^https?:\/\//, '')}</a><br/>to enter now!</p>
       </div>
