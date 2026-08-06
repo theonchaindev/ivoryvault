@@ -101,7 +101,7 @@ function newCompetitionHtml(comp: FeaturedComp | null): string {
     <img src="${SITE_URL}/logo.png" alt="Ivory Vault" width="80" height="80" style="display:block;border:0;outline:none;margin-bottom:10px;" />
     <div style="font-family:Georgia,'Times New Roman',serif;font-size:28px;letter-spacing:.2em;color:${HEADING};">IVORY VAULT</div>
     <div style="font-size:13px;letter-spacing:.3em;color:${GOLD};margin-top:8px;">— COMPETITIONS —</div>
-    <h1 style="margin:34px 0 0;font-size:52px;line-height:1.02;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION <span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
+    <h1 style="margin:34px 0 0;font-size:52px;line-height:1.02;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION <span style="color:${BLUE};">NOW ACTIVE!</span></h1>
     <p style="margin:22px 0 0;font-size:20px;line-height:1.55;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
     <a href="${SITE_URL}/competitions" style="display:block;text-align:center;background:${BLUE};color:#ffffff;text-decoration:none;font-size:17px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:20px;border-radius:14px;margin-top:30px;">Visit Our Website</a>
     ${badges}`
