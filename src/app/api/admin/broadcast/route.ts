@@ -6,9 +6,9 @@ import { sendNewCompetitionEmail, broadcastNewCompetition, type FeaturedComp } f
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
 
-async function latestComp(): Promise<FeaturedComp | null> {
+async function featuredComp(slug?: string): Promise<FeaturedComp | null> {
   const c = await prisma.competition.findFirst({
-    where: { status: 'active', type: 'standard' },
+    where: slug ? { slug } : { status: 'active', type: 'standard' },
     orderBy: { createdAt: 'desc' },
     select: { title: true, images: true, ticketPrice: true, slug: true, prizeValue: true },
   })
@@ -32,20 +32,22 @@ async function recipients(): Promise<string[]> {
 export async function POST(req: NextRequest) {
   try {
     await requireAdmin()
-    const { mode, email } = await req.json()
+    const { mode, email, slug } = await req.json()
 
     if (mode === 'count') {
       return NextResponse.json({ count: (await recipients()).length })
     }
     if (mode === 'test') {
       if (!email) return NextResponse.json({ error: 'Email required' }, { status: 400 })
-      await sendNewCompetitionEmail(String(email).trim(), await latestComp())
-      return NextResponse.json({ ok: true, sentTo: email })
+      const comp = await featuredComp(slug)
+      await sendNewCompetitionEmail(String(email).trim(), comp)
+      return NextResponse.json({ ok: true, sentTo: email, featured: comp?.title || null })
     }
     if (mode === 'send') {
+      const comp = await featuredComp(slug)
       const list = await recipients()
-      const result = await broadcastNewCompetition(list, await latestComp())
-      return NextResponse.json({ ok: true, recipients: list.length, ...result })
+      const result = await broadcastNewCompetition(list, comp)
+      return NextResponse.json({ ok: true, recipients: list.length, featured: comp?.title || null, ...result })
     }
     return NextResponse.json({ error: 'Unknown mode' }, { status: 400 })
   } catch (err) {
