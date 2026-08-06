@@ -24,7 +24,7 @@ export default function TermsPage() {
             {[
               {
                 title: '1. Eligibility',
-                content: `Competitions are open to UK residents aged 18 or over only. Employees of Ivory Vault and their immediate family members are not eligible to enter. Ivory Vault reserves the right to verify the eligibility of any entrant or winner.`,
+                content: `Competitions are open to UK residents aged 18 or over only. Employees, directors and anyone directly involved in administering the competition are not eligible to enter. Ivory Vault reserves the right to verify the eligibility of any entrant or winner.`,
               },
               {
                 title: '2. How to Enter',
