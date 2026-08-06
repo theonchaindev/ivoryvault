@@ -88,8 +88,41 @@ function shell(heading: string, bodyHtml: string, cta?: { label: string; href: s
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v.toLocaleString() : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** Marketing broadcast — "new competition now active". */
-function newCompetitionHtml(): string {
+export interface FeaturedComp { title: string; image: string | null; price: number; slug: string; prizeValue?: number }
+
+/** Marketing broadcast — "new competition now active", with a featured comp card. */
+function newCompetitionHtml(comp: FeaturedComp | null): string {
+  const price = comp ? (comp.price % 1 === 0 ? `£${comp.price}` : `£${comp.price.toFixed(2)}`) : ''
+
+  // Text column
+  const textCol = `
+    <h1 style="margin:0;font-size:30px;line-height:1.06;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION <span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
+    <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
+    <div style="margin-top:22px;">
+      <a href="${SITE_URL}/competitions" style="display:inline-block;background:${BLUE};color:#ffffff;text-decoration:none;font-size:14px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:15px 34px;border-radius:12px;">Visit Our Website</a>
+    </div>`
+
+  // Featured comp card column
+  const cardCol = comp ? `
+    <div style="background:#0e1526;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;text-align:left;">
+      ${comp.image ? `<img src="${comp.image}" alt="${esc(comp.title)}" width="280" style="display:block;width:100%;height:auto;border:0;" />` : ''}
+      <div style="padding:16px 18px 18px;">
+        <p style="margin:0;font-size:15px;font-weight:800;color:#fff;line-height:1.3;">${esc(comp.title)}</p>
+        <p style="margin:6px 0 14px;font-size:13px;color:${GOLD};font-weight:700;">Tickets from ${price}</p>
+        <a href="${SITE_URL}/competitions/${comp.slug}" style="display:block;text-align:center;background:${BLUE};color:#fff;text-decoration:none;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:13px;border-radius:10px;">Enter Now</a>
+      </div>
+    </div>` : ''
+
+  // Two columns: side-by-side on desktop, auto-stacking on mobile (fluid inline-block + MSO ghost table)
+  const twoCol = comp ? `
+    <div style="text-align:center;font-size:0;padding:6px 16px 8px;">
+      <!--[if mso]><table role="presentation" width="536" align="center" cellpadding="0" cellspacing="0"><tr><td width="268" valign="middle" style="padding:0 8px;"><![endif]-->
+      <div style="display:inline-block;vertical-align:middle;width:100%;max-width:268px;font-size:16px;text-align:left;padding:0 8px 20px;box-sizing:border-box;">${textCol}</div>
+      <!--[if mso]></td><td width="268" valign="middle" style="padding:0 8px;"><![endif]-->
+      <div style="display:inline-block;vertical-align:middle;width:100%;max-width:268px;font-size:16px;text-align:left;padding:0 8px 20px;box-sizing:border-box;">${cardCol}</div>
+      <!--[if mso]></td></tr></table><![endif]-->
+    </div>` : `<div style="text-align:center;padding:20px 24px;">${textCol}</div>`
+
   return `
   <div style="margin:0;padding:0;background:${BG};">
     <div style="max-width:600px;margin:0 auto;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
@@ -99,25 +132,20 @@ function newCompetitionHtml(): string {
         <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;letter-spacing:.24em;color:${HEADING};">IVORY VAULT</div>
         <div style="font-size:11px;letter-spacing:.34em;color:${GOLD};margin-top:8px;">— COMPETITIONS —</div>
       </div>
-      <div style="height:1px;background:rgba(255,255,255,.09);margin:0 24px;"></div>
+      <div style="height:1px;background:rgba(255,255,255,.09);margin:0 24px 8px;"></div>
 
-      <!-- Hero -->
-      <div style="text-align:center;padding:34px 24px 12px;">
-        <h1 style="margin:0;font-size:38px;line-height:1.04;font-weight:800;color:${HEADING};letter-spacing:-.01em;">NEW COMPETITION<br/><span style="color:#2f6bf0;">NOW ACTIVE!</span></h1>
-        <p style="margin:18px auto 0;max-width:420px;font-size:16px;line-height:1.6;color:rgba(255,255,255,.7);">A brand new competition is now live with amazing prizes up for grabs.</p>
-        <div style="margin-top:28px;">
-          <a href="${SITE_URL}/competitions" style="display:inline-block;background:${BLUE};color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:16px 46px;border-radius:12px;">Visit Our Website</a>
-        </div>
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:26px 0 4px;"><tr>
-          ${badgeCell('✓', 'UK REGULATED', true)}
-          ${badgeCell('✓', 'FREE ENTRY')}
-          ${badgeCell('✓', 'LIVE DRAWS')}
-          ${badgeCell('✓', '18+')}
-        </tr></table>
-      </div>
+      ${twoCol}
+
+      <!-- Badges -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:8px 0 4px;"><tr>
+        ${badgeCell('✓', 'UK REGULATED', true)}
+        ${badgeCell('✓', 'FREE ENTRY')}
+        ${badgeCell('✓', 'LIVE DRAWS')}
+        ${badgeCell('✓', '18+')}
+      </tr></table>
 
       <!-- Light footer -->
-      <div style="background:#f2f4f7;text-align:center;padding:34px 24px;">
+      <div style="background:#f2f4f7;text-align:center;padding:34px 24px;margin-top:20px;">
         <div style="font-size:26px;">🌐</div>
         <p style="margin:10px 0 0;font-size:16px;line-height:1.6;color:#3a4553;">Visit <a href="${SITE_URL}/competitions" style="color:${BLUE};text-decoration:none;font-weight:700;">${SITE_URL.replace(/^https?:\/\//, '')}</a><br/>to enter now!</p>
       </div>
@@ -133,14 +161,14 @@ function newCompetitionHtml(): string {
 
 const NEW_COMP_SUBJECT = '🎉 New competition now active — Ivory Vault'
 
-export function sendNewCompetitionEmail(to: string) {
-  return send({ to, subject: NEW_COMP_SUBJECT, html: newCompetitionHtml() })
+export function sendNewCompetitionEmail(to: string, comp: FeaturedComp | null) {
+  return send({ to, subject: NEW_COMP_SUBJECT, html: newCompetitionHtml(comp) })
 }
 
 /** Mass-send the new-competition email in batches of 100. */
-export async function broadcastNewCompetition(emails: string[]): Promise<{ sent: number; failed: number }> {
+export async function broadcastNewCompetition(emails: string[], comp: FeaturedComp | null): Promise<{ sent: number; failed: number }> {
   if (!resend || emails.length === 0) return { sent: 0, failed: 0 }
-  const html = newCompetitionHtml()
+  const html = newCompetitionHtml(comp)
   let sent = 0, failed = 0
   for (let i = 0; i < emails.length; i += 100) {
     const chunk = emails.slice(i, i + 100)
