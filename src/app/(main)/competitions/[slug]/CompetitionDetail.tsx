@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useState, useRef, useEffect } from 'react'
 import CountdownTimer from '@/components/CountdownTimer'
 import TicketSelector from './TicketSelector'
+import FreePostalEntryModal from './FreePostalEntryModal'
 import { formatDate } from '@/lib/utils'
 
 interface Competition {
@@ -101,6 +102,9 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
               <p className="cdp__draw-date">Draw date: {formatDate(competition.drawDate)}</p>
             </div>
           )}
+
+          {/* Free postal entry — button + popup, below the countdown */}
+          <FreePostalEntryModal />
         </motion.div>
 
         {/* ── RIGHT: info + ticket selector ── */}
