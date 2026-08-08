@@ -72,7 +72,7 @@ export default function FreePostalEntryModal() {
           background: rgba(0,0,0,.72); backdrop-filter: blur(4px); animation: fpe-fade .2s ease; }
         @keyframes fpe-fade { from { opacity: 0 } to { opacity: 1 } }
         .fpe-card { position: relative; width: 100%; max-width: 520px; max-height: 90vh; overflow-y: auto;
-          background: radial-gradient(130% 90% at 82% 0%, #16130a 0%, #0a0a0c 62%); border: 1px solid rgba(217,182,74,.5);
+          background: radial-gradient(130% 100% at 50% 0%, #142446 0%, #0a1122 70%); border: 1px solid rgba(217,182,74,.5);
           border-radius: 18px; padding: 2.25rem 2rem 2rem; box-shadow: 0 26px 70px rgba(0,0,0,.6), inset 0 0 40px rgba(217,182,74,.05);
           color: #efe9dc; font-family: Georgia, 'Times New Roman', serif; animation: fpe-pop .25s cubic-bezier(.22,1,.36,1); }
         @keyframes fpe-pop { from { opacity: 0; transform: translateY(14px) scale(.98) } to { opacity: 1; transform: none } }
