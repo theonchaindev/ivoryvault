@@ -7,8 +7,6 @@ import { uploadImage } from '@/lib/uploadImage'
 interface Comp { id: string; title: string; drawDate: string | null }
 interface Winner { id: string; name: string; competitionTitle: string; drawDate: string | null; image: string }
 
-const fmtDate = (s: string | null) => s ? new Date(s).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
-
 const card: React.CSSProperties = { background: '#fff', border: '1px solid var(--border)', borderRadius: '12px', padding: '1.5rem' }
 const input: React.CSSProperties = { width: '100%', padding: '.65rem .8rem', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '.875rem', fontFamily: 'inherit', color: 'var(--ink)' }
 const label: React.CSSProperties = { display: 'block', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink2)', marginBottom: '.4rem' }
@@ -19,14 +17,22 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
   const fileRef = useRef<HTMLInputElement>(null)
 
   const [name, setName] = useState('')
-  const [compId, setCompId] = useState('')
+  const [title, setTitle] = useState('')
+  const [drawDate, setDrawDate] = useState('') // yyyy-mm-dd
   const [image, setImage] = useState('')
   const [uploading, setUploading] = useState(false)
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
 
-  const selectedComp = competitions.find(c => c.id === compId)
+  // Optional helper: picking a competition autofills the title + draw date,
+  // which stay fully editable afterwards.
+  const autofill = (id: string) => {
+    const c = competitions.find(x => x.id === id)
+    if (!c) return
+    setTitle(c.title)
+    setDrawDate(c.drawDate ? c.drawDate.slice(0, 10) : '')
+  }
 
   const upload = async (file: File) => {
     setUploading(true); setErr('')
@@ -38,18 +44,18 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
   const save = async () => {
     setErr(''); setMsg('')
     if (!name.trim()) { setErr('Enter the winner’s name'); return }
-    if (!selectedComp) { setErr('Select the competition'); return }
+    if (!title.trim()) { setErr('Enter the competition name'); return }
     if (!image) { setErr('Add a winner photo'); return }
     setBusy(true)
     try {
       const res = await fetch('/api/admin/manual-winners', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, competitionTitle: selectedComp.title, drawDate: selectedComp.drawDate, image }),
+        body: JSON.stringify({ name, competitionTitle: title, drawDate: drawDate || null, image }),
       })
       const data = await res.json()
       if (!res.ok) { setErr(data.error || 'Failed to save'); return }
       setMsg('Winner added — now live on the Winners page.')
-      setName(''); setCompId(''); setImage('')
+      setName(''); setTitle(''); setDrawDate(''); setImage('')
       router.refresh()
     } catch { setErr('Something went wrong') }
     finally { setBusy(false) }
@@ -83,20 +89,24 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
           {/* Fields */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
-              <span style={label}>Competition</span>
-              <select style={input} value={compId} onChange={e => setCompId(e.target.value)}>
-                <option value="">Select a competition…</option>
-                {competitions.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-              </select>
-              {selectedComp && (
-                <p style={{ fontSize: '.75rem', color: 'var(--ink3)', marginTop: '.4rem' }}>
-                  Pulls through — <b style={{ color: 'var(--ink2)' }}>{selectedComp.title}</b> · Draw date <b style={{ color: 'var(--ink2)' }}>{fmtDate(selectedComp.drawDate)}</b>
-                </p>
+              <span style={label}>Competition name</span>
+              <input style={input} placeholder="e.g. Win a Coach Handbag!" value={title} onChange={e => setTitle(e.target.value)} />
+              {competitions.length > 0 && (
+                <select style={{ ...input, marginTop: '.5rem', color: 'var(--ink3)', fontSize: '.78rem' }} value="" onChange={e => { if (e.target.value) autofill(e.target.value) }}>
+                  <option value="">Or pick a competition to autofill…</option>
+                  {competitions.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                </select>
               )}
             </div>
-            <div>
-              <span style={label}>Winner&rsquo;s name</span>
-              <input style={input} placeholder="e.g. Jessica" value={name} onChange={e => setName(e.target.value)} />
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <span style={label}>Winner&rsquo;s name</span>
+                <input style={input} placeholder="e.g. Jessica" value={name} onChange={e => setName(e.target.value)} />
+              </div>
+              <div>
+                <span style={label}>Draw date</span>
+                <input type="date" style={input} value={drawDate} onChange={e => setDrawDate(e.target.value)} />
+              </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <button style={{ ...btn, opacity: busy ? .7 : 1 }} onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Add Winner'}</button>

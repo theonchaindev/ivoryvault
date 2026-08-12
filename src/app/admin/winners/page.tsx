@@ -52,9 +52,14 @@ export default async function AdminWinnersPage() {
           Winners
         </h1>
         <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-          {winners.length} winners drawn
+          {winners.length + manualForClient.length} winners
         </p>
       </div>
+
+      {/* Featured winners — add / manage (shown at the top) */}
+      <ManualWinnersManager winners={manualForClient} competitions={compsForClient} />
+
+      <div style={{ marginTop: '2.5rem' }} />
 
       {/* Draw a winner */}
       {drawableCompetitions.length > 0 && (
@@ -93,7 +98,7 @@ export default async function AdminWinnersPage() {
             All Winners
           </h2>
         </div>
-        {winners.length > 0 ? (
+        {(winners.length > 0 || manualForClient.length > 0) ? (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
@@ -105,6 +110,31 @@ export default async function AdminWinnersPage() {
               </tr>
             </thead>
             <tbody>
+              {/* Featured (manually added) winners */}
+              {manualForClient.map(mw => (
+                <tr key={mw.id}>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                      {mw.image && <img src={mw.image} alt="" style={{ width: '34px', height: '34px', borderRadius: '6px', objectFit: 'cover' }} />}
+                      <div style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--ink)' }}>{mw.name}</div>
+                    </div>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink2)' }}>
+                    {mw.competitionTitle}
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink3)' }}>—</td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink3)' }}>—</td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--ink3)' }}>
+                    {mw.drawDate ? formatDate(new Date(mw.drawDate)) : '—'}
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
+                    <span style={{ display: 'inline-block', padding: '0.2rem 0.6rem', fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', backgroundColor: 'rgba(37,99,235,0.1)', color: 'var(--gold)', border: '1px solid rgba(37,99,235,0.25)' }}>
+                      Featured
+                    </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }} />
+                </tr>
+              ))}
               {winners.map(winner => (
                 <tr key={winner.id}>
                   <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
@@ -151,12 +181,10 @@ export default async function AdminWinnersPage() {
           </table>
         ) : (
           <div style={{ padding: '3rem', textAlign: 'center' }}>
-            <p style={{ color: 'var(--ink3)' }}>No winners drawn yet.</p>
+            <p style={{ color: 'var(--ink3)' }}>No winners yet.</p>
           </div>
         )}
       </div>
-
-      <ManualWinnersManager winners={manualForClient} competitions={compsForClient} />
     </div>
   )
 }
