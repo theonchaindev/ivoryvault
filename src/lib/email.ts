@@ -227,6 +227,23 @@ export function sendPasswordResetEmail(to: string, name: string, resetUrl: strin
   return send({ to, subject: 'Reset your Ivory Vault password', html: shell('Password reset', body, { label: 'Reset Password', href: resetUrl }) })
 }
 
+/** Abandoned-checkout recovery — someone started checkout but didn't pay. */
+export function sendAbandonedCheckoutEmail(to: string, name: string, comps: { title: string; slug: string }[]) {
+  if (comps.length === 0) return Promise.resolve({ skipped: true })
+  const single = comps.length === 1
+  const cta = single ? `${SITE_URL}/competitions/${comps[0].slug}` : `${SITE_URL}/competitions`
+  const list = comps.map(c => `<li style="margin-bottom:6px;">${esc(c.title)}</li>`).join('')
+  const body = `
+    <p style="margin:0 0 14px;">Hi ${esc(name.split(' ')[0] || name)}, you were so close! You started entering ${single ? 'this competition' : 'these competitions'} but didn't finish:</p>
+    <ul style="margin:0 0 16px;padding-left:20px;color:#fff;font-weight:600;">${list}</ul>
+    <p style="margin:0;">Your entry isn't secured yet — finish before the draw closes. Good luck! 🍀</p>`
+  return send({
+    to,
+    subject: single ? `You left ${comps[0].title} in your basket 🛒` : 'You left items in your basket 🛒',
+    html: shell('Still want in?', body, { label: 'Complete Your Entry', href: cta }),
+  })
+}
+
 /** Contact-form receipt — goes to support, replies route back to the sender. No trust badges (internal). */
 export function sendContactReceipt(data: { name: string; email: string; subject?: string | null; message: string }) {
   const body = `
