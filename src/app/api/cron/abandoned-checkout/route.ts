@@ -35,6 +35,17 @@ export async function GET(req: NextRequest) {
 
   const dryRun = req.nextUrl.searchParams.get('dryRun') === '1'
 
+  // Admin test: send a sample recovery email to a given address (uses the latest comp)
+  const testEmail = req.nextUrl.searchParams.get('test')
+  if (testEmail) {
+    const comp = await prisma.competition.findFirst({
+      where: { status: 'active', type: 'standard' },
+      orderBy: { createdAt: 'desc' }, select: { title: true, slug: true },
+    })
+    await sendAbandonedCheckoutEmail(testEmail, 'there', comp ? [comp] : [{ title: 'Win a Coach Handbag!', slug: 'win-a-coach-handbag' }])
+    return NextResponse.json({ ok: true, testSentTo: testEmail, featured: comp?.title || null })
+  }
+
   try {
     await ensureTable()
     const now = Math.floor(Date.now() / 1000)
