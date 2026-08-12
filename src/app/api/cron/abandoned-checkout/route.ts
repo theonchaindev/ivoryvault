@@ -9,7 +9,7 @@ export const maxDuration = 60
 
 // Recovery window: remind checkouts abandoned between 1 and 24 hours ago.
 const GRACE_S = 60 * 60          // 1h grace before we consider it abandoned
-const WINDOW_S = 24 * 60 * 60    // don't chase anything older than 24h
+const WINDOW_S = 26 * 60 * 60    // ~1 day window so the daily run catches everything
 
 let tableEnsured = false
 async function ensureTable() {
