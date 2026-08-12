@@ -260,9 +260,9 @@ export default function NewCompetitionPage() {
 
         <aside className="nc-preview">
           <CompetitionPreview
-            title={title} subtitle={subtitle} description={description}
+            title={title} subtitle={subtitle}
             prizeValue={prizeValue} ticketPrice={ticketPrice} maxTickets={maxTickets}
-            drawDate={drawDate} images={images} type={type} featured={featured}
+            drawDate={drawDate} images={images} featured={featured}
           />
         </aside>
       </div>
