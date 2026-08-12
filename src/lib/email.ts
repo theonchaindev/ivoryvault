@@ -228,14 +228,28 @@ export function sendPasswordResetEmail(to: string, name: string, resetUrl: strin
 }
 
 /** Abandoned-checkout recovery — someone started checkout but didn't pay. */
-export function sendAbandonedCheckoutEmail(to: string, name: string, comps: { title: string; slug: string }[]) {
+export function sendAbandonedCheckoutEmail(to: string, name: string, comps: { title: string; slug: string; image?: string | null }[]) {
   if (comps.length === 0) return Promise.resolve({ skipped: true })
   const single = comps.length === 1
   const cta = single ? `${SITE_URL}/competitions/${comps[0].slug}` : `${SITE_URL}/competitions`
-  const list = comps.map(c => `<li style="margin-bottom:6px;">${esc(c.title)}</li>`).join('')
+
+  let itemsHtml: string
+  if (single) {
+    const c = comps[0]
+    itemsHtml = `
+      ${c.image ? `<img src="${c.image}" alt="${esc(c.title)}" width="440" style="display:block;width:100%;max-width:440px;height:auto;border-radius:14px;border:0;margin:16px auto 12px;" />` : ''}
+      <p style="margin:0 0 16px;text-align:center;font-size:17px;font-weight:800;color:#fff;">${esc(c.title)}</p>`
+  } else {
+    itemsHtml = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0 16px;">` +
+      comps.map(c => `<tr>
+        <td width="64" style="padding:5px 0;">${c.image ? `<img src="${c.image}" alt="" width="56" height="56" style="display:block;width:56px;height:56px;border-radius:8px;border:0;" />` : ''}</td>
+        <td style="padding:5px 0 5px 12px;font-size:15px;font-weight:700;color:#fff;">${esc(c.title)}</td>
+      </tr>`).join('') + `</table>`
+  }
+
   const body = `
     <p style="margin:0 0 14px;">Hi ${esc(name.split(' ')[0] || name)}, you were so close! You started entering ${single ? 'this competition' : 'these competitions'} but didn't finish:</p>
-    <ul style="margin:0 0 16px;padding-left:20px;color:#fff;font-weight:600;">${list}</ul>
+    ${itemsHtml}
     <p style="margin:0;">Your entry isn't secured yet — finish before the draw closes. Good luck! 🍀</p>`
   return send({
     to,

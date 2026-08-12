@@ -40,9 +40,11 @@ export async function GET(req: NextRequest) {
   if (testEmail) {
     const comp = await prisma.competition.findFirst({
       where: { status: 'active', type: 'standard' },
-      orderBy: { createdAt: 'desc' }, select: { title: true, slug: true },
+      orderBy: { createdAt: 'desc' }, select: { title: true, slug: true, images: true },
     })
-    await sendAbandonedCheckoutEmail(testEmail, 'there', comp ? [comp] : [{ title: 'Win a Coach Handbag!', slug: 'win-a-coach-handbag' }])
+    let img: string | null = null
+    if (comp) { try { img = JSON.parse(comp.images)[0] || null } catch { /* ignore */ } }
+    await sendAbandonedCheckoutEmail(testEmail, 'there', comp ? [{ title: comp.title, slug: comp.slug, image: img }] : [{ title: 'Win a Coach Handbag!', slug: 'win-a-coach-handbag', image: null }])
     return NextResponse.json({ ok: true, testSentTo: testEmail, featured: comp?.title || null })
   }
 
@@ -77,12 +79,17 @@ export async function GET(req: NextRequest) {
       let items: { id: string; qty: number }[] = []
       try { items = JSON.parse(s.metadata?.items || '[]') } catch { /* ignore */ }
       if (items.length === 0) continue
-      const comps = await prisma.competition.findMany({ where: { id: { in: items.map(i => i.id) } }, select: { title: true, slug: true } })
+      const comps = await prisma.competition.findMany({ where: { id: { in: items.map(i => i.id) } }, select: { title: true, slug: true, images: true } })
       if (comps.length === 0) continue
+      const compData = comps.map(c => {
+        let image: string | null = null
+        try { image = JSON.parse(c.images)[0] || null } catch { /* ignore */ }
+        return { title: c.title, slug: c.slug, image }
+      })
 
       results.push({ email: user.email, comps: comps.map(c => c.title) })
       if (!dryRun) {
-        await sendAbandonedCheckoutEmail(user.email, user.name, comps)
+        await sendAbandonedCheckoutEmail(user.email, user.name, compData)
         await markReminded(s.id)
         sent++
       }
