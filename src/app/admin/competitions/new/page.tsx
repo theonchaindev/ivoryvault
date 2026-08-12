@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { uploadImage } from '@/lib/uploadImage'
+import CompetitionPreview from './CompetitionPreview'
 
 interface MediaImage { url: string; publicId: string; size: number; createdAt: string }
 
@@ -93,6 +94,7 @@ export default function NewCompetitionPage() {
         <h1 className="nc-title">New Competition</h1>
       </div>
 
+      <div className="nc-layout">
       <form onSubmit={submit} className="nc-form">
 
         <section className="nc-card">
@@ -256,8 +258,19 @@ export default function NewCompetitionPage() {
         </div>
       </form>
 
+        <aside className="nc-preview">
+          <CompetitionPreview
+            title={title} subtitle={subtitle} description={description}
+            prizeValue={prizeValue} ticketPrice={ticketPrice} maxTickets={maxTickets}
+            drawDate={drawDate} images={images} type={type} featured={featured}
+          />
+        </aside>
+      </div>
+
       <style>{`
-        .nc-page { max-width: 820px; }
+        .nc-page { max-width: 1260px; }
+        .nc-layout { display: grid; grid-template-columns: minmax(0,1fr) 380px; gap: 1.75rem; align-items: start; }
+        @media (max-width: 1080px) { .nc-layout { grid-template-columns: 1fr; } }
         .nc-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2rem; }
         .nc-back { font-size: .8125rem; color: var(--ink3,#7a726a); text-decoration: none; transition: color .2s; }
         .nc-back:hover { color: var(--rg,#b8687a); }
