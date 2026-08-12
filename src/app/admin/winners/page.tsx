@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import AdminDrawButton from './AdminDrawButton'
 import AdminAnnounceButton from './AdminAnnounceButton'
+import ManualWinnersManager from './ManualWinnersManager'
+import { listWinners } from '@/lib/winners'
 
 async function getWinnersData() {
   const [winners, competitions] = await Promise.all([
@@ -26,6 +28,22 @@ async function getWinnersData() {
 export default async function AdminWinnersPage() {
   const { winners, competitions } = await getWinnersData()
   const drawableCompetitions = competitions.filter(c => c.ticketsSold > 0)
+
+  // Manual (featured) winners + all competitions for the picker
+  const [manualWinners, allComps] = await Promise.all([
+    listWinners(),
+    prisma.competition.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, title: true, drawDate: true },
+    }),
+  ])
+  const manualForClient = manualWinners.map(w => ({
+    id: w.id, name: w.name, competitionTitle: w.competitionTitle,
+    drawDate: w.drawDate ? w.drawDate.toISOString() : null, image: w.image,
+  }))
+  const compsForClient = allComps.map(c => ({
+    id: c.id, title: c.title, drawDate: c.drawDate ? c.drawDate.toISOString() : null,
+  }))
 
   return (
     <div>
@@ -137,6 +155,8 @@ export default async function AdminWinnersPage() {
           </div>
         )}
       </div>
+
+      <ManualWinnersManager winners={manualForClient} competitions={compsForClient} />
     </div>
   )
 }
