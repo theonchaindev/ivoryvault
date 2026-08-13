@@ -1,6 +1,7 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
+import { isCompClosed } from '@/lib/compState'
 import CompetitionDetail from './CompetitionDetail'
 
 export const dynamic = 'force-dynamic'
@@ -31,6 +32,9 @@ export default async function CompetitionPage({ params }: PageProps) {
   const { slug } = await params
   const competition = await getCompetition(slug)
   if (!competition) notFound()
+
+  // Once the draw date passes, the detail page is no longer accessible.
+  if (isCompClosed(competition)) redirect('/competitions')
 
   const images = (() => { try { return JSON.parse(competition.images) as string[] } catch { return [] } })()
 

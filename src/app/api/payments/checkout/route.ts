@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import { stripe } from '@/lib/stripe'
 import { applyCredit } from '@/lib/credit'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
+import { isCompClosed } from '@/lib/compState'
 
 interface BasketLine { competitionId: string; quantity: number }
 interface GuestDetails { name?: string; email?: string; phone?: string }
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       const comp = await prisma.competition.findUnique({ where: { id: line.competitionId } })
       if (!comp) return NextResponse.json({ error: 'A competition in your basket no longer exists' }, { status: 404 })
       if (comp.status !== 'active') return NextResponse.json({ error: `${comp.title} is no longer active` }, { status: 400 })
+      if (isCompClosed(comp)) return NextResponse.json({ error: `${comp.title} has closed — entries are no longer available` }, { status: 400 })
 
       const remaining = comp.maxTickets - comp.ticketsSold
       if (line.quantity > remaining) {

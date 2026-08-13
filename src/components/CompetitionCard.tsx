@@ -10,7 +10,7 @@ interface Comp {
   id: string; slug: string; title: string; subtitle?: string | null
   prizeValue: number; ticketPrice: number; maxTickets: number
   ticketsSold: number; images: string; drawDate?: string | null
-  status: string; featured: boolean
+  status: string; featured: boolean; closed?: boolean
 }
 
 export default function CompetitionCard({ competition: c, index = 0 }: { competition: Comp; index?: number }) {
@@ -22,6 +22,29 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
   const remaining = c.maxTickets - c.ticketsSold
   const hot = pct >= 80
   const comingSoon = c.status === 'coming_soon'
+
+  // ── Closed: draw date passed, awaiting winner — shown but not clickable ──
+  if (c.closed) {
+    return (
+      <motion.article
+        ref={ref}
+        className="cc cc--closed"
+        initial={{ opacity: 0, y: 24 }}
+        animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
+      >
+        <div className="cc__img-wrap">
+          {img ? <img src={img} alt={c.title} className="cc__img" style={{ filter: 'grayscale(0.7)', opacity: 0.72 }} /> : <div className="cc__placeholder" />}
+          <span className="cc__soon-tag" style={{ background: 'var(--ink)', color: '#fff' }}>Closed</span>
+        </div>
+        <div className="cc__body">
+          <h3 className="cc__title">{c.title}</h3>
+          <p className="cc__soon-text">Entries are closed — the winner will be drawn shortly.</p>
+          <span className="cc__enter-btn cc__enter-btn--soon">Entries Closed</span>
+        </div>
+      </motion.article>
+    )
+  }
 
   // ── Coming soon: graphic + label, not clickable ──
   if (comingSoon) {
