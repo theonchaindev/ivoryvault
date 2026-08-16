@@ -21,8 +21,8 @@ export function slugify(text: string): string {
     .replace(/(^-|-$)/g, '')
 }
 
-export function getTimeRemaining(drawDate: Date | string) {
-  const total = new Date(drawDate).getTime() - Date.now()
+export function getTimeRemaining(drawDate: Date | string, now: number = Date.now()) {
+  const total = new Date(drawDate).getTime() - now
   if (total <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, total: 0 }
   const seconds = Math.floor((total / 1000) % 60)
   const minutes = Math.floor((total / 1000 / 60) % 60)

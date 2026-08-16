@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useCart } from '@/context/CartContext'
 import { formatCurrency } from '@/lib/utils'
 import { applyCredit } from '@/lib/credit'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 
 const ease = [0.22, 1, 0.36, 1] as const
 
@@ -192,14 +193,24 @@ export default function BasketPage() {
 
               {error && <p className="bk__error">{error}</p>}
 
-              <button className="bk__checkout" onClick={handleCheckout} disabled={loading || loggedIn === null}>
-                {loading ? 'Starting checkout…'
-                  : loggedIn && applied.toPay <= 0 ? 'Complete Order — Free with Credit'
-                  : loggedIn === false ? 'Checkout as Guest'
-                  : 'Proceed to Checkout'}
-              </button>
+              {PAYMENTS_PAUSED ? (
+                <>
+                  <div className="bk__paused">
+                    <strong>Payments temporarily unavailable</strong>
+                    <span>We&rsquo;re really sorry — we&rsquo;re working to fix this as quickly as we can. Your basket is saved. Please check back soon to enter.</span>
+                  </div>
+                  <button className="bk__checkout" disabled aria-disabled="true">Checkout unavailable</button>
+                </>
+              ) : (
+                <button className="bk__checkout" onClick={handleCheckout} disabled={loading || loggedIn === null}>
+                  {loading ? 'Starting checkout…'
+                    : loggedIn && applied.toPay <= 0 ? 'Complete Order — Free with Credit'
+                    : loggedIn === false ? 'Checkout as Guest'
+                    : 'Proceed to Checkout'}
+                </button>
+              )}
               <Link href="/competitions" className="bk__continue">← Continue shopping</Link>
-              <p className="bk__note">🔒 Secure checkout via Stripe. Free entry route available.</p>
+              {!PAYMENTS_PAUSED && <p className="bk__note">🔒 Secure checkout. Free entry route available.</p>}
             </motion.div>
           </div>
         )}
@@ -281,6 +292,9 @@ export default function BasketPage() {
         .bk__continue { display: block; text-align: center; margin-top: .875rem; font-size: .75rem; color: var(--ink3); text-decoration: none; transition: color .2s; }
         .bk__continue:hover { color: var(--gold); }
         .bk__note { font-size: .625rem; color: var(--ink3); text-align: center; margin-top: 1rem; line-height: 1.5; }
+        .bk__paused { display: flex; flex-direction: column; gap: .35rem; background: #fdecea; border: 1px solid #f3b6ae; border-radius: 12px; padding: .9rem 1rem; margin-bottom: .75rem; }
+        .bk__paused strong { color: #c0261c; font-size: .8rem; letter-spacing: .02em; }
+        .bk__paused span { color: #7a2a22; font-size: .72rem; line-height: 1.5; }
       `}</style>
     </div>
   )

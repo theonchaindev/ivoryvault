@@ -2,11 +2,12 @@ export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
 import { CLOSED_WINDOW_MS, isCompClosed } from '@/lib/compState'
+import { effectiveNow } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
 
 async function getCompetitions() {
   // Closed standard comps linger for 16h after their draw date, then drop off.
-  const cutoff = new Date(Date.now() - CLOSED_WINDOW_MS)
+  const cutoff = new Date(effectiveNow() - CLOSED_WINDOW_MS)
   try {
     return await prisma.competition.findMany({
       where: {
@@ -35,7 +36,7 @@ export default async function CompetitionsPage() {
     ...c,
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
-    closed: isCompClosed(c),
+    closed: isCompClosed(c, effectiveNow()),
   }))
   // Open competitions first, closed ones sink to the bottom.
   serialized.sort((a, b) => Number(a.closed) - Number(b.closed))

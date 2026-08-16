@@ -6,12 +6,17 @@ import { stripe } from '@/lib/stripe'
 import { applyCredit } from '@/lib/credit'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
 import { isCompClosed } from '@/lib/compState'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 
 interface BasketLine { competitionId: string; quantity: number }
 interface GuestDetails { name?: string; email?: string; phone?: string }
 
 export async function POST(request: NextRequest) {
   try {
+    if (PAYMENTS_PAUSED) {
+      return NextResponse.json({ error: 'Payments are temporarily unavailable. Please check back soon.', paused: true }, { status: 503 })
+    }
+
     const session = await getSession()
     const { items, useCredit, guest } = await request.json() as { items: BasketLine[]; useCredit?: boolean; guest?: GuestDetails }
 

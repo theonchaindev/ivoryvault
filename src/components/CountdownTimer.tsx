@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { getTimeRemaining } from '@/lib/utils'
+import { PAYMENTS_PAUSED, effectiveNow } from '@/lib/outage'
 
 type Variant = 'dark' | 'light' | 'strip' | 'hero'
 
@@ -14,9 +15,11 @@ export default function CountdownTimer({
   compact?: boolean
   variant?: Variant
 }) {
-  const [t, setT] = useState(() => getTimeRemaining(drawDate))
+  const [t, setT] = useState(() => getTimeRemaining(drawDate, effectiveNow()))
 
   useEffect(() => {
+    // While payments are paused, freeze the clock — don't tick.
+    if (PAYMENTS_PAUSED) return
     const id = setInterval(() => setT(getTimeRemaining(drawDate)), 1000)
     return () => clearInterval(id)
   }, [drawDate])

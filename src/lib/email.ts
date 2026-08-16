@@ -163,6 +163,44 @@ export async function broadcastNewCompetition(emails: string[], comp: FeaturedCo
   return { sent, failed }
 }
 
+// ── Payments paused notice ──────────────────────────────────────────────
+const PAUSED_SUBJECT = 'An important update about Ivory Vault'
+
+function paymentsPausedHtml() {
+  const body = `
+    <p style="margin:0 0 18px;">We wanted to let you know that <strong style="color:#fff;">card payments on Ivory Vault are temporarily unavailable</strong> while we resolve an issue with our payment provider.</p>
+    <p style="margin:0 0 18px;">We&rsquo;re really sorry for the inconvenience — our team is working hard to get this fixed as quickly as possible.</p>
+    <p style="margin:0 0 18px;">Please rest assured:</p>
+    <ul style="margin:0 0 18px;padding-left:20px;line-height:1.8;">
+      <li><strong style="color:#fff;">All existing entries are completely safe.</strong></li>
+      <li><strong style="color:#fff;">Every live competition&rsquo;s countdown has been paused</strong> — no draw will close while payments are down, so no one misses out.</li>
+      <li>You&rsquo;ll be able to enter again as soon as payments are back.</li>
+    </ul>
+    <p style="margin:0;">Thank you so much for your patience and support. We&rsquo;ll be back very soon.</p>`
+  return shell('A quick update ⏳', body, { label: 'Visit Ivory Vault', href: `${SITE_URL}/competitions` })
+}
+
+/** Notify a single member that payments are paused. */
+export function sendPaymentsPausedEmail(to: string) {
+  return send({ to, subject: PAUSED_SUBJECT, html: paymentsPausedHtml() })
+}
+
+/** Mass-send the payments-paused notice in batches of 100. */
+export async function broadcastPaymentsPaused(emails: string[]): Promise<{ sent: number; failed: number }> {
+  if (!resend || emails.length === 0) return { sent: 0, failed: 0 }
+  const html = paymentsPausedHtml()
+  let sent = 0, failed = 0
+  for (let i = 0; i < emails.length; i += 100) {
+    const chunk = emails.slice(i, i + 100)
+    try {
+      const res = await resend.batch.send(chunk.map(to => ({ from: EMAIL_FROM, to, subject: PAUSED_SUBJECT, html })))
+      if (res.error) { failed += chunk.length; console.error('[email] paused batch error:', res.error) }
+      else sent += chunk.length
+    } catch (e) { failed += chunk.length; console.error('[email] paused batch threw:', e) }
+  }
+  return { sent, failed }
+}
+
 /** Welcome email on signup. */
 export function sendWelcomeEmail(to: string, name: string) {
   const body = `

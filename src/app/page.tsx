@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SiteAlert from '@/components/SiteAlert'
+import { effectiveNow } from '@/lib/outage'
 import CompetitionCard from '@/components/CompetitionCard'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
@@ -15,7 +16,7 @@ import StarDivider from '@/components/StarDivider'
 
 async function getData() {
   try {
-    const now = new Date()
+    const now = new Date(effectiveNow())
     const [comps, winners] = await Promise.all([
       prisma.competition.findMany({
         where: {

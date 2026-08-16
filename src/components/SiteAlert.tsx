@@ -1,6 +1,7 @@
 'use client'
 
 import { useLayoutEffect, useRef } from 'react'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 
 // Site-wide, non-clickable notice bar. Fixed to the top on every customer page.
 // Publishes its own height as --banner-h so the navbar and page content offset
@@ -22,6 +23,8 @@ export default function SiteAlert() {
       document.documentElement.style.removeProperty('--banner-h')
     }
   }, [])
+
+  if (!PAYMENTS_PAUSED) return null
 
   return (
     <div ref={ref} className="site-alert" role="status" aria-live="polite">
