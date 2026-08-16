@@ -141,8 +141,25 @@ a { color: inherit; }
 /* ═══════════════════════════════════════════════
    NAVBAR
 ═══════════════════════════════════════════════ */
+/* Site-wide alert bar (non-clickable). --banner-h is refined by SiteAlert at runtime. */
+:root { --banner-h: 52px; }
+@media (max-width: 640px) { :root { --banner-h: 100px; } }
+.site-alert {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 300;
+  background: #c0261c; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  padding: .65rem 1.25rem; text-align: center;
+  box-shadow: 0 2px 14px rgba(0,0,0,.25);
+}
+.site-alert__text {
+  margin: 0; max-width: 900px;
+  font-size: .8rem; font-weight: 500; line-height: 1.45; letter-spacing: .01em;
+}
+.site-alert__text strong { font-weight: 800; }
+@media (max-width: 640px) { .site-alert__text { font-size: .72rem; } }
+
 .nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  position: fixed; top: var(--banner-h, 0px); left: 0; right: 0; z-index: 100;
   background: var(--ink);
   border-bottom: 1px solid rgba(255,255,255,.08);
   transition: box-shadow .25s;
@@ -601,7 +618,7 @@ a { color: inherit; }
 .admin-sidebar__back:hover { color: rgba(255,255,255,.7); }
 
 /* Main shell (inside (main) layout) */
-.main-shell { padding-top: 80px; min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
+.main-shell { padding-top: calc(80px + var(--banner-h, 0px)); min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; }
 
 /* ═══════════════════════════════════════════════
    MISC PAGE SHELLS

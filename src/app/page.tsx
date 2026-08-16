@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import SiteAlert from '@/components/SiteAlert'
 import CompetitionCard from '@/components/CompetitionCard'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
@@ -70,10 +71,11 @@ export default async function Home() {
 
   return (
     <>
+      <SiteAlert />
       <Navbar />
 
       {/* Crystal Comps-style carousel hero */}
-      <div style={{ paddingTop: '68px' }}>
+      <div style={{ paddingTop: 'calc(68px + var(--banner-h, 0px))' }}>
         <HomeHero comps={heroComps} />
       </div>
 
