@@ -185,20 +185,38 @@ export function sendPaymentsPausedEmail(to: string) {
   return send({ to, subject: PAUSED_SUBJECT, html: paymentsPausedHtml() })
 }
 
-/** Mass-send the payments-paused notice in batches of 100. */
-export async function broadcastPaymentsPaused(emails: string[]): Promise<{ sent: number; failed: number }> {
+/** Mass-send the payments-paused notice. Batches where possible, falls back to
+ *  individual sends so one bad address can't block the whole run. */
+export async function broadcastPaymentsPaused(emails: string[]): Promise<{ sent: number; failed: number; sampleError?: string }> {
   if (!resend || emails.length === 0) return { sent: 0, failed: 0 }
+  const r = resend
   const html = paymentsPausedHtml()
   let sent = 0, failed = 0
-  for (let i = 0; i < emails.length; i += 100) {
-    const chunk = emails.slice(i, i + 100)
+  let sampleError: string | undefined
+
+  const sendOne = async (to: string) => {
     try {
-      const res = await resend.batch.send(chunk.map(to => ({ from: EMAIL_FROM, to, subject: PAUSED_SUBJECT, html })))
-      if (res.error) { failed += chunk.length; console.error('[email] paused batch error:', res.error) }
-      else sent += chunk.length
-    } catch (e) { failed += chunk.length; console.error('[email] paused batch threw:', e) }
+      const res = await r.emails.send({ from: EMAIL_FROM, to, subject: PAUSED_SUBJECT, html })
+      if (res.error) { failed++; sampleError ??= `${to}: ${JSON.stringify(res.error)}` }
+      else sent++
+    } catch (e) { failed++; sampleError ??= `${to}: ${(e as Error).message}` }
   }
-  return { sent, failed }
+
+  for (let i = 0; i < emails.length; i += 20) {
+    const chunk = emails.slice(i, i + 20)
+    try {
+      const res = await r.batch.send(chunk.map(to => ({ from: EMAIL_FROM, to, subject: PAUSED_SUBJECT, html })))
+      if (res.error) {
+        // Batch rejected (often one invalid address) — retry the chunk individually.
+        sampleError ??= `batch: ${JSON.stringify(res.error)}`
+        for (const to of chunk) await sendOne(to)
+      } else sent += chunk.length
+    } catch (e) {
+      sampleError ??= `batch: ${(e as Error).message}`
+      for (const to of chunk) await sendOne(to)
+    }
+  }
+  return { sent, failed, sampleError }
 }
 
 /** Welcome email on signup. */
