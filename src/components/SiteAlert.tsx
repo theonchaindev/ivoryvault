@@ -26,8 +26,9 @@ export default function SiteAlert() {
   return (
     <div ref={ref} className="site-alert" role="status" aria-live="polite">
       <p className="site-alert__text">
-        <strong>Payments temporarily unavailable.</strong> We&rsquo;re really sorry — we&rsquo;re working to fix
-        this as quickly as we can. Please check back soon to enter.
+        <strong>Payments temporarily unavailable.</strong>{' '}
+        We&rsquo;re really sorry — we&rsquo;re working to fix this as quickly as we can.{' '}
+        Please check back soon to enter.
       </p>
     </div>
   )
