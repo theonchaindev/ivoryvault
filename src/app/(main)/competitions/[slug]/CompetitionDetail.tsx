@@ -6,6 +6,7 @@ import CountdownTimer from '@/components/CountdownTimer'
 import TicketSelector from './TicketSelector'
 import FreePostalEntryModal from './FreePostalEntryModal'
 import { formatDate } from '@/lib/utils'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 
 interface Competition {
   id: string; slug: string; title: string; subtitle?: string | null
@@ -88,7 +89,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
           )}
 
           {/* Mobile-only Enter Now button, above the countdown */}
-          {competition.status === 'active' && (
+          {competition.status === 'active' && !PAYMENTS_PAUSED && (
             <button ref={enterBtnRef} className="cdp__mobile-enter" onClick={() => setSheetOpen(true)}>
               Enter Now
             </button>

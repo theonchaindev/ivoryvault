@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'motion/react'
 import { formatCurrency } from '@/lib/utils'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 import CountdownTimer from './CountdownTimer'
 
 interface Comp {
@@ -75,7 +76,7 @@ function FeaturedCard({ c, large = false, index = 0 }: { c: Comp; large?: boolea
               whileHover={{ x: 3 }}
               transition={{ type: 'spring', stiffness: 400 }}
             >
-              Enter Now →
+              {PAYMENTS_PAUSED ? 'Entries Paused' : 'Enter Now →'}
             </motion.span>
           </div>
         </div>

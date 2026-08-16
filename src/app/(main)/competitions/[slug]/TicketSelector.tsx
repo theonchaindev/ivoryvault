@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 
 interface Props {
   competition: {
@@ -59,6 +60,14 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
       maxAvailable: maxSelect,
     })
     router.push('/basket')
+  }
+
+  if (PAYMENTS_PAUSED) {
+    return (
+      <div className="ts ts--flat">
+        <p className="ts__closed">Entries are paused while payments are temporarily unavailable. Please check back soon.</p>
+      </div>
+    )
   }
 
   if (competition.status !== 'active') {

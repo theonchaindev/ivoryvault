@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { formatCurrency } from '@/lib/utils'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 import CountdownTimer from './CountdownTimer'
 
 interface HeroComp {
@@ -105,7 +106,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
                   <div className="hh__card-foot">
                     <span className="hh__card-price">{formatCurrency(c.ticketPrice)}<span className="hh__card-per"> / entry</span></span>
                   </div>
-                  <Link href={`/competitions/${c.slug}`} className="hh__card-btn">Enter Now</Link>
+                  <Link href={`/competitions/${c.slug}`} className="hh__card-btn">{PAYMENTS_PAUSED ? 'Entries Paused' : 'Enter Now'}</Link>
                 </div>
               </motion.div>
             </AnimatePresence>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'
 import { formatCurrency } from '@/lib/utils'
+import { PAYMENTS_PAUSED } from '@/lib/outage'
 import CountdownTimer from './CountdownTimer'
 
 interface Comp {
@@ -121,7 +122,9 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
           </div>
 
           {/* Bold full-width Enter Now button */}
-          <span className="cc__enter-btn">Enter Now</span>
+          <span className={`cc__enter-btn${PAYMENTS_PAUSED ? ' cc__enter-btn--soon' : ''}`}>
+            {PAYMENTS_PAUSED ? 'Entries Paused' : 'Enter Now'}
+          </span>
         </div>
 
       </Link>
