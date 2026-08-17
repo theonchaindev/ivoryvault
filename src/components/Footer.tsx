@@ -53,6 +53,24 @@ export default function Footer() {
 
         <div className="site-footer__divider"><StarDivider dark /></div>
 
+        <div className="site-footer__pay">
+          <span className="site-footer__pay-label">Payments Accepted</span>
+          <div className="site-footer__pay-cards">
+            <span className="pay-card" aria-label="Visa" role="img">
+              <svg width="40" height="13" viewBox="0 0 40 13" aria-hidden="true">
+                <text x="0" y="11" fontFamily="Arial, Helvetica, sans-serif" fontSize="14" fontWeight="700" fontStyle="italic" fill="#1434CB" letterSpacing="1.5">VISA</text>
+              </svg>
+            </span>
+            <span className="pay-card" aria-label="Mastercard" role="img">
+              <svg width="34" height="22" viewBox="0 0 34 22" aria-hidden="true">
+                <circle cx="13" cy="11" r="8.5" fill="#EB001B" />
+                <circle cx="21" cy="11" r="8.5" fill="#F79E1B" />
+                <path d="M17 4.3a8.5 8.5 0 0 0 0 13.4 8.5 8.5 0 0 0 0-13.4Z" fill="#FF5F00" />
+              </svg>
+            </span>
+          </div>
+        </div>
+
         <div className="site-footer__bottom">
           <p>© {year} Ivory Vault Ltd. All rights reserved.</p>
           <p>18+ only · UK residents · <Link href="/free-entry" className="site-footer__free">Free entry available</Link></p>

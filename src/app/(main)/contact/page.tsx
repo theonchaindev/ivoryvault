@@ -10,7 +10,7 @@ const spring = { type: 'spring', stiffness: 350, damping: 28 } as const
 const INFO = [
   { icon: '✉', label: 'Email', value: 'support@ivoryvaultcompetitions.co.uk' },
   { icon: '⏱', label: 'Response Time', value: 'Within 24 hours' },
-  { icon: '📍', label: 'Location', value: 'United Kingdom' },
+  { icon: '📍', label: 'Address', value: '68 Laburnum Crescent, Northampton, NN3 2LF' },
 ]
 
 export default function ContactPage() {

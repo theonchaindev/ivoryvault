@@ -452,6 +452,10 @@ a { color: inherit; }
 .site-footer__nav { display: flex; flex-direction: column; gap: .75rem; }
 .site-footer__link { font-size: .9375rem; color: rgba(255,255,255,.65); text-decoration: none; transition: color .2s; }
 .site-footer__link:hover { color: #fff; }
+.site-footer__pay { display: flex; align-items: center; gap: .85rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.site-footer__pay-label { font-size: .625rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.45); }
+.site-footer__pay-cards { display: flex; gap: .5rem; }
+.pay-card { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 30px; background: #fff; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
 .site-footer__bottom { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; font-size: .8125rem; color: rgba(255,255,255,.5); }
 .site-footer__free { color: rgba(31,122,224,.6); text-decoration: none; transition: color .2s; }
 .site-footer__free:hover { color: var(--gold); }
