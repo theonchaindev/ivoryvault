@@ -71,7 +71,8 @@ export async function createPaymentJob(input: CreatePaymentJobInput): Promise<Cr
     throw new Error(`Cashflows create failed (${res.status}): ${JSON.stringify(json)}`)
   }
   const data = json.data ?? json
-  const actionUrl: string | undefined = data?.links?.action?.url
+  // `links` is at the top level of the response; `reference` is inside `data`.
+  const actionUrl: string | undefined = json?.links?.action?.url ?? data?.links?.action?.url
   const paymentJobReference: string | undefined = data?.reference
   if (!actionUrl || !paymentJobReference) {
     throw new Error(`Cashflows create: missing action url / reference: ${JSON.stringify(json)}`)
