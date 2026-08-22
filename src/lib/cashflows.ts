@@ -29,6 +29,9 @@ export interface CreatePaymentJobInput {
   returnUrlFailed: string
   returnUrlCancelled: string
   webhookUrl: string
+  // Omit to show ALL payment methods enabled in the Cashflows portal
+  // (cards + Apple Pay + Google Pay + PayPal). Pass ['card'] to restrict.
+  paymentMethods?: string[]
 }
 
 export interface CreatePaymentJobResult {
@@ -57,7 +60,7 @@ export async function createPaymentJob(input: CreatePaymentJobInput): Promise<Cr
       ReturnUrlCancelled: input.returnUrlCancelled,
       WebhookUrl: input.webhookUrl,
     },
-    paymentMethodsToUse: ['card'],
+    ...(input.paymentMethods ? { paymentMethodsToUse: input.paymentMethods } : {}),
   }
 
   const raw = JSON.stringify(body)

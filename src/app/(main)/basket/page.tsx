@@ -17,13 +17,14 @@ export default function BasketPage() {
   const [credit, setCredit] = useState(0)
   const [useCredit, setUseCredit] = useState(true)
   const [loggedIn, setLoggedIn] = useState<boolean | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [guest, setGuest] = useState({ name: '', email: '', phone: '' })
   const [guestAgree, setGuestAgree] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/me')
       .then(r => r.ok ? r.json() : null)
-      .then(d => { if (d?.user) { setLoggedIn(true); setCredit(d.user.siteCredit || 0) } else setLoggedIn(false) })
+      .then(d => { if (d?.user) { setLoggedIn(true); setCredit(d.user.siteCredit || 0); setIsAdmin(d.user.role === 'admin') } else setLoggedIn(false) })
       .catch(() => setLoggedIn(false))
   }, [])
 
@@ -38,7 +39,7 @@ export default function BasketPage() {
     }
     setLoading(true)
     try {
-      const res = await fetch('/api/payments/checkout', {
+      const res = await fetch('/api/payments/cashflows/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -199,7 +200,13 @@ export default function BasketPage() {
                     <strong>Payments temporarily unavailable</strong>
                     <span>We&rsquo;re really sorry — we&rsquo;re working to fix this as quickly as we can. Your basket is saved. Please check back soon to enter.</span>
                   </div>
-                  <button className="bk__checkout" disabled aria-disabled="true">Checkout unavailable</button>
+                  {isAdmin ? (
+                    <button className="bk__checkout" onClick={handleCheckout} disabled={loading} style={{ background: '#7c3aed' }}>
+                      {loading ? 'Starting…' : 'Admin test — Pay with Cashflows'}
+                    </button>
+                  ) : (
+                    <button className="bk__checkout" disabled aria-disabled="true">Checkout unavailable</button>
+                  )}
                 </>
               ) : (
                 <button className="bk__checkout" onClick={handleCheckout} disabled={loading || loggedIn === null}>
