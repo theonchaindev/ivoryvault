@@ -201,7 +201,7 @@ export default function BasketPage() {
                     <span>We&rsquo;re really sorry — we&rsquo;re working to fix this as quickly as we can. Your basket is saved. Please check back soon to enter.</span>
                   </div>
                   {isAdmin ? (
-                    <button className="bk__checkout" onClick={handleCheckout} disabled={loading} style={{ background: '#7c3aed' }}>
+                    <button className="bk__checkout" onClick={handleCheckout} disabled={loading}>
                       {loading ? 'Starting…' : 'Admin test — Pay with Cashflows'}
                     </button>
                   ) : (
