@@ -72,7 +72,7 @@ export default function Footer() {
         </div>
 
         <div className="site-footer__bottom">
-          <p>© {year} Ivory Vault Ltd. All rights reserved.</p>
+          <p>© {year} Ivory Vault Competitions Ltd. All rights reserved.</p>
           <p>18+ only · UK residents · <Link href="/free-entry" className="site-footer__free">Free entry available</Link></p>
         </div>
       </div>

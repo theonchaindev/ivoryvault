@@ -8,7 +8,7 @@ export const metadata = {
 const SECTIONS: { title: string; content: string }[] = [
   {
     title: '1. Who we are',
-    content: `Ivory Vault Ltd ("Ivory Vault", "we", "us", "our") operates this prize-competition website and is the "data controller" responsible for your personal data. If you have any questions about this policy or how we handle your data, contact us at support@ivoryvaultcompetitions.co.uk.`,
+    content: `Ivory Vault Competitions Ltd ("Ivory Vault", "we", "us", "our"), a company registered in England and Wales under company number 17244721 with its registered office at 68 Laburnum Crescent, Northampton, NN3 2LF, operates this prize-competition website and is the "data controller" responsible for your personal data. If you have any questions about this policy or how we handle your data, contact us at support@ivoryvaultcompetitions.co.uk.`,
   },
   {
     title: '2. The data we collect',

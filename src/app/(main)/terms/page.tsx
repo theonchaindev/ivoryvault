@@ -24,7 +24,7 @@ export default function TermsPage() {
             {[
               {
                 title: '1. Company Information',
-                content: `These terms and conditions ("Terms") govern all competitions operated by Ivory Vault Ltd ("Ivory Vault", "we", "us" or "our"), a company registered in England and Wales (Company registration number: [COMPANY NUMBER TO BE CONFIRMED]). Our registered office and business address is 68 Laburnum Crescent, Northampton, NN3 2LF, United Kingdom. You can contact us at any time by email at support@ivoryvaultcompetitions.co.uk. By entering any competition on this website you confirm that you have read, understood and agree to be bound by these Terms.`,
+                content: `These terms and conditions ("Terms") govern all competitions operated by Ivory Vault Competitions Ltd ("Ivory Vault", "we", "us" or "our"), a company registered in England and Wales under company number 17244721. Our registered office and business address is 68 Laburnum Crescent, Northampton, NN3 2LF, United Kingdom. You can contact us at any time by email at support@ivoryvaultcompetitions.co.uk. By entering any competition on this website you confirm that you have read, understood and agree to be bound by these Terms.`,
               },
               {
                 title: '2. Eligibility',
