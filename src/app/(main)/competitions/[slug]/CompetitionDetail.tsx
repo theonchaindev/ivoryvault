@@ -7,6 +7,7 @@ import TicketSelector from './TicketSelector'
 import FreePostalEntryModal from './FreePostalEntryModal'
 import { formatDate } from '@/lib/utils'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
+import { useIsAdmin } from '@/lib/useIsAdmin'
 
 interface Competition {
   id: string; slug: string; title: string; subtitle?: string | null
@@ -22,6 +23,8 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
   const remaining = competition.maxTickets - competition.ticketsSold
   const pct = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
   const hot = pct >= 80
+  const isAdmin = useIsAdmin()
+  const canEnter = !PAYMENTS_PAUSED || isAdmin
 
   // Mobile: an in-page "Enter Now" button opens the ticket sheet; the sticky
   // bottom bar only appears once that button has scrolled out of view.
@@ -89,7 +92,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
           )}
 
           {/* Mobile-only Enter Now button, above the countdown */}
-          {competition.status === 'active' && !PAYMENTS_PAUSED && (
+          {competition.status === 'active' && canEnter && (
             <button ref={enterBtnRef} className="cdp__mobile-enter" onClick={() => setSheetOpen(true)}>
               Enter Now
             </button>

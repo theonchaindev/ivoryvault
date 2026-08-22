@@ -5,6 +5,7 @@ import { motion, useInView } from 'motion/react'
 import { useRef } from 'react'
 import { formatCurrency } from '@/lib/utils'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
+import { useIsAdmin } from '@/lib/useIsAdmin'
 import CountdownTimer from './CountdownTimer'
 
 interface Comp {
@@ -23,6 +24,8 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
   const remaining = c.maxTickets - c.ticketsSold
   const hot = pct >= 80
   const comingSoon = c.status === 'coming_soon'
+  const isAdmin = useIsAdmin()
+  const entriesPaused = PAYMENTS_PAUSED && !isAdmin
 
   // ── Closed: draw date passed, awaiting winner — shown but not clickable ──
   if (c.closed) {
@@ -122,8 +125,8 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
           </div>
 
           {/* Bold full-width Enter Now button */}
-          <span className={`cc__enter-btn${PAYMENTS_PAUSED ? ' cc__enter-btn--soon' : ''}`}>
-            {PAYMENTS_PAUSED ? 'Entries Paused' : 'Enter Now'}
+          <span className={`cc__enter-btn${entriesPaused ? ' cc__enter-btn--soon' : ''}`}>
+            {entriesPaused ? 'Entries Paused' : 'Enter Now'}
           </span>
         </div>
 

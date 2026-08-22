@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { formatCurrency } from '@/lib/utils'
 import { useCart } from '@/context/CartContext'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
+import { useIsAdmin } from '@/lib/useIsAdmin'
 
 interface Props {
   competition: {
@@ -22,6 +23,7 @@ const ease = [0.22, 1, 0.36, 1] as const
 
 export default function TicketSelector({ competition, open: controlledOpen, onOpenChange, hideTrigger = false }: Props) {
   const router = useRouter()
+  const isAdmin = useIsAdmin()
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
@@ -62,7 +64,7 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
     router.push('/basket')
   }
 
-  if (PAYMENTS_PAUSED) {
+  if (PAYMENTS_PAUSED && !isAdmin) {
     return (
       <div className="ts ts--flat">
         <p className="ts__closed">Entries are paused while payments are temporarily unavailable. Please check back soon.</p>
@@ -192,6 +194,12 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
           </motion.span>
         </AnimatePresence>
       </div>
+
+      {PAYMENTS_PAUSED && isAdmin && (
+        <p style={{ background: '#f3e8ff', color: '#6b21a8', fontSize: '.7rem', fontWeight: 600, padding: '.5rem .7rem', borderRadius: '8px', marginBottom: '.6rem', textAlign: 'center' }}>
+          Admin preview — payments are paused for the public. Any payment here is a REAL live charge.
+        </p>
+      )}
 
       <motion.button
         className="ts__cta"
