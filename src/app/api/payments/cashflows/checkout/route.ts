@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { applyCredit } from '@/lib/credit'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
-import { isCompClosed } from '@/lib/compState'
+import { isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { createPaymentJob, cashflowsConfigured } from '@/lib/cashflows'
 import { createOrder } from '@/lib/cashflowsOrders'
@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
       if (!comp) return NextResponse.json({ error: 'A competition in your basket no longer exists' }, { status: 404 })
       if (comp.status !== 'active') return NextResponse.json({ error: `${comp.title} is no longer active` }, { status: 400 })
       if (isCompClosed(comp)) return NextResponse.json({ error: `${comp.title} has closed — entries are no longer available` }, { status: 400 })
+      if (isCompUpcoming(comp)) return NextResponse.json({ error: `Entries for ${comp.title} haven't opened yet` }, { status: 400 })
       const remaining = comp.maxTickets - comp.ticketsSold
       if (line.quantity > remaining) {
         return NextResponse.json({ error: `Only ${remaining} tickets left for ${comp.title}` }, { status: 400 })

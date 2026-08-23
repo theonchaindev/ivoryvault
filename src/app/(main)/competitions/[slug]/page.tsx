@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
-import { isCompClosed } from '@/lib/compState'
+import { isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { effectiveNow } from '@/lib/outage'
 import CompetitionDetail from './CompetitionDetail'
 
@@ -66,6 +66,7 @@ export default async function CompetitionPage({ params }: PageProps) {
         ticketsSold: competition.ticketsSold,
         status: competition.status,
         drawDate: competition.drawDate ?? null,
+        upcoming: isCompUpcoming(competition, effectiveNow()),
         images,
       }}
     />

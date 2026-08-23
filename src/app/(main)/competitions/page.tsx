@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
-import { CLOSED_WINDOW_MS, isCompClosed } from '@/lib/compState'
+import { CLOSED_WINDOW_MS, isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { effectiveNow } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
 
@@ -32,13 +32,16 @@ export const metadata = {
 
 export default async function CompetitionsPage() {
   const competitions = await getCompetitions()
+  const now = effectiveNow()
   const serialized = competitions.map(c => ({
     ...c,
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
-    closed: isCompClosed(c, effectiveNow()),
+    closed: isCompClosed(c, now),
+    upcoming: isCompUpcoming(c, now),
   }))
-  // Open competitions first, closed ones sink to the bottom.
-  serialized.sort((a, b) => Number(a.closed) - Number(b.closed))
+  // Order: open (enter now) first, then upcoming (enter soon), then closed.
+  const rank = (c: typeof serialized[number]) => c.closed ? 2 : c.upcoming ? 1 : 0
+  serialized.sort((a, b) => rank(a) - rank(b))
   return <CompetitionsClient competitions={serialized} />
 }

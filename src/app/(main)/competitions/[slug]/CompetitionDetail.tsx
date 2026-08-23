@@ -13,7 +13,7 @@ interface Competition {
   id: string; slug: string; title: string; subtitle?: string | null
   description: string; prizeValue: number; ticketPrice: number
   maxTickets: number; ticketsSold: number; status: string
-  drawDate?: Date | null; images: string[]
+  drawDate?: Date | null; upcoming?: boolean; images: string[]
 }
 
 const ease = [0.22, 1, 0.36, 1] as const
@@ -24,7 +24,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
   const pct = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
   const hot = pct >= 80
   const isAdmin = useIsAdmin()
-  const canEnter = !PAYMENTS_PAUSED || isAdmin
+  const canEnter = (!PAYMENTS_PAUSED || isAdmin) && !competition.upcoming
 
   // Mobile: an in-page "Enter Now" button opens the ticket sheet; the sticky
   // bottom bar only appears once that button has scrolled out of view.
@@ -170,6 +170,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
               maxTickets: competition.maxTickets,
               ticketsSold: competition.ticketsSold,
               status: competition.status,
+              upcoming: competition.upcoming,
             }} />
 
           {/* Description */}

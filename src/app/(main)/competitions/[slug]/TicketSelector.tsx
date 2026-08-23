@@ -11,7 +11,7 @@ import { useIsAdmin } from '@/lib/useIsAdmin'
 interface Props {
   competition: {
     id: string; slug: string; title: string; image: string | null; ticketPrice: number
-    maxTickets: number; ticketsSold: number; status: string
+    maxTickets: number; ticketsSold: number; status: string; upcoming?: boolean
   }
   open?: boolean
   onOpenChange?: (open: boolean) => void
@@ -62,6 +62,14 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
       maxAvailable: maxSelect,
     })
     router.push('/basket')
+  }
+
+  if (competition.upcoming) {
+    return (
+      <div className="ts ts--flat">
+        <p className="ts__closed">Entries for this competition open in the final 30 days before the draw. Check back soon!</p>
+      </div>
+    )
   }
 
   if (PAYMENTS_PAUSED && !isAdmin) {

@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SiteAlert from '@/components/SiteAlert'
 import { effectiveNow } from '@/lib/outage'
+import { ENTER_WINDOW_MS } from '@/lib/compState'
 import CompetitionCard from '@/components/CompetitionCard'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
@@ -21,8 +22,12 @@ async function getData() {
       prisma.competition.findMany({
         where: {
           status: 'active',
-          // Exclude competitions where draw date has already passed
-          OR: [{ drawDate: null }, { drawDate: { gt: now } }],
+          // Show only enterable comps: exclude past-draw and "Enter Soon" (>30 days out).
+          OR: [
+            { drawDate: null },
+            { type: 'instant', drawDate: { gt: now } },
+            { type: { not: 'instant' }, drawDate: { gt: now, lte: new Date(now.getTime() + ENTER_WINDOW_MS) } },
+          ],
         },
         orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],
         take: 9,
