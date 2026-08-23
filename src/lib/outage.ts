@@ -10,7 +10,7 @@
 // otherwise the frozen countdowns will jump down and some comps may close instantly.
 // Also reset the CSS default `--banner-h` to 0 in globals.css so no gap remains.
 
-export const PAYMENTS_PAUSED = true
+export const PAYMENTS_PAUSED = false
 
 // The instant the clocks were frozen (used as "now" everywhere while paused).
 export const PAUSED_AT = '2026-08-16T09:20:00Z'

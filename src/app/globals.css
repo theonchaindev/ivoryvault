@@ -141,9 +141,9 @@ a { color: inherit; }
 /* ═══════════════════════════════════════════════
    NAVBAR
 ═══════════════════════════════════════════════ */
-/* Site-wide alert bar (non-clickable). --banner-h is refined by SiteAlert at runtime. */
-:root { --banner-h: 52px; }
-@media (max-width: 640px) { :root { --banner-h: 100px; } }
+/* Site-wide alert bar (non-clickable). --banner-h is refined by SiteAlert at runtime;
+   0 when no banner is shown (payments live). */
+:root { --banner-h: 0px; }
 .site-alert {
   position: fixed; top: 0; left: 0; right: 0; z-index: 300;
   background: #c0261c; color: #fff;
