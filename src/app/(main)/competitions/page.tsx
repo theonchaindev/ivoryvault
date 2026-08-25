@@ -40,8 +40,11 @@ export default async function CompetitionsPage() {
     closed: isCompClosed(c, now),
     upcoming: isCompUpcoming(c, now),
   }))
-  // Order: open (enter now) first, then upcoming (enter soon), then closed.
+  // Order: open (enter now) first, then upcoming (enter soon), then closed;
+  // within each group, the soonest draw date first (comps ending soon lead).
   const rank = (c: typeof serialized[number]) => c.closed ? 2 : c.upcoming ? 1 : 0
-  serialized.sort((a, b) => rank(a) - rank(b))
+  const drawTs = (c: typeof serialized[number]) => c.drawDate ? new Date(c.drawDate).getTime() : Infinity
+  serialized.sort((a, b) =>
+    rank(a) - rank(b) || drawTs(a) - drawTs(b) || Number(b.featured) - Number(a.featured))
   return <CompetitionsClient competitions={serialized} />
 }
