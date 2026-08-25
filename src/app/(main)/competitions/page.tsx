@@ -40,9 +40,10 @@ export default async function CompetitionsPage() {
     closed: isCompClosed(c, now),
     upcoming: isCompUpcoming(c, now),
   }))
-  // Order: open (enter now) first, then upcoming (enter soon), then closed;
-  // within each group, the soonest draw date first (comps ending soon lead).
-  const rank = (c: typeof serialized[number]) => c.closed ? 2 : c.upcoming ? 1 : 0
+  // Order: live (enter now) → enter soon → coming soon → closed.
+  // Within each group, the soonest draw date first (comps ending soon lead).
+  const rank = (c: typeof serialized[number]) =>
+    c.closed ? 4 : c.status === 'coming_soon' ? 3 : c.upcoming ? 2 : 1
   const drawTs = (c: typeof serialized[number]) => c.drawDate ? new Date(c.drawDate).getTime() : Infinity
   serialized.sort((a, b) =>
     rank(a) - rank(b) || drawTs(a) - drawTs(b) || Number(b.featured) - Number(a.featured))
