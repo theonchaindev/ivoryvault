@@ -266,6 +266,22 @@ export function sendInstantWinEmail(to: string, name: string, amount: number, ki
   return send({ to, subject: `You won ${money(amount)}${kind === 'cash' ? ' cash' : ''}! 🎉`, html: shell(`Instant <span style="color:#2f6bf0;">win!</span> 🎉`, body, { label: 'Go to My Account', href: `${SITE_URL}/account` }) })
 }
 
+/** Manual competition winner notification (sent by an admin from the portal). */
+export function sendWinnerEmail(to: string, opts: { name: string; competitionTitle: string; ticketNumber?: string | number | null; prizeTitle?: string | null }) {
+  const first = esc((opts.name || '').split(' ')[0] || opts.name || 'there')
+  const comp = esc(opts.competitionTitle)
+  const ticketLine = (opts.ticketNumber !== undefined && opts.ticketNumber !== null && `${opts.ticketNumber}` !== '')
+    ? `<p style="margin:0 0 16px;">Your winning ticket number was <strong style="color:#fff;">#${esc(String(opts.ticketNumber))}</strong>.</p>` : ''
+  const prizeLine = opts.prizeTitle ? `<p style="margin:0 0 16px;">Your prize: <strong style="color:#fff;">${esc(opts.prizeTitle)}</strong>.</p>` : ''
+  const body = `
+    <p style="margin:0 0 16px;">Congratulations ${first} — you're the <strong style="color:#fff;">winner</strong> of <strong style="color:#fff;">${comp}</strong>! 🎉</p>
+    ${ticketLine}
+    ${prizeLine}
+    <p style="margin:0 0 16px;">Our team will be in touch very shortly to arrange your prize. Please keep an eye on your inbox and phone.</p>
+    <p style="margin:0;">Thank you for taking part — and enjoy your win!</p>`
+  return send({ to, subject: `🎉 Congratulations — you've won ${opts.competitionTitle}!`, html: shell(`You <span style="color:#2f6bf0;">won!</span> 🎉`, body, { label: 'Go to My Account', href: `${SITE_URL}/account` }) })
+}
+
 /** After a guest checkout — invite them to create/claim their account. */
 export function sendGuestCreateAccount(to: string, name: string) {
   const body = `

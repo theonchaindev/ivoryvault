@@ -47,13 +47,18 @@ export default async function AdminWinnersPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>
-          Winners
-        </h1>
-        <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-          {winners.length + manualForClient.length} winners
-        </p>
+      <div style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '2rem', fontWeight: 600, color: 'var(--ink)' }}>
+            Winners
+          </h1>
+          <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
+            {winners.length + manualForClient.length} winners
+          </p>
+        </div>
+        <a href="/admin/winner-email" className="btn-primary" style={{ padding: '0.7rem 1.4rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+          ✦ Send Winner Email
+        </a>
       </div>
 
       {/* Featured winners — add / manage (shown at the top) */}
