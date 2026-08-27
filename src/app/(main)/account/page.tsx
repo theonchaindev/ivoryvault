@@ -57,6 +57,21 @@ export default async function AccountPage() {
     take: 30,
   })
 
+  // Competitions this user has won
+  const winsRaw = await prisma.winner.findMany({
+    where: { userId: session.userId },
+    orderBy: { drawnAt: 'desc' },
+    include: { competition: { select: { title: true, slug: true } } },
+  })
+  const wins = winsRaw.map(w => ({
+    id: w.id,
+    competitionTitle: w.competition.title,
+    competitionSlug: w.competition.slug,
+    prizeTitle: w.prizeTitle ?? null,
+    prizeValue: w.prizeValue ?? null,
+    drawnAt: w.drawnAt.toISOString(),
+  }))
+
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0)
   const activeEntries = tickets.filter(t => t.competition.status === 'active').length
   const tier = getTier(totalTickets)
@@ -91,6 +106,7 @@ export default async function AccountPage() {
         progressPct={progressPct}
         tickets={ticketData}
         instantSpins={instantSpins}
+        wins={wins}
         notifications={notifications.map(n => ({ id: n.id, title: n.title, body: n.body, icon: n.icon, read: n.read, createdAt: n.createdAt.toISOString() }))}
       />
     </>
