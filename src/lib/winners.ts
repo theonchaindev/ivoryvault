@@ -44,6 +44,14 @@ export async function createWinner(d: { name: string; competitionTitle: string; 
   )
 }
 
+export async function updateWinner(id: string, d: { name: string; competitionTitle: string; drawDate: Date | null; image: string }) {
+  await ensure()
+  await prisma.$executeRawUnsafe(
+    `UPDATE "ManualWinner" SET "name" = $2, "competitionTitle" = $3, "drawDate" = $4, "image" = $5 WHERE "id" = $1`,
+    id, d.name, d.competitionTitle, d.drawDate, d.image,
+  )
+}
+
 export async function deleteWinner(id: string) {
   await ensure()
   await prisma.$executeRawUnsafe(`DELETE FROM "ManualWinner" WHERE "id" = $1`, id)

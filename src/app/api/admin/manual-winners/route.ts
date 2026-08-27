@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
-import { listWinners, createWinner, deleteWinner } from '@/lib/winners'
+import { listWinners, createWinner, updateWinner, deleteWinner } from '@/lib/winners'
 
 export const dynamic = 'force-dynamic'
 
@@ -33,6 +33,23 @@ export async function POST(req: NextRequest) {
       drawDate: drawDate ? new Date(drawDate) : null,
       image: image.trim(),
       sortOrder: parseInt(sortOrder, 10) || 0,
+    })
+    return NextResponse.json({ ok: true })
+  } catch (err) { return fail(err) }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    await requireAdmin()
+    const { id, name, competitionTitle, drawDate, image } = await req.json()
+    if (!id || !name?.trim() || !competitionTitle?.trim() || !image?.trim()) {
+      return NextResponse.json({ error: 'Winner name, competition and image are required' }, { status: 400 })
+    }
+    await updateWinner(id, {
+      name: name.trim(),
+      competitionTitle: competitionTitle.trim(),
+      drawDate: drawDate ? new Date(drawDate) : null,
+      image: image.trim(),
     })
     return NextResponse.json({ ok: true })
   } catch (err) { return fail(err) }

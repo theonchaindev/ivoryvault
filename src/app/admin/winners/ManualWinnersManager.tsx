@@ -24,6 +24,7 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
 
   // Optional helper: picking a competition autofills the title + draw date,
   // which stay fully editable afterwards.
@@ -41,6 +42,15 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
     finally { setUploading(false) }
   }
 
+  const resetForm = () => { setEditingId(null); setName(''); setTitle(''); setDrawDate(''); setImage('') }
+
+  const startEdit = (w: Winner) => {
+    setEditingId(w.id); setName(w.name); setTitle(w.competitionTitle)
+    setDrawDate(w.drawDate ? w.drawDate.slice(0, 10) : ''); setImage(w.image)
+    setMsg(''); setErr('')
+    if (typeof window !== 'undefined') window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   const save = async () => {
     setErr(''); setMsg('')
     if (!name.trim()) { setErr('Enter the winner’s name'); return }
@@ -49,13 +59,13 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
     setBusy(true)
     try {
       const res = await fetch('/api/admin/manual-winners', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, competitionTitle: title, drawDate: drawDate || null, image }),
+        method: editingId ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...(editingId ? { id: editingId } : {}), name, competitionTitle: title, drawDate: drawDate || null, image }),
       })
       const data = await res.json()
       if (!res.ok) { setErr(data.error || 'Failed to save'); return }
-      setMsg('Winner added — now live on the Winners page.')
-      setName(''); setTitle(''); setDrawDate(''); setImage('')
+      setMsg(editingId ? 'Winner updated.' : 'Winner added — now live on the Winners page.')
+      resetForm()
       router.refresh()
     } catch { setErr('Something went wrong') }
     finally { setBusy(false) }
@@ -109,7 +119,9 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <button style={{ ...btn, opacity: busy ? .7 : 1 }} onClick={save} disabled={busy}>{busy ? 'Saving…' : 'Add Winner'}</button>
+              <button style={{ ...btn, opacity: busy ? .7 : 1 }} onClick={save} disabled={busy}>{busy ? 'Saving…' : editingId ? 'Update Winner' : 'Add Winner'}</button>
+              {editingId && <button onClick={resetForm} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '.6rem 1rem', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', color: 'var(--ink2)', fontFamily: 'inherit' }}>Cancel</button>}
+              {editingId && <span style={{ color: 'var(--gold)', fontSize: '.75rem', fontWeight: 700 }}>Editing existing winner</span>}
               {msg && <span style={{ color: '#15803d', fontSize: '.82rem' }}>{msg}</span>}
               {err && <span style={{ color: '#c0392b', fontSize: '.82rem' }}>{err}</span>}
             </div>
@@ -126,7 +138,10 @@ export default function ManualWinnersManager({ winners, competitions }: { winner
               <div style={{ padding: '.75rem .875rem' }}>
                 <p style={{ fontWeight: 700, color: 'var(--ink)', fontSize: '.85rem' }}>{w.name}</p>
                 <p style={{ color: 'var(--ink3)', fontSize: '.72rem', marginTop: '.15rem' }}>{w.competitionTitle}</p>
-                <button onClick={() => remove(w.id)} style={{ marginTop: '.5rem', background: 'none', border: 'none', color: '#c0392b', fontSize: '.7rem', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>Remove</button>
+                <div style={{ marginTop: '.5rem', display: 'flex', gap: '.85rem' }}>
+                  <button onClick={() => startEdit(w)} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '.7rem', fontWeight: 700, cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>Edit</button>
+                  <button onClick={() => remove(w.id)} style={{ background: 'none', border: 'none', color: '#c0392b', fontSize: '.7rem', cursor: 'pointer', padding: 0, fontFamily: 'inherit' }}>Remove</button>
+                </div>
               </div>
             </div>
           ))}
