@@ -4,6 +4,8 @@ import AdminDrawButton from './AdminDrawButton'
 import AdminAnnounceButton from './AdminAnnounceButton'
 import ManualWinnersManager from './ManualWinnersManager'
 import { listWinners } from '@/lib/winners'
+import { isCompClosed } from '@/lib/compState'
+import { listAllClaims } from '@/lib/prizeClaims'
 
 async function getWinnersData() {
   const [winners, competitions] = await Promise.all([
@@ -19,7 +21,7 @@ async function getWinnersData() {
         status: { in: ['active', 'completed'] },
         winner: null,
       },
-      select: { id: true, title: true, status: true, ticketsSold: true },
+      select: { id: true, title: true, status: true, ticketsSold: true, drawDate: true, type: true },
     }),
   ])
   return { winners, competitions }
@@ -27,7 +29,9 @@ async function getWinnersData() {
 
 export default async function AdminWinnersPage() {
   const { winners, competitions } = await getWinnersData()
-  const drawableCompetitions = competitions.filter(c => c.ticketsSold > 0)
+  const claims = await listAllClaims()
+  // A winner can only be picked once the competition has closed (draw date passed).
+  const drawableCompetitions = competitions.filter(c => c.ticketsSold > 0 && isCompClosed(c))
 
   // Manual (featured) winners + all competitions for the picker
   const [manualWinners, allComps] = await Promise.all([
@@ -66,12 +70,13 @@ export default async function AdminWinnersPage() {
 
       <div style={{ marginTop: '2.5rem' }} />
 
-      {/* Draw a winner */}
+      {/* Pick a winner — only competitions that have closed */}
       {drawableCompetitions.length > 0 && (
         <div style={{ backgroundColor: 'white', border: '1px solid var(--border)', padding: '2rem', marginBottom: '2rem' }}>
-          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '1.25rem' }}>
-            Draw a Winner
+          <h2 style={{ fontFamily: 'var(--font-cormorant)', fontSize: '1.5rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.35rem' }}>
+            Pick a Winner
           </h2>
+          <p style={{ color: 'var(--ink3)', fontSize: '0.8rem', marginBottom: '1.25rem' }}>Competitions below have closed and are ready for a winner to be picked.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {drawableCompetitions.map(comp => (
               <div
@@ -107,7 +112,7 @@ export default async function AdminWinnersPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr>
-                {['Winner', 'Competition', 'Prize', 'Ticket #', 'Drawn', 'Announced', ''].map(h => (
+                {['Winner', 'Competition', 'Prize', 'Ticket #', 'Drawn', 'Announced', 'Delivery', ''].map(h => (
                   <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink3)', borderBottom: '1px solid var(--border)' }}>
                     {h}
                   </th>
@@ -137,6 +142,7 @@ export default async function AdminWinnersPage() {
                       Featured
                     </span>
                   </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.8rem', color: 'var(--ink3)' }}>—</td>
                   <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }} />
                 </tr>
               ))}
@@ -174,6 +180,19 @@ export default async function AdminWinnersPage() {
                     >
                       {winner.announced ? 'Yes' : 'No'}
                     </span>
+                  </td>
+                  <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.78rem', color: 'var(--ink2)', maxWidth: '220px' }}>
+                    {claims[winner.id] ? (
+                      <div style={{ lineHeight: 1.5 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--ink)' }}>{claims[winner.id].fullName}</div>
+                        <div>{claims[winner.id].addressLine1}</div>
+                        {claims[winner.id].addressLine2 && <div>{claims[winner.id].addressLine2}</div>}
+                        <div>{claims[winner.id].city}, {claims[winner.id].postcode}</div>
+                        {claims[winner.id].phone && <div style={{ color: 'var(--ink3)' }}>{claims[winner.id].phone}</div>}
+                      </div>
+                    ) : (
+                      <span style={{ color: 'var(--ink3)' }}>Awaiting claim</span>
+                    )}
                   </td>
                   <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
                     {!winner.announced && (

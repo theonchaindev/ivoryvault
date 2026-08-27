@@ -13,7 +13,7 @@ export default function AdminDrawButton({ competitionId, competitionTitle }: Pro
   const router = useRouter()
 
   const handleDraw = async () => {
-    if (!confirm(`Draw a winner for "${competitionTitle}"? This cannot be undone.`)) return
+    if (!confirm(`Pick a winner for "${competitionTitle}"? This cannot be undone.`)) return
 
     setLoading(true)
     try {
@@ -40,7 +40,7 @@ export default function AdminDrawButton({ competitionId, competitionTitle }: Pro
       className="btn-primary"
       style={{ fontSize: '0.75rem', padding: '0.5rem 1.25rem', opacity: loading ? 0.7 : 1 }}
     >
-      {loading ? 'Drawing...' : 'Draw Winner'}
+      {loading ? 'Picking...' : 'Pick Winner'}
     </button>
   )
 }

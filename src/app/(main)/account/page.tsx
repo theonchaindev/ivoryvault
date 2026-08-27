@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getTier, getNextTier } from '@/lib/tiers'
 import AccountClient from './AccountClient'
 import ClearBasketOnSuccess from './ClearBasketOnSuccess'
+import { getClaimsForUser } from '@/lib/prizeClaims'
 
 async function getUserTickets(userId: string) {
   try {
@@ -57,12 +58,13 @@ export default async function AccountPage() {
     take: 30,
   })
 
-  // Competitions this user has won
+  // Competitions this user has won (+ whether they've submitted a claim address)
   const winsRaw = await prisma.winner.findMany({
     where: { userId: session.userId },
     orderBy: { drawnAt: 'desc' },
     include: { competition: { select: { title: true, slug: true } } },
   })
+  const claims = await getClaimsForUser(session.userId)
   const wins = winsRaw.map(w => ({
     id: w.id,
     competitionTitle: w.competition.title,
@@ -70,6 +72,7 @@ export default async function AccountPage() {
     prizeTitle: w.prizeTitle ?? null,
     prizeValue: w.prizeValue ?? null,
     drawnAt: w.drawnAt.toISOString(),
+    claimed: Boolean(claims[w.id]),
   }))
 
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0)

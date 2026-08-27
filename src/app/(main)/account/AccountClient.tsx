@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import WinClaim, { type Win } from './WinClaim'
 
 interface Tier {
   name: string
@@ -50,7 +51,7 @@ interface Props {
   tickets: TicketEntry[]
   notifications: Notification[]
   instantSpins: { slug: string; title: string; total: number; unrevealed: number }[]
-  wins: { id: string; competitionTitle: string; competitionSlug: string; prizeTitle: string | null; prizeValue: number | null; drawnAt: string }[]
+  wins: Win[]
 }
 
 type View = 'overview' | 'notifications' | 'addresses' | 'account' | 'communication' | 'safeplay'
@@ -206,29 +207,7 @@ export default function AccountClient({
                 {/* Your Wins */}
                 {wins.length > 0 && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                    {wins.map(w => (
-                      <a
-                        key={w.id}
-                        href={`/competitions/${w.competitionSlug}`}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: '1rem', textDecoration: 'none',
-                          background: 'linear-gradient(135deg, #1b2432 0%, #131a26 100%)',
-                          border: '1px solid rgba(194,162,78,0.5)', borderRadius: '14px', padding: '1.1rem 1.25rem',
-                          boxShadow: '0 10px 30px rgba(19,26,38,0.25)',
-                        }}
-                      >
-                        <span style={{ fontSize: '1.9rem', lineHeight: 1 }}>🏆</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: '0.62rem', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#c2a24e', marginBottom: '0.2rem' }}>You&rsquo;re a winner!</p>
-                          <p style={{ fontFamily: 'var(--font-cormorant, serif)', fontSize: '1.2rem', fontWeight: 600, color: '#fff', lineHeight: 1.2 }}>{w.prizeTitle || w.competitionTitle}</p>
-                          <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.15rem' }}>
-                            Won {new Date(w.drawnAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            {w.prizeValue ? ` · worth £${w.prizeValue.toLocaleString()}` : ''}
-                          </p>
-                        </div>
-                        <span style={{ color: '#c2a24e', fontSize: '0.7rem', fontWeight: 700, whiteSpace: 'nowrap' }}>View →</span>
-                      </a>
-                    ))}
+                    {wins.map(w => <WinClaim key={w.id} win={w} />)}
                   </div>
                 )}
 
