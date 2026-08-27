@@ -26,7 +26,7 @@ async function getCompetitions() {
 }
 
 export const metadata = {
-  title: 'Competitions — Ivory Vault',
+  title: 'Competitions',
   description: 'Browse all live luxury prize competitions.',
 }
 

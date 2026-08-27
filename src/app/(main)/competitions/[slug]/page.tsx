@@ -22,10 +22,26 @@ async function getCompetition(slug: string) {
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params
   const competition = await getCompetition(slug)
-  if (!competition) return { title: 'Not Found — Ivory Vault' }
+  if (!competition) return { title: 'Not Found' }
+  const imgs = (() => { try { return JSON.parse(competition.images) as string[] } catch { return [] } })()
+  const desc = (competition.description || '').replace(/\s+/g, ' ').trim().slice(0, 200)
   return {
-    title: `${competition.title} — Ivory Vault`,
-    description: competition.description,
+    title: competition.title,
+    description: desc,
+    alternates: { canonical: `/competitions/${slug}` },
+    openGraph: {
+      type: 'website',
+      title: competition.title,
+      description: desc,
+      url: `/competitions/${slug}`,
+      ...(imgs[0] ? { images: [{ url: imgs[0], alt: competition.title }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: competition.title,
+      description: desc,
+      ...(imgs[0] ? { images: [imgs[0]] } : {}),
+    },
   }
 }
 
@@ -50,25 +66,46 @@ export default async function CompetitionPage({ params }: PageProps) {
     }
   }
 
+  const upcoming = isCompUpcoming(competition, effectiveNow())
+  const soldOut = competition.ticketsSold >= competition.maxTickets
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: competition.title,
+    description: (competition.description || '').replace(/\s+/g, ' ').trim().slice(0, 300),
+    ...(images.length ? { image: images } : {}),
+    brand: { '@type': 'Brand', name: 'Ivory Vault' },
+    offers: {
+      '@type': 'Offer',
+      price: competition.ticketPrice.toFixed(2),
+      priceCurrency: 'GBP',
+      availability: (upcoming || soldOut) ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock',
+      url: `https://www.ivoryvaultcompetitions.co.uk/competitions/${competition.slug}`,
+    },
+  }
+
   return (
-    <CompetitionDetail
-      isInstant={isInstant}
-      instantSpins={instantSpins}
-      competition={{
-        id: competition.id,
-        slug: competition.slug,
-        title: competition.title,
-        subtitle: competition.subtitle ?? null,
-        description: competition.description,
-        prizeValue: competition.prizeValue,
-        ticketPrice: competition.ticketPrice,
-        maxTickets: competition.maxTickets,
-        ticketsSold: competition.ticketsSold,
-        status: competition.status,
-        drawDate: competition.drawDate ?? null,
-        upcoming: isCompUpcoming(competition, effectiveNow()),
-        images,
-      }}
-    />
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
+      <CompetitionDetail
+        isInstant={isInstant}
+        instantSpins={instantSpins}
+        competition={{
+          id: competition.id,
+          slug: competition.slug,
+          title: competition.title,
+          subtitle: competition.subtitle ?? null,
+          description: competition.description,
+          prizeValue: competition.prizeValue,
+          ticketPrice: competition.ticketPrice,
+          maxTickets: competition.maxTickets,
+          ticketsSold: competition.ticketsSold,
+          status: competition.status,
+          drawDate: competition.drawDate ?? null,
+          upcoming,
+          images,
+        }}
+      />
+    </>
   )
 }

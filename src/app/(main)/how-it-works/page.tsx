@@ -3,7 +3,7 @@ import HowItWorksClient from './HowItWorksClient'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'How It Works — Ivory Vault',
+  title: 'How It Works',
   description: 'Learn how Ivory Vault competitions work. UK competition law compliant, transparent draws, and real prizes.',
 }
 

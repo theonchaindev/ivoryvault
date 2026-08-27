@@ -5,7 +5,7 @@ import EntrantsViewer from './EntrantsViewer'
 
 export const dynamic = 'force-dynamic'
 export const metadata = {
-  title: 'Entrants — Ivory Vault',
+  title: 'Entrants',
   robots: { index: false, follow: false },
 }
 

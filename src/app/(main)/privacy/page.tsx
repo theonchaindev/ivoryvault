@@ -1,7 +1,7 @@
 import AnimatedSection from '@/components/AnimatedSection'
 
 export const metadata = {
-  title: 'Privacy Policy — Ivory Vault',
+  title: 'Privacy Policy',
   description: 'How Ivory Vault collects, uses and protects your personal data. UK GDPR compliant.',
 }
 

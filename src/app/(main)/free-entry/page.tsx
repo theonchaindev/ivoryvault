@@ -2,7 +2,7 @@ import AnimatedSection from '@/components/AnimatedSection'
 import Link from 'next/link'
 
 export const metadata = {
-  title: 'Free Entry — Ivory Vault',
+  title: 'Free Entry',
   description: 'Enter Ivory Vault competitions for free via our postal entry route. No purchase necessary.',
 }
 

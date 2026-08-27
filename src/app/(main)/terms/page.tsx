@@ -1,7 +1,7 @@
 import AnimatedSection from '@/components/AnimatedSection'
 
 export const metadata = {
-  title: 'Terms & Conditions — Ivory Vault',
+  title: 'Terms & Conditions',
   description: 'Ivory Vault competition terms and conditions. UK competition law compliant.',
 }
 

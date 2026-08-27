@@ -30,7 +30,7 @@ async function getUserTickets(userId: string) {
 }
 
 export const metadata = {
-  title: 'My Account — Ivory Vault',
+  title: 'My Account',
 }
 
 export default async function AccountPage() {

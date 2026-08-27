@@ -4,7 +4,7 @@ import WinnersGrid from './WinnersGrid'
 export const dynamic = 'force-dynamic'
 
 export const metadata = {
-  title: 'Winners — Ivory Vault',
+  title: 'Winners',
   description: 'Meet the real Ivory Vault winners. Every draw is recorded and independently verifiable.',
 }
 
