@@ -81,23 +81,23 @@ export default function FreePostalEntryModal() {
 
         .fpe-head { display: flex; align-items: center; gap: .875rem; padding-right: 1.5rem; }
         .fpe-head-icon { flex-shrink: 0; width: 44px; height: 44px; border: 1.5px solid rgba(217,182,74,.6); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .fpe-title { font-size: clamp(1.25rem,4.4vw,1.6rem); font-weight: 700; color: ${GOLD}; letter-spacing: .02em; line-height: 1.1; }
-        .fpe-sub { font-size: .95rem; line-height: 1.55; color: #e8e2d4; margin-top: 1rem; }
+        .fpe-title { font-size: clamp(1.45rem,4.8vw,1.85rem); font-weight: 700; color: ${GOLD}; letter-spacing: .02em; line-height: 1.1; }
+        .fpe-sub { font-size: 1.1rem; line-height: 1.6; color: #e8e2d4; margin-top: 1rem; }
 
         .fpe-rule { display: flex; align-items: center; justify-content: center; margin: 1.25rem 0; }
         .fpe-rule::before, .fpe-rule::after { content: ''; height: 1px; flex: 1; background: linear-gradient(90deg, transparent, rgba(217,182,74,.5), transparent); }
         .fpe-rule span { color: ${GOLD}; padding: 0 .75rem; font-size: .8rem; }
 
-        .fpe-label { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: ${GOLD}; font-weight: 700; margin-bottom: .625rem; }
-        .fpe-addr { font-size: 1rem; line-height: 1.6; color: #efe9dc; }
-        .fpe-addr strong { display: inline-block; margin-bottom: .2rem; font-size: 1.1rem; color: #fff; }
+        .fpe-label { font-size: .82rem; letter-spacing: .16em; text-transform: uppercase; color: ${GOLD}; font-weight: 700; margin-bottom: .625rem; }
+        .fpe-addr { font-size: 1.2rem; line-height: 1.65; color: #efe9dc; }
+        .fpe-addr strong { display: inline-block; margin-bottom: .2rem; font-size: 1.3rem; color: #fff; }
 
         .fpe-list { list-style: none; padding: 0; margin: 0; }
-        .fpe-list li { position: relative; padding: .3rem 0 .3rem 1.6rem; font-size: .95rem; color: #e8e2d4; }
-        .fpe-list li::before { content: '✦'; position: absolute; left: 0; color: ${GOLD}; font-size: .8rem; top: .45rem; }
+        .fpe-list li { position: relative; padding: .35rem 0 .35rem 1.7rem; font-size: 1.1rem; line-height: 1.45; color: #e8e2d4; }
+        .fpe-list li::before { content: '✦'; position: absolute; left: 0; color: ${GOLD}; font-size: .85rem; top: .6rem; }
 
-        .fpe-notes { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .75rem; border-top: 1px solid rgba(217,182,74,.2); padding-top: 1.25rem; }
-        .fpe-note { display: flex; gap: .75rem; font-size: .875rem; line-height: 1.5; color: #d8d2c4; }
+        .fpe-notes { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .85rem; border-top: 1px solid rgba(217,182,74,.2); padding-top: 1.25rem; }
+        .fpe-note { display: flex; gap: .75rem; font-size: 1rem; line-height: 1.55; color: #d8d2c4; }
         .fpe-note-i { flex-shrink: 0; filter: grayscale(.2); }
         .fpe-tc { color: ${GOLD}; text-decoration: underline; }
         .fpe-tc:hover { color: #f0d98a; }
