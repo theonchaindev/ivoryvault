@@ -6,9 +6,10 @@ interface Tier { type: 'credit' | 'custom'; amount: number; total: number; name?
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 
 export default function InstantTicketsClient({
-  price, prizes, poolSize, pending, signedIn, creditAvailable,
+  price, image, prizes, poolSize, pending, signedIn, creditAvailable,
 }: {
   price: number
+  image: string
   prizes: Tier[]
   poolSize: number
   pending: number
@@ -47,6 +48,7 @@ export default function InstantTicketsClient({
         price={price}
         maxQty={25}
         title="Instant Win Tickets"
+        heroImage={image}
         onCheckout={onCheckout}
         onRevealNext={onRevealNext}
         pending={pending}

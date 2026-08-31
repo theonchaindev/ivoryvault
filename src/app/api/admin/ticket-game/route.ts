@@ -23,10 +23,11 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     await requireAdmin()
-    const b = await request.json() as { priceP?: number; poolSize?: number; winners?: Record<number, WinnerDef> }
+    const b = await request.json() as { priceP?: number; poolSize?: number; image?: string; winners?: Record<number, WinnerDef> }
     await saveConfig({
       priceP: Number(b.priceP) || 10,
       poolSize: Number(b.poolSize) || 500,
+      image: typeof b.image === 'string' ? b.image : '',
       winners: (b.winners && typeof b.winners === 'object') ? b.winners : {},
     })
     const config = await getConfig()

@@ -35,6 +35,7 @@ export default async function InstantTicketsPage() {
       )}
       <InstantTicketsClient
         price={cfg.priceP / 100}
+        image={cfg.image}
         prizes={aggregatePrizes(cfg.winners)}
         poolSize={cfg.poolSize}
         pending={pending}

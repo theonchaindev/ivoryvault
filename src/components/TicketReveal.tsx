@@ -30,11 +30,13 @@ export interface TicketRevealProps {
   pending?: number
   signedIn?: boolean
   creditAvailable?: number
+  /** Optional main image shown as the game's thumbnail/hero. */
+  heroImage?: string
 }
 
 export default function TicketReveal({
   drawTickets, price, maxQty = 10, title = 'Ivory Vault Instant Tickets',
-  onCheckout, onRevealNext, pending = 0, signedIn = true, creditAvailable = 0,
+  onCheckout, onRevealNext, pending = 0, signedIn = true, creditAvailable = 0, heroImage = '',
 }: TicketRevealProps) {
   const realMode = !!onRevealNext
   const [phase, setPhase] = useState<'choose' | 'play'>(realMode && pending > 0 ? 'play' : 'choose')
@@ -129,19 +131,24 @@ export default function TicketReveal({
 
       {phase === 'choose' && (
         <div className="tk__product">
-          {/* LEFT — ticket showcase */}
+          {/* LEFT — showcase: main image if set, else the sample ticket */}
           <div className="tk__stage">
-            <div className="tk__stage-ticket">
-              <div className="tk-face tk-front">
-                <span className="tk-notch tk-notch--t" /><span className="tk-notch tk-notch--b" />
-                <div className="tk-body">
-                  <div className="tk-brand">IVORY VAULT</div>
-                  <div className="tk-headline">Instant Win</div>
-                  <div className="tk-tap">Tap to reveal ›</div>
+            {heroImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={heroImage} alt="" className="tk__stage-hero" />
+            ) : (
+              <div className="tk__stage-ticket">
+                <div className="tk-face tk-front">
+                  <span className="tk-notch tk-notch--t" /><span className="tk-notch tk-notch--b" />
+                  <div className="tk-body">
+                    <div className="tk-brand">IVORY VAULT</div>
+                    <div className="tk-headline">Instant Win</div>
+                    <div className="tk-tap">Tap to reveal ›</div>
+                  </div>
+                  {stub(1)}
                 </div>
-                {stub(1)}
               </div>
-            </div>
+            )}
             <p className="tk__stage-cap">Reveal instantly — every ticket could be a prize or site credit, straight away.</p>
           </div>
 
@@ -305,6 +312,7 @@ export default function TicketReveal({
         .tk__stage{ display:flex; flex-direction:column; gap:1.1rem; }
         .tk__stage-ticket{ position:relative; aspect-ratio:24/10; filter:drop-shadow(0 18px 34px rgba(0,0,0,.18)); }
         .tk__stage-ticket .tk-face{ position:absolute; inset:0; }
+        .tk__stage-hero{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:16px; box-shadow:0 18px 34px rgba(0,0,0,.18); }
         .tk__stage-cap{ color:var(--ink3); font-size:.9rem; line-height:1.5; margin:0; }
 
         .tk__buy{ background:var(--card,#fff); border:1px solid var(--border); border-radius:16px; padding:1.6rem 1.5rem; box-shadow:0 12px 40px rgba(0,0,0,.07); }

@@ -19,6 +19,7 @@ export default function TicketGameAdmin() {
   const [published, setPublished] = useState(false)
   const [priceP, setPriceP] = useState(10)
   const [poolSize, setPoolSize] = useState(500)
+  const [image, setImage] = useState('')
   const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
@@ -29,13 +30,14 @@ export default function TicketGameAdmin() {
   const [err, setErr] = useState('')
   const fileFor = useRef<number | null>(null)
   const fileInput = useRef<HTMLInputElement>(null)
+  const mainFileInput = useRef<HTMLInputElement>(null)
 
   const load = async () => {
     try {
       const res = await fetch('/api/admin/ticket-game')
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; winners: Winners }; sold: number; won: number; customWins: CustomWin[] }
-      setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setWinners(d.config.winners || {})
+      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; image: string; winners: Winners }; sold: number; won: number; customWins: CustomWin[] }
+      setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setImage(d.config.image || ''); setWinners(d.config.winners || {})
       setSold(d.sold); setWon(d.won); setCustomWins(d.customWins)
     } catch { setErr('Could not load the ticket game config.') }
     finally { setLoading(false) }
@@ -56,10 +58,19 @@ export default function TicketGameAdmin() {
     finally { setMsg('') }
   }
 
+  const onMainFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0]; e.target.value = ''
+    if (!f) return
+    setMsg('Uploading image…')
+    try { const url = await uploadImage(f); setImage(url) }
+    catch { const reader = new FileReader(); reader.onload = () => setImage(String(reader.result)); reader.readAsDataURL(f) }
+    finally { setMsg('') }
+  }
+
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, winners }) })
+      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, image, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -107,6 +118,22 @@ export default function TicketGameAdmin() {
 
       {/* Settings */}
       <div style={card}>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <label style={label}>Main image (game thumbnail)</label>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => mainFileInput.current?.click()} style={{ width: '180px', height: '120px', border: '1.5px dashed var(--border,#e2e7ee)', borderRadius: '10px', background: image ? 'none' : '#f7f8fa', cursor: 'pointer', overflow: 'hidden', padding: 0, flexShrink: 0 }}>
+              {image
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '.72rem', color: '#9aa3af' }}>+ Upload image</span>}
+            </button>
+            <div style={{ fontSize: '.78rem', color: 'var(--ink3)' }}>
+              Shown as the game&rsquo;s thumbnail / hero on the site.
+              {image && <><br /><button onClick={() => setImage('')} style={{ background: 'none', border: 'none', color: '#c0392b', fontSize: '.75rem', cursor: 'pointer', fontFamily: 'inherit', padding: '.3rem 0 0' }}>Remove image</button></>}
+            </div>
+          </div>
+          <input ref={mainFileInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={onMainFile} />
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
           <div>
             <label style={label}>Ticket price</label>
