@@ -1,10 +1,20 @@
 import { prisma } from '@/lib/prisma'
 import { syncEarnedSpins } from '@/lib/spins'
 import { sendPurchaseConfirmation } from '@/lib/email'
+import { createPlays as createTicketGamePlays } from '@/lib/ticketGame'
+
+/** Sentinel "competition id" used to route a purchase to the Ticket Game. */
+export const TICKET_GAME_ITEM = '__ticketgame__'
 
 /** Record a single competition purchase: create ticket/spins, bump count, auto-draw if sold out. */
 export async function recordPurchase(userId: string, competitionId: string, qty: number, paymentRef: string) {
   if (!userId || !competitionId || !qty) return
+
+  // Ticket Game: mint N unrevealed plays (isolated from competitions)
+  if (competitionId === TICKET_GAME_ITEM) {
+    await createTicketGamePlays(userId, qty)
+    return
+  }
 
   // Instant-win competition: create N unrevealed spins instead of a raffle ticket
   const comp = await prisma.competition.findUnique({ where: { id: competitionId }, select: { type: true } })
@@ -65,7 +75,7 @@ export async function sendOrderConfirmation(userId: string, items: { id: string;
     select: { id: true, title: true, ticketPrice: true },
   })
   const byId = new Map(comps.map(c => [c.id, c]))
-  const lines = items.map(i => ({ title: byId.get(i.id)?.title || 'Competition entry', qty: i.qty }))
+  const lines = items.map(i => ({ title: i.id === TICKET_GAME_ITEM ? 'Instant Win Tickets' : (byId.get(i.id)?.title || 'Competition entry'), qty: i.qty }))
   const total = totalPence != null
     ? totalPence / 100
     : items.reduce((s, i) => s + (byId.get(i.id)?.ticketPrice || 0) * i.qty, 0)

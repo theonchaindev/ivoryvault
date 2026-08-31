@@ -5,6 +5,8 @@ import { getTier, getNextTier } from '@/lib/tiers'
 import AccountClient from './AccountClient'
 import ClearBasketOnSuccess from './ClearBasketOnSuccess'
 import { getClaimsForUser } from '@/lib/prizeClaims'
+import { getOrCreateReferral, getReferredCount } from '@/lib/referrals'
+import { getWinsForUser } from '@/lib/ticketGame'
 
 async function getUserTickets(userId: string) {
   try {
@@ -65,6 +67,8 @@ export default async function AccountPage() {
     include: { competition: { select: { title: true, slug: true } } },
   })
   const claims = await getClaimsForUser(session.userId)
+  const referral = await getOrCreateReferral(session.userId, session.name)
+  const referredCount = await getReferredCount(session.userId)
   const wins = winsRaw.map(w => ({
     id: w.id,
     competitionTitle: w.competition.title,
@@ -74,6 +78,11 @@ export default async function AccountPage() {
     drawnAt: w.drawnAt.toISOString(),
     claimed: Boolean(claims[w.id]),
   }))
+
+  // Instant Win ticket-game custom prizes (need a delivery address to claim)
+  const ticketWins = (await getWinsForUser(session.userId))
+    .filter(w => w.type === 'custom')
+    .map(w => ({ playId: w.playId, name: w.name, amount: w.amount, image: w.image, ticketNo: w.ticketNo, claimed: !!w.claim }))
 
   const totalTickets = tickets.reduce((sum, t) => sum + t.quantity, 0)
   const activeEntries = tickets.filter(t => t.competition.status === 'active').length
@@ -110,6 +119,9 @@ export default async function AccountPage() {
         tickets={ticketData}
         instantSpins={instantSpins}
         wins={wins}
+        ticketWins={ticketWins}
+        referralCode={referral.code}
+        referredCount={referredCount}
         notifications={notifications.map(n => ({ id: n.id, title: n.title, body: n.body, icon: n.icon, read: n.read, createdAt: n.createdAt.toISOString() }))}
       />
     </>

@@ -14,7 +14,7 @@ async function ensure() {
       "city" TEXT NOT NULL,
       "postcode" TEXT NOT NULL,
       "phone" TEXT,
-      "claimedAt" TIMESTAMPTZ NOT NULL DEFAULT now()
+      "claimedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
     ensured = true
   } catch (e) { console.error('[prizeClaims] ensure failed:', e) }

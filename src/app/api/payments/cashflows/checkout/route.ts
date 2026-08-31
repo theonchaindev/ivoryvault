@@ -8,6 +8,7 @@ import { isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { createPaymentJob, cashflowsConfigured } from '@/lib/cashflows'
 import { createOrder } from '@/lib/cashflowsOrders'
+import { REFERRAL_RATE, validateReferral, setReferredBy, rewardReferrer } from '@/lib/referrals'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,10 +17,6 @@ interface GuestDetails { name?: string; email?: string; phone?: string }
 
 export async function POST(request: NextRequest) {
   try {
-    if (!cashflowsConfigured()) {
-      return NextResponse.json({ error: 'Payments are not configured.' }, { status: 500 })
-    }
-
     const session = await getSession()
 
     // While the outage is on, only admins can run checkout (for testing the real flow).
@@ -27,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payments are temporarily unavailable. Please check back soon.', paused: true }, { status: 503 })
     }
 
-    const { items, useCredit, guest } = await request.json() as { items: BasketLine[]; useCredit?: boolean; guest?: GuestDetails }
+    const { items, useCredit, guest, referralCode } = await request.json() as { items: BasketLine[]; useCredit?: boolean; guest?: GuestDetails; referralCode?: string }
     if (!Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Your basket is empty' }, { status: 400 })
     }
@@ -89,12 +86,24 @@ export async function POST(request: NextRequest) {
 
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ivoryvaultcompetitions.co.uk'
 
+    // Referral: 10% off the buyer's first order; referrer earns 10% of the order value.
+    let referralDiscount = 0
+    let referralApplied = false
+    if (referralCode && referralCode.trim() && session) {
+      const v = await validateReferral(userId, referralCode.trim())
+      if (!v.ok) return NextResponse.json({ error: v.error }, { status: 400 })
+      referralDiscount = Math.round(orderTotal * REFERRAL_RATE * 100) / 100
+      await setReferredBy(userId, v.referrerUserId, Math.round(orderTotal * 100 * REFERRAL_RATE))
+      referralApplied = true
+    }
+    const discountedTotal = Math.max(0, Math.round((orderTotal - referralDiscount) * 100) / 100)
+
     // Apply site credit if requested
     let creditUsed = 0
     if (useCredit) {
       const balance = buyer?.siteCredit ?? 0
       if (balance > 0) {
-        const applied = applyCredit(orderTotal, balance)
+        const applied = applyCredit(discountedTotal, balance)
         creditUsed = applied.creditUsed
 
         // Credit covers the whole order → grant directly, no card payment
@@ -105,13 +114,19 @@ export async function POST(request: NextRequest) {
           await prisma.notification.create({
             data: { userId, title: `£${deduct.toFixed(2)} site credit used`, body: 'Your site credit covered your whole order — no payment needed.', icon: 'info' },
           })
+          if (referralApplied) await rewardReferrer(userId) // referred user's first order complete
           after(() => sendOrderConfirmation(userId, metaItems, 0))
           return NextResponse.json({ url: `${origin}/checkout/success?free=1` })
         }
       }
     }
 
-    const toPay = applyCredit(orderTotal, creditUsed).toPay
+    // Beyond this point a card payment is required.
+    if (!cashflowsConfigured()) {
+      return NextResponse.json({ error: 'Payments are not configured.' }, { status: 500 })
+    }
+
+    const toPay = applyCredit(discountedTotal, creditUsed).toPay
     const amount = toPay.toFixed(2)
     const orderNumber = `IVV-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 

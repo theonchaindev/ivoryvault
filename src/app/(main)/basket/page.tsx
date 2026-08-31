@@ -20,6 +20,10 @@ export default function BasketPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [guest, setGuest] = useState({ name: '', email: '', phone: '' })
   const [guestAgree, setGuestAgree] = useState(false)
+  const [refInput, setRefInput] = useState('')
+  const [refCode, setRefCode] = useState('')      // applied code
+  const [refErr, setRefErr] = useState('')
+  const [refBusy, setRefBusy] = useState(false)
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -28,7 +32,23 @@ export default function BasketPage() {
       .catch(() => setLoggedIn(false))
   }, [])
 
-  const applied = applyCredit(total, loggedIn && useCredit ? credit : 0)
+  const referralDiscount = refCode ? Math.round(total * 10) / 100 : 0
+  const discountedTotal = Math.max(0, Math.round((total - referralDiscount) * 100) / 100)
+  const applied = applyCredit(discountedTotal, loggedIn && useCredit ? credit : 0)
+
+  const applyReferral = async () => {
+    setRefErr('')
+    const code = refInput.trim()
+    if (!code) return
+    setRefBusy(true)
+    try {
+      const res = await fetch('/api/referral/validate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) })
+      const data = await res.json()
+      if (!res.ok || !data.ok) { setRefErr(data.error || 'Invalid code'); return }
+      setRefCode(code)
+    } catch { setRefErr('Could not check that code') }
+    finally { setRefBusy(false) }
+  }
 
   const handleCheckout = async () => {
     setError('')
@@ -45,6 +65,7 @@ export default function BasketPage() {
         body: JSON.stringify({
           items: items.map(i => ({ competitionId: i.competitionId, quantity: i.quantity })),
           useCredit: loggedIn ? useCredit : false,
+          ...(loggedIn && refCode ? { referralCode: refCode } : {}),
           ...(loggedIn === false ? { guest } : {}),
         }),
       })
@@ -158,6 +179,24 @@ export default function BasketPage() {
                 <span>Subtotal</span>
                 <span>{formatCurrency(total)}</span>
               </div>
+
+              {/* Referral code (logged-in only) */}
+              {loggedIn && (
+                refCode ? (
+                  <div className="bk__summary-row" style={{ color: '#16a34a' }}>
+                    <span>Referral <b>({refCode})</b> · 10% off</span>
+                    <span>−{formatCurrency(referralDiscount)} <button onClick={() => { setRefCode(''); setRefInput('') }} style={{ background: 'none', border: 'none', color: 'var(--ink3)', cursor: 'pointer', fontSize: '.7rem', textDecoration: 'underline' }}>remove</button></span>
+                  </div>
+                ) : (
+                  <div style={{ margin: '.5rem 0' }}>
+                    <div style={{ display: 'flex', gap: '.4rem' }}>
+                      <input className="bk__guest-input" style={{ margin: 0 }} placeholder="Referral code (optional)" value={refInput} onChange={e => setRefInput(e.target.value.toUpperCase())} />
+                      <button onClick={applyReferral} disabled={refBusy || !refInput.trim()} style={{ background: 'var(--ink)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0 1rem', fontSize: '.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>{refBusy ? '…' : 'Apply'}</button>
+                    </div>
+                    {refErr && <p style={{ color: '#c0392b', fontSize: '.72rem', marginTop: '.3rem' }}>{refErr}</p>}
+                  </div>
+                )
+              )}
 
               {loggedIn && credit > 0 && (
                 <label className="bk__credit">

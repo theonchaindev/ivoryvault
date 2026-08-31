@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import WinClaim, { type Win } from './WinClaim'
+import TicketWinClaim, { type TicketWin } from './TicketWinClaim'
+import ReferAFriend from './ReferAFriend'
 
 interface Tier {
   name: string
@@ -52,6 +54,9 @@ interface Props {
   notifications: Notification[]
   instantSpins: { slug: string; title: string; total: number; unrevealed: number }[]
   wins: Win[]
+  ticketWins: TicketWin[]
+  referralCode: string
+  referredCount: number
 }
 
 type View = 'overview' | 'notifications' | 'addresses' | 'account' | 'communication' | 'safeplay'
@@ -92,7 +97,7 @@ function timeAgo(iso: string): string {
 
 export default function AccountClient({
   name, email, siteCredit, totalTickets, totalEntries, activeEntries,
-  tier, nextTier, progressPct, tickets, notifications, instantSpins, wins,
+  tier, nextTier, progressPct, tickets, notifications, instantSpins, wins, ticketWins, referralCode, referredCount,
 }: Props) {
   const [view, setView] = useState<View>('overview')
   const [filter, setFilter] = useState<Filter>('all')
@@ -204,10 +209,14 @@ export default function AccountClient({
                   </div>
                 )}
 
+                {/* Refer a friend */}
+                <ReferAFriend code={referralCode} referredCount={referredCount} />
+
                 {/* Your Wins */}
-                {wins.length > 0 && (
+                {(wins.length > 0 || ticketWins.length > 0) && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '0.5rem' }}>
                     {wins.map(w => <WinClaim key={w.id} win={w} />)}
+                    {ticketWins.map(w => <TicketWinClaim key={w.playId} win={w} />)}
                   </div>
                 )}
 

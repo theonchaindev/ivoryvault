@@ -5,6 +5,7 @@ import { setSetting } from '@/lib/settings'
 import { claimOrderPaid } from '@/lib/cashflowsOrders'
 import { recordPurchase, sendOrderConfirmation } from '@/lib/orders'
 import { sendGuestCreateAccount } from '@/lib/email'
+import { rewardReferrer } from '@/lib/referrals'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
             })
           }
         }
+        // Referral: if this was the referred user's first order, reward the referrer.
+        await rewardReferrer(order.userId)
+
         const buyer = await prisma.user.findUnique({ where: { id: order.userId }, select: { role: true, email: true, name: true } })
         if (buyer?.role === 'guest' && buyer.email) {
           after(() => sendGuestCreateAccount(buyer.email as string, buyer.name))
