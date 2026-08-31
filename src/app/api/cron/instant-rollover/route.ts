@@ -15,6 +15,9 @@ const NEW_IMAGE = '/instant-win-september.png'
 // UK midnight, 1 September 2026. The UK is on BST (UTC+1) in September, so
 // 00:00 BST on 1 Sep === 23:00 UTC on 31 Aug.
 const SWITCH_AT = Date.UTC(2026, 7, 31, 23, 0, 0)
+// New countdown: 15 days from that midnight (fixed, so a late cron run still
+// lands the timer on the right end date rather than "15 days from whenever").
+const DRAW_AT = SWITCH_AT + 15 * 24 * 60 * 60 * 1000
 
 export async function GET(req: NextRequest) {
   // Auth: Vercel cron (bearer secret) or a logged-in admin (for manual runs)
@@ -30,15 +33,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: true, applied: false, reason: 'not-yet', now: new Date(now).toISOString(), switchAt: new Date(SWITCH_AT).toISOString() })
   }
 
-  const comp = await prisma.competition.findUnique({ where: { slug: SLUG }, select: { id: true, images: true } })
+  const comp = await prisma.competition.findUnique({ where: { slug: SLUG }, select: { id: true, images: true, drawDate: true } })
   if (!comp) return NextResponse.json({ ok: false, applied: false, reason: 'comp-not-found', slug: SLUG }, { status: 404 })
 
   let current: string[] = []
   try { current = JSON.parse(comp.images) } catch { /* ignore */ }
-  if (current[0] === NEW_IMAGE) {
+  const drawSet = comp.drawDate?.getTime() === DRAW_AT
+  if (current[0] === NEW_IMAGE && drawSet) {
     return NextResponse.json({ ok: true, applied: false, reason: 'already-set' })
   }
 
-  await prisma.competition.update({ where: { id: comp.id }, data: { images: JSON.stringify([NEW_IMAGE]) } })
-  return NextResponse.json({ ok: true, applied: true, slug: SLUG, image: NEW_IMAGE, previous: current })
+  await prisma.competition.update({
+    where: { id: comp.id },
+    data: { images: JSON.stringify([NEW_IMAGE]), drawDate: new Date(DRAW_AT) },
+  })
+  return NextResponse.json({ ok: true, applied: true, slug: SLUG, image: NEW_IMAGE, drawDate: new Date(DRAW_AT).toISOString(), previous: current })
 }
