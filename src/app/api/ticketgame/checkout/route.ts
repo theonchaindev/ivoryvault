@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!cfg.published && !isAdmin) {
       return NextResponse.json({ error: 'This game is not available yet.' }, { status: 404 })
     }
-    if (cfg.prizes.length === 0) {
+    if (Object.keys(cfg.winners).length === 0) {
       return NextResponse.json({ error: 'This game is not set up yet.' }, { status: 400 })
     }
 

@@ -3,25 +3,25 @@
 import { useEffect, useRef, useState } from 'react'
 import { uploadImage } from '@/lib/uploadImage'
 
-type TierType = 'credit' | 'custom'
-interface Tier { type: TierType; amount: number; total: number; name?: string; image?: string }
-interface Config { published: boolean; priceP: number; poolSize: number; prizes: Tier[] }
-interface PoolRow extends Tier { key: string; won: number; left: number }
+type WinnerType = 'credit' | 'custom'
+interface Winner { type: WinnerType; amount: number; name?: string; image?: string }
+type Winners = Record<number, Winner>
 interface CustomWin { playId: string; userId: string; amount: number; name: string | null; image: string | null; ticketNo: number; userName: string; userEmail: string; claim?: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; postcode: string; phone: string | null } }
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 const card: React.CSSProperties = { background: 'var(--card,#fff)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem' }
 const label: React.CSSProperties = { display: 'block', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3,#6b7684)', marginBottom: '.4rem' }
 const input: React.CSSProperties = { padding: '.55rem .7rem', border: '1px solid var(--border,#e2e7ee)', borderRadius: '8px', fontSize: '.85rem', fontFamily: 'inherit', width: '100%', color: 'var(--ink,#1b2432)', background: '#fff' }
+const GRID_CAP = 1000
 
 export default function TicketGameAdmin() {
   const [loading, setLoading] = useState(true)
   const [published, setPublished] = useState(false)
   const [priceP, setPriceP] = useState(10)
   const [poolSize, setPoolSize] = useState(500)
-  const [prizes, setPrizes] = useState<Tier[]>([])
-  const [pool, setPool] = useState<PoolRow[]>([])
+  const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
+  const [won, setWon] = useState(0)
   const [customWins, setCustomWins] = useState<CustomWin[]>([])
   const [saving, setSaving] = useState(false)
   const [busyPub, setBusyPub] = useState(false)
@@ -34,39 +34,32 @@ export default function TicketGameAdmin() {
     try {
       const res = await fetch('/api/admin/ticket-game')
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { config: Config; sold: number; pool: PoolRow[]; customWins: CustomWin[] }
-      setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setPrizes(d.config.prizes)
-      setPool(d.pool); setSold(d.sold); setCustomWins(d.customWins)
+      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; winners: Winners }; sold: number; won: number; customWins: CustomWin[] }
+      setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setWinners(d.config.winners || {})
+      setSold(d.sold); setWon(d.won); setCustomWins(d.customWins)
     } catch { setErr('Could not load the ticket game config.') }
     finally { setLoading(false) }
   }
   useEffect(() => { load() }, [])
 
-  const setTier = (i: number, patch: Partial<Tier>) => setPrizes(p => p.map((t, idx) => idx === i ? { ...t, ...patch } : t))
-  const addTier = () => setPrizes(p => [...p, { type: 'credit', amount: 5, total: 1 }])
-  const removeTier = (i: number) => setPrizes(p => p.filter((_, idx) => idx !== i))
+  const toggle = (n: number) => setWinners(w => { const next = { ...w }; if (next[n]) delete next[n]; else next[n] = { type: 'credit', amount: 5 }; return next })
+  const setPrize = (n: number, patch: Partial<Winner>) => setWinners(w => ({ ...w, [n]: { ...w[n], ...patch } }))
+  const changePool = (v: number) => { const size = Math.max(1, v || 1); setPoolSize(size); setWinners(w => { const next: Winners = {}; for (const [k, val] of Object.entries(w)) if (Number(k) <= size) next[Number(k)] = val; return next }) }
 
-  const pickImage = (i: number) => { fileFor.current = i; fileInput.current?.click() }
+  const pickImage = (n: number) => { fileFor.current = n; fileInput.current?.click() }
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]; const i = fileFor.current; e.target.value = ''
-    if (!f || i == null) return
+    const f = e.target.files?.[0]; const n = fileFor.current; e.target.value = ''
+    if (!f || n == null) return
     setMsg('Uploading image…')
-    try {
-      const url = await uploadImage(f)
-      setTier(i, { image: url })
-    } catch {
-      // Fall back to a local data URL (e.g. Cloudinary not configured locally)
-      const reader = new FileReader(); reader.onload = () => setTier(i, { image: String(reader.result) }); reader.readAsDataURL(f)
-    } finally { setMsg('') }
+    try { const url = await uploadImage(f); setPrize(n, { image: url }) }
+    catch { const reader = new FileReader(); reader.onload = () => setPrize(n, { image: String(reader.result) }); reader.readAsDataURL(f) }
+    finally { setMsg('') }
   }
 
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch('/api/admin/ticket-game', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceP, poolSize, prizes }),
-      })
+      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -79,10 +72,7 @@ export default function TicketGameAdmin() {
     if (goingLive && !confirm('Show the ticket game on the live site? Members will be able to buy and play it for real money.')) return
     setBusyPub(true); setErr('')
     try {
-      const res = await fetch('/api/admin/ticket-game', {
-        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ published: goingLive }),
-      })
+      const res = await fetch('/api/admin/ticket-game', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ published: goingLive }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
       setPublished(d.config.published)
@@ -90,12 +80,13 @@ export default function TicketGameAdmin() {
     finally { setBusyPub(false) }
   }
 
-  const totalWinners = prizes.reduce((s, t) => s + (Number(t.total) || 0), 0)
+  const winnerNums = Object.keys(winners).map(Number).sort((a, b) => a - b)
+  const gridCount = Math.min(poolSize, GRID_CAP)
 
   if (loading) return <p style={{ color: 'var(--ink3)' }}>Loading…</p>
 
   return (
-    <div style={{ maxWidth: '920px', color: 'var(--ink,#1b2432)' }}>
+    <div style={{ maxWidth: '960px', color: 'var(--ink,#1b2432)' }}>
       {err && <div style={{ ...card, borderColor: '#f3c2bd', background: '#fdf2f1', color: '#b23b2e' }}>{err}</div>}
 
       {/* Publish switch */}
@@ -106,12 +97,10 @@ export default function TicketGameAdmin() {
             <strong style={{ fontSize: '1rem' }}>{published ? 'Live on site' : 'Hidden from site'}</strong>
           </div>
           <p style={{ color: 'var(--ink3)', fontSize: '.82rem', margin: '.35rem 0 0' }}>
-            {published
-              ? 'Members can see and play the ticket game right now.'
-              : 'The game is not shown anywhere on the site. Turn this on when you’re ready to go live.'}
+            {published ? 'Members can see and play the ticket game right now.' : 'The game is not shown anywhere on the site. Turn this on when you’re ready to go live.'}
           </p>
         </div>
-        <button onClick={togglePublish} disabled={busyPub || (!published && prizes.length === 0)} style={{ background: published ? '#c0392b' : '#16a34a', color: '#fff', border: 'none', borderRadius: '10px', padding: '.85rem 1.8rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: busyPub || (!published && prizes.length === 0) ? .6 : 1 }}>
+        <button onClick={togglePublish} disabled={busyPub || (!published && winnerNums.length === 0)} style={{ background: published ? '#c0392b' : '#16a34a', color: '#fff', border: 'none', borderRadius: '10px', padding: '.85rem 1.8rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: busyPub || (!published && winnerNums.length === 0) ? .6 : 1 }}>
           {busyPub ? '…' : published ? 'Hide from site' : 'Show on site'}
         </button>
       </div>
@@ -127,73 +116,71 @@ export default function TicketGameAdmin() {
             </div>
           </div>
           <div>
-            <label style={label}>Ticket pool size</label>
-            <input type="number" min="1" style={{ ...input, width: '140px' }} value={poolSize} onChange={e => setPoolSize(Math.max(1, parseInt(e.target.value, 10) || 1))} />
-            <p style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.4rem' }}>{totalWinners} winning ticket{totalWinners === 1 ? '' : 's'} across {poolSize} · {sold} sold so far</p>
+            <label style={label}>Number of tickets in the pool</label>
+            <input type="number" min="1" style={{ ...input, width: '140px' }} value={poolSize} onChange={e => changePool(parseInt(e.target.value, 10))} />
+            <p style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.4rem' }}>{winnerNums.length} winning ticket{winnerNums.length === 1 ? '' : 's'} · {poolSize - winnerNums.length} non-winning · {sold} sold ({won} won)</p>
           </div>
         </div>
       </div>
 
-      {/* Prize tiers */}
+      {/* Pick winning tickets */}
       <div style={card}>
-        <label style={label}>Prizes</label>
-        {prizes.length === 0 && <p style={{ color: 'var(--ink3)', fontSize: '.85rem' }}>No prizes yet — add your first below.</p>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
-          {prizes.map((t, i) => (
-            <div key={i} style={{ padding: '.85rem', border: '1px solid var(--border,#eef1f6)', borderRadius: '10px' }}>
-              <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <select style={{ ...input, width: '150px' }} value={t.type} onChange={e => setTier(i, { type: e.target.value as TierType })}>
-                  <option value="credit">Site credit</option>
-                  <option value="custom">Custom prize</option>
-                </select>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                  <span style={{ color: 'var(--ink3)', fontSize: '.8rem' }}>Qty</span>
-                  <input type="number" min="1" style={{ ...input, width: '80px' }} value={t.total} onChange={e => setTier(i, { total: Math.max(1, parseInt(e.target.value, 10) || 1) })} />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
-                  <span style={{ color: 'var(--ink3)', fontSize: '.8rem' }}>{t.type === 'credit' ? 'Amount £' : 'Value £'}</span>
-                  <input type="number" step="0.01" min="0" style={{ ...input, width: '100px' }} value={t.amount} onChange={e => setTier(i, { amount: Math.max(0, parseFloat(e.target.value) || 0) })} />
-                </div>
-                {t.type === 'credit' && <span style={{ fontSize: '.72rem', color: 'var(--ink3)' }}>→ added to balance</span>}
-                <button onClick={() => removeTier(i)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#c0392b', fontSize: '.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Remove</button>
-              </div>
-              {t.type === 'custom' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '84px 1fr', gap: '.75rem', alignItems: 'center', marginTop: '.75rem' }}>
-                  <button onClick={() => pickImage(i)} style={{ width: '84px', height: '64px', border: '1.5px dashed var(--border,#e2e7ee)', borderRadius: '8px', background: t.image ? 'none' : '#f7f8fa', cursor: 'pointer', overflow: 'hidden', padding: 0 }}>
-                    {t.image
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={t.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: '.66rem', color: '#9aa3af' }}>+ Photo</span>}
-                  </button>
-                  <input style={input} placeholder="Prize name (e.g. Coach Handbag)" value={t.name || ''} onChange={e => setTier(i, { name: e.target.value })} />
-                </div>
-              )}
-            </div>
-          ))}
+        <label style={label}>Pick the winning tickets</label>
+        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .75rem' }}>Click a ticket number to make it a winner (gold). Tickets are handed out in order as they’re bought, so ticket #5 is the 5th one played.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', maxHeight: '300px', overflowY: 'auto', padding: '6px', border: '1px solid var(--border,#eef1f6)', borderRadius: '8px', background: '#fafbfc' }}>
+          {Array.from({ length: gridCount }, (_, i) => i + 1).map(n => {
+            const isWin = !!winners[n]
+            return <button key={n} onClick={() => toggle(n)} title={`Ticket ${n}`} style={{ width: '44px', height: '34px', borderRadius: '6px', cursor: 'pointer', fontSize: '.72rem', fontWeight: 700, fontFamily: 'inherit', border: isWin ? '1px solid #b8912f' : '1px solid var(--border,#e2e7ee)', background: isWin ? '#d9b64a' : '#fff', color: isWin ? '#1b2432' : 'var(--ink3,#6b7684)' }}>{n}</button>
+          })}
         </div>
+        {poolSize > GRID_CAP && <p style={{ fontSize: '.72rem', color: '#b45309', marginTop: '.5rem' }}>Showing the first {GRID_CAP} tickets. (The full pool is {poolSize}.)</p>}
+      </div>
+
+      {/* Prize for each winning ticket */}
+      <div style={card}>
+        <label style={label}>Prizes for winning tickets</label>
+        {winnerNums.length === 0 ? <p style={{ color: 'var(--ink3)', fontSize: '.85rem' }}>No winning tickets yet — pick some above.</p> : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '.85rem' }}>
+            {winnerNums.map(n => {
+              const p = winners[n]
+              return (
+                <div key={n} style={{ padding: '.85rem', border: '1px solid var(--border,#eef1f6)', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ fontWeight: 800, minWidth: '52px' }}>#{n}</div>
+                    <select style={{ ...input, width: '150px' }} value={p.type} onChange={e => setPrize(n, { type: e.target.value as WinnerType })}>
+                      <option value="credit">Site credit</option>
+                      <option value="custom">Custom prize</option>
+                    </select>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
+                      <span style={{ color: 'var(--ink3)', fontSize: '.8rem' }}>{p.type === 'credit' ? 'Amount £' : 'Value £'}</span>
+                      <input type="number" step="0.01" min="0" style={{ ...input, width: '100px' }} value={p.amount} onChange={e => setPrize(n, { amount: Math.max(0, parseFloat(e.target.value) || 0) })} />
+                    </div>
+                    {p.type === 'credit' && <span style={{ fontSize: '.72rem', color: 'var(--ink3)' }}>→ added to balance</span>}
+                    <button onClick={() => toggle(n)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: '#c0392b', fontSize: '.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>Remove</button>
+                  </div>
+                  {p.type === 'custom' && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '84px 1fr', gap: '.75rem', alignItems: 'center', marginTop: '.75rem' }}>
+                      <button onClick={() => pickImage(n)} style={{ width: '84px', height: '64px', border: '1.5px dashed var(--border,#e2e7ee)', borderRadius: '8px', background: p.image ? 'none' : '#f7f8fa', cursor: 'pointer', overflow: 'hidden', padding: 0 }}>
+                        {p.image
+                          // eslint-disable-next-line @next/next/no-img-element
+                          ? <img src={p.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <span style={{ fontSize: '.66rem', color: '#9aa3af' }}>+ Photo</span>}
+                      </button>
+                      <input style={input} placeholder="Prize name (e.g. Coach Handbag)" value={p.name || ''} onChange={e => setPrize(n, { name: e.target.value })} />
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
         <input ref={fileInput} type="file" accept="image/*" style={{ display: 'none' }} onChange={onFile} />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1rem' }}>
-          <button onClick={addTier} style={{ background: 'none', border: '1.5px solid var(--border,#e2e7ee)', borderRadius: '8px', padding: '.6rem 1.1rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--ink)' }}>+ Add prize</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.25rem' }}>
           <button onClick={save} disabled={saving} style={{ background: 'var(--gold,#2563eb)', color: '#fff', border: 'none', borderRadius: '8px', padding: '.75rem 2rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? .6 : 1 }}>{saving ? 'Saving…' : 'Save setup'}</button>
           {msg && <span style={{ color: '#15803d', fontSize: '.85rem' }}>{msg}</span>}
           <a href="/instant-tickets" target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--gold,#2563eb)', fontSize: '.82rem', fontWeight: 700, textDecoration: 'none' }}>▶ Preview game</a>
         </div>
       </div>
-
-      {/* Live pool status */}
-      {pool.some(p => p.won > 0) && (
-        <div style={card}>
-          <label style={label}>Prizes won so far</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.4rem' }}>
-            {pool.map(p => (
-              <div key={p.key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.85rem' }}>
-                <span>{p.type === 'credit' ? `${money(p.amount)} site credit` : (p.name || 'Prize')}</span>
-                <span style={{ color: 'var(--ink3)' }}>{p.won} won · {p.left} left of {p.total}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Custom prize fulfilment */}
       <div style={card}>

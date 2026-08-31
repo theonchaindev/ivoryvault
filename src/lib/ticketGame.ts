@@ -2,20 +2,22 @@ import crypto from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 
 // ── Ticket Game ──────────────────────────────────────────────────────────
-// A self-contained instant-win mechanic, isolated from Competitions so it can
-// never leak into the public competition grid or collide with the one-Winner-
-// per-competition constraint. Prizes are defined as tiers (credit or custom
-// physical prize) with quantities; outcomes are decided SERVER-SIDE as plays
-// are revealed, dripping wins across the pool so a tier can't be over-awarded.
+// A self-contained instant-win mechanic, isolated from Competitions. The admin
+// picks EXACTLY which ticket numbers win and what each one holds (site credit
+// or a custom physical prize). Plays are minted with a sequential ticket number
+// as they're bought; revealing a play looks up whether its number is a winner —
+// so outcomes are deterministic and fully controlled by the admin.
 //
 // Uses Prisma tagged-template raw queries so it works on BOTH SQLite (local)
-// and Postgres (prod). Booleans are stored as INTEGER 0/1.
+// and Postgres (prod). Booleans are stored as INTEGER 0/1. The winners map is
+// stored as JSON in the "prizes" column.
 
-export interface TicketTier { type: 'credit' | 'custom'; amount: number; total: number; name?: string; image?: string }
-export interface TicketGameConfig { published: boolean; priceP: number; poolSize: number; prizes: TicketTier[] }
+export interface WinnerDef { type: 'credit' | 'custom'; amount: number; name?: string; image?: string }
+export interface TicketGameConfig { published: boolean; priceP: number; poolSize: number; winners: Record<number, WinnerDef> }
+export interface AggPrize { type: 'credit' | 'custom'; amount: number; name?: string; image?: string; total: number }
 export interface TicketWin { win: boolean; type?: 'credit' | 'custom'; amount?: number; name?: string; image?: string; ticketNumber?: number }
 
-const DEFAULT_CONFIG: TicketGameConfig = { published: false, priceP: 10, poolSize: 500, prizes: [] }
+const DEFAULT_CONFIG: TicketGameConfig = { published: false, priceP: 10, poolSize: 500, winners: {} }
 
 let ensured = false
 async function ensure() {
@@ -26,7 +28,7 @@ async function ensure() {
       "published" INTEGER NOT NULL DEFAULT 0,
       "priceP" INTEGER NOT NULL DEFAULT 10,
       "poolSize" INTEGER NOT NULL DEFAULT 500,
-      "prizes" TEXT NOT NULL DEFAULT '[]',
+      "prizes" TEXT NOT NULL DEFAULT '{}',
       "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TicketGamePlay" (
@@ -56,20 +58,43 @@ async function ensure() {
   } catch (e) { console.error('[ticketGame] ensure failed:', e) }
 }
 
-export function parsePrizes(raw: string | null | undefined): TicketTier[] {
+function cleanWinner(p: unknown): WinnerDef | null {
+  if (!p || typeof p !== 'object') return null
+  const o = p as Record<string, unknown>
+  const type = o.type === 'custom' ? 'custom' : 'credit'
+  return {
+    type,
+    amount: Math.max(0, Number(o.amount) || 0),
+    name: typeof o.name === 'string' ? o.name : undefined,
+    image: typeof o.image === 'string' ? o.image : undefined,
+  }
+}
+
+export function parseWinners(raw: string | null | undefined): Record<number, WinnerDef> {
   try {
-    const arr = JSON.parse(raw || '[]')
-    if (!Array.isArray(arr)) return []
-    return arr
-      .filter((p) => (p.type === 'credit' || p.type === 'custom') && Number(p.total) > 0)
-      .map((p) => ({
-        type: p.type === 'custom' ? 'custom' : 'credit' as TicketTier['type'],
-        amount: Math.max(0, Number(p.amount) || 0),
-        total: Math.max(0, Math.round(Number(p.total) || 0)),
-        name: typeof p.name === 'string' ? p.name : undefined,
-        image: typeof p.image === 'string' ? p.image : undefined,
-      }))
-  } catch { return [] }
+    const obj = JSON.parse(raw || '{}')
+    const out: Record<number, WinnerDef> = {}
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+      for (const [k, v] of Object.entries(obj)) {
+        const n = parseInt(k, 10)
+        const w = cleanWinner(v)
+        if (Number.isFinite(n) && n > 0 && w) out[n] = w
+      }
+    }
+    return out
+  } catch { return {} }
+}
+
+/** Group the winners map into distinct prizes (for public display). */
+export function aggregatePrizes(winners: Record<number, WinnerDef>): AggPrize[] {
+  const map = new Map<string, AggPrize>()
+  for (const w of Object.values(winners)) {
+    const key = w.type === 'credit' ? `credit:${w.amount}` : `custom:${w.name}|${w.amount}|${w.image ? 'img' : ''}`
+    const ex = map.get(key)
+    if (ex) ex.total++
+    else map.set(key, { type: w.type, amount: w.amount, name: w.name, image: w.image, total: 1 })
+  }
+  return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
 export async function getConfig(): Promise<TicketGameConfig> {
@@ -79,21 +104,26 @@ export async function getConfig(): Promise<TicketGameConfig> {
       SELECT "published","priceP","poolSize","prizes" FROM "TicketGameConfig" WHERE "id" = 1`
     if (!rows.length) return { ...DEFAULT_CONFIG }
     const r = rows[0]
-    return { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), prizes: parsePrizes(r.prizes) }
+    return { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), winners: parseWinners(r.prizes) }
   } catch { return { ...DEFAULT_CONFIG } }
 }
 
-export async function saveConfig(cfg: { priceP: number; poolSize: number; prizes: TicketTier[] }): Promise<void> {
+export async function saveConfig(cfg: { priceP: number; poolSize: number; winners: Record<number, WinnerDef> }): Promise<void> {
   await ensure()
   const priceP = Math.max(1, Math.round(cfg.priceP))
   const poolSize = Math.max(1, Math.round(cfg.poolSize))
-  const prizes = JSON.stringify(parsePrizes(JSON.stringify(cfg.prizes)))
-  // Upsert the single config row (id = 1), preserving the published flag.
+  // Keep only winners whose ticket number falls within the pool.
+  const clean: Record<number, WinnerDef> = {}
+  for (const [k, v] of Object.entries(cfg.winners || {})) {
+    const n = parseInt(k, 10); const w = cleanWinner(v)
+    if (Number.isFinite(n) && n >= 1 && n <= poolSize && w) clean[n] = w
+  }
+  const winners = JSON.stringify(clean)
   const existing = await prisma.$queryRaw<{ id: number }[]>`SELECT "id" FROM "TicketGameConfig" WHERE "id" = 1`
   if (existing.length) {
-    await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "prizes" = ${prizes} WHERE "id" = 1`
+    await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "prizes" = ${winners} WHERE "id" = 1`
   } else {
-    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","prizes") VALUES (1, 0, ${priceP}, ${poolSize}, ${prizes})`
+    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","prizes") VALUES (1, 0, ${priceP}, ${poolSize}, ${winners})`
   }
 }
 
@@ -104,7 +134,7 @@ export async function setPublished(published: boolean): Promise<void> {
   if (existing.length) {
     await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "published" = ${val} WHERE "id" = 1`
   } else {
-    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","prizes") VALUES (1, ${val}, 10, 500, '[]')`
+    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","prizes") VALUES (1, ${val}, 10, 500, '{}')`
   }
 }
 
@@ -126,6 +156,15 @@ export async function countUnrevealed(userId: string): Promise<number> {
   } catch { return 0 }
 }
 
+/** How many winning tickets have been revealed so far. */
+export async function countWon(): Promise<number> {
+  await ensure()
+  try {
+    const rows = await prisma.$queryRaw<{ c: number | bigint }[]>`SELECT COUNT(*) AS c FROM "TicketGamePlay" WHERE "revealed" = 1 AND "prizeType" IS NOT NULL`
+    return Number(rows[0]?.c || 0)
+  } catch { return 0 }
+}
+
 /** Mint N plays for a user (called after payment / credit purchase). */
 export async function createPlays(userId: string, qty: number): Promise<void> {
   await ensure()
@@ -140,41 +179,11 @@ export async function createPlays(userId: string, qty: number): Promise<void> {
   }
 }
 
-/** Won counts keyed by tier key (t0, t1, …), for pool accounting. */
-async function wonByKey(): Promise<Record<string, number>> {
-  const rows = await prisma.$queryRaw<{ prizeKey: string; c: number | bigint }[]>`
-    SELECT "prizeKey", COUNT(*) AS c FROM "TicketGamePlay" WHERE "revealed" = 1 AND "prizeKey" IS NOT NULL GROUP BY "prizeKey"`
-  const map: Record<string, number> = {}
-  for (const r of rows) map[r.prizeKey] = Number(r.c)
-  return map
-}
-
-async function revealedCount(): Promise<number> {
-  const rows = await prisma.$queryRaw<{ c: number | bigint }[]>`SELECT COUNT(*) AS c FROM "TicketGamePlay" WHERE "revealed" = 1`
-  return Number(rows[0]?.c || 0)
-}
-
-interface Decision { winKey: string | null; tier: TicketTier | null }
-function decide(prizes: TicketTier[], won: Record<string, number>, remainingEntries: number): Decision {
-  const status = prizes.map((p, i) => ({ p, key: `t${i}`, left: Math.max(0, p.total - (won[`t${i}`] || 0)) }))
-  const avail = status.filter(s => s.left > 0)
-  const totalLeft = avail.reduce((s, t) => s + t.left, 0)
-  if (totalLeft === 0 || remainingEntries <= 0) return { winKey: null, tier: null }
-  const winChance = Math.min(1, totalLeft / Math.max(1, remainingEntries))
-  if (Math.random() >= winChance) return { winKey: null, tier: null }
-  let r = Math.random() * totalLeft
-  for (const s of avail) {
-    if (r < s.left) return { winKey: s.key, tier: s.p }
-    r -= s.left
-  }
-  const last = avail[avail.length - 1]
-  return { winKey: last.key, tier: last.p }
-}
-
 /**
- * Reveal the user's next unrevealed play. Decides the outcome server-side,
- * marks the play atomically (so a double-tap can't reveal twice), and pays out
- * (site credit → balance; custom prize → claimable win). Returns the result.
+ * Reveal the user's next unrevealed play. Its outcome is fixed by its ticket
+ * number: if the admin marked that number as a winner, it wins that prize;
+ * otherwise it's a no-win. Marks the play atomically (so a double-tap can't
+ * reveal twice) and pays out (site credit → balance; custom prize → claimable).
  */
 export async function revealNext(userId: string): Promise<TicketWin | null> {
   await ensure()
@@ -185,18 +194,14 @@ export async function revealNext(userId: string): Promise<TicketWin | null> {
       SELECT "id","ticketNo" FROM "TicketGamePlay" WHERE "userId" = ${userId} AND "revealed" = 0 ORDER BY "ticketNo" ASC LIMIT 1`
     if (!nextRows.length) return null
     const play = nextRows[0]
+    const ticketNo = Number(play.ticketNo)
 
-    const won = await wonByKey()
-    const revealed = await revealedCount()
-    const remainingEntries = Math.max(1, cfg.poolSize - revealed)
-    const decision = decide(cfg.prizes, won, remainingEntries)
-
-    const t = decision.tier
-    const prizeKey = decision.winKey
-    const prizeType = t ? t.type : null
-    const prizeAmount = t ? t.amount : 0
-    const prizeName = t?.type === 'custom' ? (t.name || 'Prize') : null
-    const prizeImage = t?.type === 'custom' ? (t.image || null) : null
+    const w = cfg.winners[ticketNo] || null
+    const prizeKey = w ? `n${ticketNo}` : null
+    const prizeType = w ? w.type : null
+    const prizeAmount = w ? w.amount : 0
+    const prizeName = w?.type === 'custom' ? (w.name || 'Prize') : null
+    const prizeImage = w?.type === 'custom' ? (w.image || null) : null
 
     // Atomic claim: only succeeds if the play is still unrevealed.
     const claimed = await prisma.$executeRaw`
@@ -207,24 +212,24 @@ export async function revealNext(userId: string): Promise<TicketWin | null> {
     if (!claimed) continue // someone revealed it first — retry with the next one
 
     // Payout
-    if (t?.type === 'credit' && t.amount > 0) {
-      await prisma.user.update({ where: { id: userId }, data: { siteCredit: { increment: t.amount } } })
+    if (w?.type === 'credit' && w.amount > 0) {
+      await prisma.user.update({ where: { id: userId }, data: { siteCredit: { increment: w.amount } } })
       await prisma.notification.create({
-        data: { userId, title: `£${t.amount % 1 === 0 ? t.amount : t.amount.toFixed(2)} site credit won 🎉`, body: `You won £${t.amount % 1 === 0 ? t.amount : t.amount.toFixed(2)} in site credit on an Instant Win ticket — it's been added to your account balance.`, icon: 'win' },
+        data: { userId, title: `£${w.amount % 1 === 0 ? w.amount : w.amount.toFixed(2)} site credit won 🎉`, body: `You won £${w.amount % 1 === 0 ? w.amount : w.amount.toFixed(2)} in site credit on an Instant Win ticket — it's been added to your account balance.`, icon: 'win' },
       }).catch(() => {})
-    } else if (t?.type === 'custom') {
+    } else if (w?.type === 'custom') {
       await prisma.notification.create({
         data: { userId, title: `You won ${prizeName}! 🎁`, body: `You won ${prizeName} on an Instant Win ticket. Head to your account to claim it and enter your delivery details.`, icon: 'win' },
       }).catch(() => {})
     }
 
     return {
-      win: !!t,
-      type: t?.type,
-      amount: t?.amount,
+      win: !!w,
+      type: w?.type,
+      amount: w?.amount,
       name: prizeName || undefined,
       image: prizeImage || undefined,
-      ticketNumber: play.ticketNo,
+      ticketNumber: ticketNo,
     }
   }
   return null
@@ -297,11 +302,4 @@ export async function listCustomWinsForAdmin(): Promise<Array<TicketWinRow & { u
     ticketNo: Number(r.ticketNo), createdAt: String(r.createdAt), claim: claimByPlay.get(r.id),
     userName: byUser.get(r.userId)?.name || 'Unknown', userEmail: byUser.get(r.userId)?.email || '',
   }))
-}
-
-/** For the admin dashboard: how many of each tier have been won. */
-export async function poolStatus(): Promise<Array<TicketTier & { key: string; won: number; left: number }>> {
-  const cfg = await getConfig()
-  const won = await wonByKey()
-  return cfg.prizes.map((p, i) => ({ ...p, key: `t${i}`, won: won[`t${i}`] || 0, left: Math.max(0, p.total - (won[`t${i}`] || 0)) }))
 }

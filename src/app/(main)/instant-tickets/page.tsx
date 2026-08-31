@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getConfig, countUnrevealed } from '@/lib/ticketGame'
+import { getConfig, countUnrevealed, aggregatePrizes } from '@/lib/ticketGame'
 import InstantTicketsClient from './InstantTicketsClient'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +35,7 @@ export default async function InstantTicketsPage() {
       )}
       <InstantTicketsClient
         price={cfg.priceP / 100}
-        prizes={cfg.prizes}
+        prizes={aggregatePrizes(cfg.winners)}
         poolSize={cfg.poolSize}
         pending={pending}
         signedIn={!!session}
