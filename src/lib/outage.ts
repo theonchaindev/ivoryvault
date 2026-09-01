@@ -12,6 +12,12 @@
 
 export const PAYMENTS_PAUSED = false
 
+// Competitions to hide from the whole site by slug (removed from listings, and
+// their detail page 404s). A code-level off switch for when admin isn't handy.
+// Remove a slug here to bring it back.
+export const HIDDEN_COMPETITION_SLUGS = ['instant-cash-spin']
+export const isCompHidden = (slug: string) => HIDDEN_COMPETITION_SLUGS.includes(slug)
+
 // The instant the clocks were frozen (used as "now" everywhere while paused).
 export const PAUSED_AT = '2026-08-16T09:20:00Z'
 

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
 import { CLOSED_WINDOW_MS, isCompClosed, isCompUpcoming } from '@/lib/compState'
-import { effectiveNow } from '@/lib/outage'
+import { effectiveNow, isCompHidden } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
 import { getPublishedGameCards } from '@/lib/instantGames'
 
@@ -10,7 +10,7 @@ async function getCompetitions() {
   // Closed standard comps linger for 16h after their draw date, then drop off.
   const cutoff = new Date(effectiveNow() - CLOSED_WINDOW_MS)
   try {
-    return await prisma.competition.findMany({
+    const rows = await prisma.competition.findMany({
       where: {
         OR: [
           { status: 'coming_soon' },
@@ -23,6 +23,7 @@ async function getCompetitions() {
       },
       orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
     })
+    return rows.filter(c => !isCompHidden(c.slug))
   } catch { return [] }
 }
 

@@ -2,7 +2,7 @@ import { notFound, redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { isCompClosed, isCompUpcoming } from '@/lib/compState'
-import { effectiveNow } from '@/lib/outage'
+import { effectiveNow, isCompHidden } from '@/lib/outage'
 import CompetitionDetail from './CompetitionDetail'
 
 export const dynamic = 'force-dynamic'
@@ -47,6 +47,7 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CompetitionPage({ params }: PageProps) {
   const { slug } = await params
+  if (isCompHidden(slug)) notFound()
   const competition = await getCompetition(slug)
   if (!competition) notFound()
 
