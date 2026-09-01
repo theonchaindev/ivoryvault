@@ -129,7 +129,17 @@ export async function getConfig(): Promise<TicketGameConfig> {
       SELECT "published","priceP","poolSize","prizes","image","endsAt" FROM "TicketGameConfig" WHERE "id" = 1`
     if (!rows.length) return { ...DEFAULT_CONFIG }
     const r = rows[0]
-    return { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes) }
+    const cfg: TicketGameConfig = { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes) }
+    // A published game should always have a countdown — if none is set, default
+    // to 30 days from now and persist it (once) so the cards + page show a timer.
+    if (cfg.published && !cfg.endsAt) {
+      const iso = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      try {
+        await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "endsAt" = ${iso} WHERE "id" = 1 AND ("endsAt" IS NULL OR "endsAt" = '')`
+        cfg.endsAt = iso
+      } catch { /* ignore — timer just won't show until an end date is set */ }
+    }
+    return cfg
   } catch { return { ...DEFAULT_CONFIG } }
 }
 
