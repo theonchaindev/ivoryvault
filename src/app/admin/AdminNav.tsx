@@ -11,7 +11,7 @@ const navItems = [
   { href: '/admin/winners', label: 'Winners', icon: '★' },
   { href: '/admin/winner-email', label: 'Winner Email', icon: '✦' },
   { href: '/admin/instant', label: 'Instant Wins', icon: '⚡' },
-  { href: '/admin/ticket-game', label: 'Ticket Game', icon: '🎟' },
+  { href: '/admin/instant-win', label: 'Instant Win', icon: '🎟' },
   { href: '/admin/contacts', label: 'Contacts', icon: '✉' },
   { href: '/admin/integrations', label: 'Integrations', icon: '⚙' },
   { href: '/admin/guide', label: 'Guide', icon: '❔' },

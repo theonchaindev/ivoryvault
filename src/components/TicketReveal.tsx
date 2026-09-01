@@ -32,11 +32,14 @@ export interface TicketRevealProps {
   creditAvailable?: number
   /** Optional main image shown as the game's thumbnail/hero. */
   heroImage?: string
+  /** Where the "Log in to play" button points. */
+  loginHref?: string
 }
 
 export default function TicketReveal({
   drawTickets, price, maxQty = 10, title = 'Ivory Vault Instant Tickets',
   onCheckout, onRevealNext, pending = 0, signedIn = true, creditAvailable = 0, heroImage = '',
+  loginHref = '/login',
 }: TicketRevealProps) {
   const realMode = !!onRevealNext
   const [phase, setPhase] = useState<'choose' | 'play'>(realMode && pending > 0 ? 'play' : 'choose')
@@ -177,7 +180,7 @@ export default function TicketReveal({
               </label>
             )}
             {realMode && !signedIn ? (
-              <a className="tk__go tk__go--link" href="/login?from=/instant-tickets">Log in to play</a>
+              <a className="tk__go tk__go--link" href={loginHref}>Log in to play</a>
             ) : (
               <button className="tk__go" onClick={start} disabled={busy}>{busy ? 'Loading…' : realMode ? `Pay ${money(total)} · ${qty} ticket${qty === 1 ? '' : 's'}` : `Pay ${money(total)} · Reveal ${qty} ticket${qty === 1 ? '' : 's'}`}</button>
             )}

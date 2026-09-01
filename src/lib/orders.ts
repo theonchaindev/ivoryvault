@@ -1,18 +1,25 @@
 import { prisma } from '@/lib/prisma'
 import { syncEarnedSpins } from '@/lib/spins'
 import { sendPurchaseConfirmation } from '@/lib/email'
-import { createPlays as createTicketGamePlays } from '@/lib/ticketGame'
+import { createPlays as createGamePlays, gameIdFromItem, getGameBySlug, IG_ITEM_PREFIX } from '@/lib/instantGames'
 
-/** Sentinel "competition id" used to route a purchase to the Ticket Game. */
+/** Legacy sentinel — pre-multi-game ticket-game orders. Maps to the migrated game. */
 export const TICKET_GAME_ITEM = '__ticketgame__'
 
 /** Record a single competition purchase: create ticket/spins, bump count, auto-draw if sold out. */
 export async function recordPurchase(userId: string, competitionId: string, qty: number, paymentRef: string) {
   if (!userId || !competitionId || !qty) return
 
-  // Ticket Game: mint N unrevealed plays (isolated from competitions)
+  // Instant Win game: mint N unrevealed plays for that game (isolated from competitions)
+  if (competitionId.startsWith(IG_ITEM_PREFIX)) {
+    const gid = gameIdFromItem(competitionId)
+    if (gid) await createGamePlays(gid, userId, qty)
+    return
+  }
+  // Legacy ticket-game order → the migrated game.
   if (competitionId === TICKET_GAME_ITEM) {
-    await createTicketGamePlays(userId, qty)
+    const g = await getGameBySlug('instant-tickets')
+    if (g) await createGamePlays(g.id, userId, qty)
     return
   }
 
@@ -75,7 +82,7 @@ export async function sendOrderConfirmation(userId: string, items: { id: string;
     select: { id: true, title: true, ticketPrice: true },
   })
   const byId = new Map(comps.map(c => [c.id, c]))
-  const lines = items.map(i => ({ title: i.id === TICKET_GAME_ITEM ? 'Instant Win Tickets' : (byId.get(i.id)?.title || 'Competition entry'), qty: i.qty }))
+  const lines = items.map(i => ({ title: (i.id.startsWith(IG_ITEM_PREFIX) || i.id === TICKET_GAME_ITEM) ? 'Instant Win Tickets' : (byId.get(i.id)?.title || 'Competition entry'), qty: i.qty }))
   const total = totalPence != null
     ? totalPence / 100
     : items.reduce((s, i) => s + (byId.get(i.id)?.ticketPrice || 0) * i.qty, 0)

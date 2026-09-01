@@ -6,9 +6,11 @@ import CountdownTimer from '@/components/CountdownTimer'
 interface Tier { type: 'credit' | 'custom'; amount: number; total: number; name?: string; image?: string }
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 
-export default function InstantTicketsClient({
-  price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable,
+export default function InstantGameClient({
+  gameId, title, price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable, loginFrom,
 }: {
+  gameId: string
+  title: string
   price: number
   image: string
   endsAt: string | null
@@ -17,27 +19,28 @@ export default function InstantTicketsClient({
   pending: number
   signedIn: boolean
   creditAvailable: number
+  loginFrom: string
 }) {
   const onCheckout = async (qty: number, useCredit: boolean) => {
-    const res = await fetch('/api/ticketgame/checkout', {
+    const res = await fetch('/api/instant-win/checkout', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: qty, useCredit }),
+      body: JSON.stringify({ gameId, quantity: qty, useCredit }),
     })
     const d = await res.json().catch(() => ({}))
     if (!res.ok) {
-      if (d.needsLogin) { window.location.href = '/login?from=/instant-tickets'; return }
+      if (d.needsLogin) { window.location.href = `/login?from=${encodeURIComponent(loginFrom)}`; return }
       throw new Error(d.error || 'Could not start checkout.')
     }
     if (d.url) window.location.href = d.url
   }
 
   const onRevealNext = async (): Promise<TicketResult | null> => {
-    const res = await fetch('/api/ticketgame/reveal', { method: 'POST' })
+    const res = await fetch('/api/instant-win/reveal', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId }),
+    })
     const d = await res.json().catch(() => ({}))
-    if (!res.ok) {
-      if (d.error === 'no-tickets') return null
-      throw new Error(d.error || 'Could not reveal.')
-    }
+    if (!res.ok) { if (d.error === 'no-tickets') return null; throw new Error(d.error || 'Could not reveal.') }
     return d.result as TicketResult
   }
 
@@ -55,13 +58,14 @@ export default function InstantTicketsClient({
       <TicketReveal
         price={price}
         maxQty={25}
-        title="Instant Win Tickets"
+        title={title}
         heroImage={image}
         onCheckout={onCheckout}
         onRevealNext={onRevealNext}
         pending={pending}
         signedIn={signedIn}
         creditAvailable={creditAvailable}
+        loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
       />
 
       {shown.length > 0 && (

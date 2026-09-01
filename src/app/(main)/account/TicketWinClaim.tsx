@@ -33,7 +33,7 @@ export default function TicketWinClaim({ win }: { win: TicketWin }) {
     if (!f.fullName.trim() || !f.addressLine1.trim() || !f.city.trim() || !f.postcode.trim()) { setErr('Please fill in your name and full address.'); return }
     setBusy(true)
     try {
-      const res = await fetch('/api/ticketgame/claim', {
+      const res = await fetch('/api/instant-win/claim', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ playId: win.playId, ...f }),
       })

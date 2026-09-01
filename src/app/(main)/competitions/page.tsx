@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { CLOSED_WINDOW_MS, isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { effectiveNow } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
-import { getTicketGameCard } from '@/lib/ticketGame'
+import { getPublishedGameCards } from '@/lib/instantGames'
 
 async function getCompetitions() {
   // Closed standard comps linger for 16h after their draw date, then drop off.
@@ -48,8 +48,8 @@ export default async function CompetitionsPage() {
   const drawTs = (c: typeof serialized[number]) => c.drawDate ? new Date(c.drawDate).getTime() : Infinity
   serialized.sort((a, b) =>
     rank(a) - rank(b) || drawTs(a) - drawTs(b) || Number(b.featured) - Number(a.featured))
-  // Prepend the ticket game tile (links to /instant-tickets) when it's published.
-  const ticketCard = await getTicketGameCard()
-  const list = ticketCard ? [ticketCard, ...serialized] : serialized
+  // Prepend a tile for each published instant-win game.
+  const gameCards = await getPublishedGameCards()
+  const list = [...gameCards, ...serialized]
   return <CompetitionsClient competitions={list} />
 }

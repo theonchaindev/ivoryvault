@@ -6,7 +6,7 @@ import AccountClient from './AccountClient'
 import ClearBasketOnSuccess from './ClearBasketOnSuccess'
 import { getClaimsForUser } from '@/lib/prizeClaims'
 import { getOrCreateReferral, getReferredCount } from '@/lib/referrals'
-import { getWinsForUser } from '@/lib/ticketGame'
+import { getWinsForUser } from '@/lib/instantGames'
 
 async function getUserTickets(userId: string) {
   try {

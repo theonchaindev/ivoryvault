@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { uploadImage } from '@/lib/uploadImage'
 
 type WinnerType = 'credit' | 'custom'
@@ -10,7 +12,6 @@ interface CustomWin { playId: string; userId: string; amount: number; name: stri
 interface Order { orderNumber: string; status: string; amount: string; createdAt: string; paidAt: string | null; qty: number; email: string; name: string }
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
-// ISO ↔ <input type="datetime-local"> (local time, minute precision)
 const toLocalInput = (iso: string) => { const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16) }
 const plusDaysLocal = (n: number) => toLocalInput(new Date(Date.now() + n * 86400000).toISOString())
 const card: React.CSSProperties = { background: 'var(--card,#fff)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem' }
@@ -18,13 +19,18 @@ const label: React.CSSProperties = { display: 'block', fontSize: '.62rem', fontW
 const input: React.CSSProperties = { padding: '.55rem .7rem', border: '1px solid var(--border,#e2e7ee)', borderRadius: '8px', fontSize: '.85rem', fontFamily: 'inherit', width: '100%', color: 'var(--ink,#1b2432)', background: '#fff' }
 const GRID_CAP = 1000
 
-export default function TicketGameAdmin() {
+export default function InstantGameAdmin({ gameId }: { gameId: string }) {
+  const router = useRouter()
+  const base = `/api/admin/instant-win/${gameId}`
   const [loading, setLoading] = useState(true)
+  const [notFound, setNotFound] = useState(false)
+  const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
   const [published, setPublished] = useState(false)
-  const [priceP, setPriceP] = useState(10)
+  const [priceP, setPriceP] = useState(50)
   const [poolSize, setPoolSize] = useState(500)
   const [image, setImage] = useState('')
-  const [endsAt, setEndsAt] = useState('') // datetime-local value
+  const [endsAt, setEndsAt] = useState('')
   const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
@@ -45,16 +51,17 @@ export default function TicketGameAdmin() {
 
   const load = async () => {
     try {
-      const res = await fetch('/api/admin/ticket-game')
+      const res = await fetch(base)
+      if (res.status === 404) { setNotFound(true); return }
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
-      setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setImage(d.config.image || ''); setWinners(d.config.winners || {})
-      setEndsAt(d.config.endsAt ? toLocalInput(d.config.endsAt) : plusDaysLocal(30))
+      const d = await res.json() as { game: { slug: string; name: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
+      setName(d.game.name); setSlug(d.game.slug); setPublished(d.game.published); setPriceP(d.game.priceP); setPoolSize(d.game.poolSize); setImage(d.game.image || ''); setWinners(d.game.winners || {})
+      setEndsAt(d.game.endsAt ? toLocalInput(d.game.endsAt) : plusDaysLocal(30))
       setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setOrders(d.orders || [])
-    } catch { setErr('Could not load the ticket game config.') }
+    } catch { setErr('Could not load this game.') }
     finally { setLoading(false) }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = (n: number) => setWinners(w => { const next = { ...w }; if (next[n]) delete next[n]; else next[n] = { type: 'credit', amount: 5 }; return next })
   const setPrize = (n: number, patch: Partial<Winner>) => setWinners(w => ({ ...w, [n]: { ...w[n], ...patch } }))
@@ -69,7 +76,6 @@ export default function TicketGameAdmin() {
     catch { const reader = new FileReader(); reader.onload = () => setPrize(n, { image: String(reader.result) }); reader.readAsDataURL(f) }
     finally { setMsg('') }
   }
-
   const onMainFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]; e.target.value = ''
     if (!f) return
@@ -82,7 +88,7 @@ export default function TicketGameAdmin() {
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, winners }) })
+      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -92,13 +98,13 @@ export default function TicketGameAdmin() {
 
   const togglePublish = async () => {
     const goingLive = !published
-    if (goingLive && !confirm('Show the ticket game on the live site? Members will be able to buy and play it for real money.')) return
+    if (goingLive && !confirm('Show this game on the live site? Members will be able to buy and play it for real money.')) return
     setBusyPub(true); setErr('')
     try {
-      const res = await fetch('/api/admin/ticket-game', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ published: goingLive }) })
+      const res = await fetch(base, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ published: goingLive }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
-      setPublished(d.config.published)
+      setPublished(d.game.published); if (d.game.endsAt && !endsAt) setEndsAt(toLocalInput(d.game.endsAt))
     } catch (e) { setErr(e instanceof Error ? e.message : 'Could not update.') }
     finally { setBusyPub(false) }
   }
@@ -106,19 +112,19 @@ export default function TicketGameAdmin() {
   const grant = async () => {
     setGranting(true); setGrantMsg('')
     try {
-      const res = await fetch('/api/admin/ticket-game/grant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: grantEmail.trim(), quantity: grantQty }) })
+      const res = await fetch(`${base}/grant`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: grantEmail.trim(), quantity: grantQty }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
-      setGrantMsg(`✓ Added ${d.granted} ticket(s) to ${d.email} (they now hold ${d.pending} unrevealed).`); setGrantEmail('')
+      setGrantMsg(`✓ Added ${d.granted} ticket(s) to ${d.email} (they now hold ${d.pending} unrevealed).`); setGrantEmail(''); load()
     } catch (e) { setGrantMsg(e instanceof Error ? e.message : 'Could not grant.') }
     finally { setGranting(false) }
   }
 
   const resetGame = async () => {
-    if (!confirm('Reset the game to 0 tickets sold? This permanently clears all plays and prize claims. Prize setup + published status are kept.')) return
+    if (!confirm('Reset this game to 0 tickets sold? This permanently clears all plays and prize claims. Prize setup + published status are kept.')) return
     setResetting(true)
     try {
-      const res = await fetch('/api/admin/ticket-game/reset', { method: 'POST' })
+      const res = await fetch(`${base}/reset`, { method: 'POST' })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
       load()
@@ -126,14 +132,31 @@ export default function TicketGameAdmin() {
     finally { setResetting(false) }
   }
 
+  const deleteGame = async () => {
+    if (!confirm(`Delete "${name}" permanently? This removes the game and all its plays. This can't be undone.`)) return
+    try {
+      const res = await fetch(base, { method: 'DELETE' })
+      if (!res.ok) throw new Error('failed')
+      router.push('/admin/instant-win')
+    } catch { setErr('Could not delete.') }
+  }
+
   const winnerNums = Object.keys(winners).map(Number).sort((a, b) => a - b)
   const gridCount = Math.min(poolSize, GRID_CAP)
 
   if (loading) return <p style={{ color: 'var(--ink3)' }}>Loading…</p>
+  if (notFound) return <p style={{ color: 'var(--ink3)' }}>Game not found. <Link href="/admin/instant-win" style={{ color: 'var(--gold,#2563eb)' }}>Back to games</Link></p>
 
   return (
     <div style={{ maxWidth: '960px', color: 'var(--ink,#1b2432)' }}>
-      {err && <div style={{ ...card, borderColor: '#f3c2bd', background: '#fdf2f1', color: '#b23b2e' }}>{err}</div>}
+      <Link href="/admin/instant-win" style={{ color: 'var(--ink3)', fontSize: '.8rem', textDecoration: 'none' }}>← All games</Link>
+      {err && <div style={{ ...card, marginTop: '1rem', borderColor: '#f3c2bd', background: '#fdf2f1', color: '#b23b2e' }}>{err}</div>}
+
+      {/* Name */}
+      <div style={{ ...card, marginTop: '1rem' }}>
+        <label style={label}>Game name</label>
+        <input style={{ ...input, maxWidth: '420px', fontSize: '1rem' }} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. October Instant Win" />
+      </div>
 
       {/* Publish switch */}
       <div style={{ ...card, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', borderColor: published ? '#a7e0bf' : 'var(--border,#e2e7ee)', background: published ? '#f0fbf4' : 'var(--card,#fff)' }}>
@@ -143,7 +166,7 @@ export default function TicketGameAdmin() {
             <strong style={{ fontSize: '1rem' }}>{published ? 'Live on site' : 'Hidden from site'}</strong>
           </div>
           <p style={{ color: 'var(--ink3)', fontSize: '.82rem', margin: '.35rem 0 0' }}>
-            {published ? 'Members can see and play the ticket game right now.' : 'The game is not shown anywhere on the site. Turn this on when you’re ready to go live.'}
+            {published ? 'Members can see and play this game right now.' : 'The game is not shown anywhere on the site. Turn this on when you’re ready to go live.'}
           </p>
         </div>
         <button onClick={togglePublish} disabled={busyPub || (!published && winnerNums.length === 0)} style={{ background: published ? '#c0392b' : '#16a34a', color: '#fff', border: 'none', borderRadius: '10px', padding: '.85rem 1.8rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: busyPub || (!published && winnerNums.length === 0) ? .6 : 1 }}>
@@ -249,7 +272,7 @@ export default function TicketGameAdmin() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.25rem' }}>
           <button onClick={save} disabled={saving} style={{ background: 'var(--gold,#2563eb)', color: '#fff', border: 'none', borderRadius: '8px', padding: '.75rem 2rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: saving ? .6 : 1 }}>{saving ? 'Saving…' : 'Save setup'}</button>
           {msg && <span style={{ color: '#15803d', fontSize: '.85rem' }}>{msg}</span>}
-          <a href="/instant-tickets" target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--gold,#2563eb)', fontSize: '.82rem', fontWeight: 700, textDecoration: 'none' }}>▶ Preview game</a>
+          <a href={`/instant-win/${slug}`} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--gold,#2563eb)', fontSize: '.82rem', fontWeight: 700, textDecoration: 'none' }}>▶ Preview game</a>
         </div>
       </div>
 
@@ -288,7 +311,7 @@ export default function TicketGameAdmin() {
       {/* Orders & recovery */}
       <div style={card}>
         <label style={label}>Orders &amp; recovery</label>
-        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .9rem' }}>Recent ticket purchases. If a member paid but a card order shows <b>paid</b> yet they didn&rsquo;t get their tickets, grant them below.</p>
+        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .9rem' }}>Recent ticket purchases for this game. If a member paid but a card order shows <b>paid</b> yet they didn&rsquo;t get their tickets, grant them below.</p>
         {orders.length === 0
           ? <p style={{ color: 'var(--ink3)', fontSize: '.85rem' }}>No ticket orders yet.</p>
           : (
@@ -322,12 +345,16 @@ export default function TicketGameAdmin() {
         </div>
       </div>
 
-      {/* Danger zone: reset */}
+      {/* Danger zone */}
       <div style={{ ...card, borderColor: '#f3c2bd' }}>
-        <label style={label}>Reset</label>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <label style={label}>Reset &amp; delete</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <p style={{ fontSize: '.82rem', color: 'var(--ink3)', margin: 0, maxWidth: '520px' }}>Clears all tickets sold and prize claims, back to <b>0 sold</b>. Your prize setup, image and published status are kept.</p>
           <button onClick={resetGame} disabled={resetting} style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: '10px', padding: '.75rem 1.6rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: resetting ? .6 : 1 }}>{resetting ? 'Resetting…' : 'Reset to 0 sold'}</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', borderTop: '1px solid var(--border,#eef1f6)', paddingTop: '1rem' }}>
+          <p style={{ fontSize: '.82rem', color: 'var(--ink3)', margin: 0, maxWidth: '520px' }}>Permanently delete this game and everything in it.</p>
+          <button onClick={deleteGame} style={{ background: 'none', color: '#c0392b', border: '1px solid #c0392b', borderRadius: '10px', padding: '.7rem 1.4rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit' }}>Delete game</button>
         </div>
       </div>
     </div>
