@@ -8,7 +8,7 @@ interface GameRow { id: string; slug: string; name: string; published: boolean; 
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 
-export default function InstantWinIndex() {
+export default function InstantWinIndex({ kind = 'ticket', label = 'ticket win' }: { kind?: 'ticket' | 'instant'; label?: string }) {
   const router = useRouter()
   const [games, setGames] = useState<GameRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -17,20 +17,20 @@ export default function InstantWinIndex() {
 
   const load = async () => {
     try {
-      const res = await fetch('/api/admin/instant-win')
+      const res = await fetch(`/api/admin/instant-win?kind=${kind}`)
       if (!res.ok) throw new Error('load failed')
       setGames((await res.json()).games || [])
     } catch { setErr('Could not load games.') }
     finally { setLoading(false) }
   }
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const create = async () => {
-    const name = prompt('Name your new ticket win game (e.g. October Ticket Win)')
+    const name = prompt(`Name your new ${label} game`)
     if (name === null) return
     setCreating(true); setErr('')
     try {
-      const res = await fetch('/api/admin/instant-win', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim() || 'New Instant Win' }) })
+      const res = await fetch('/api/admin/instant-win', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim() || 'New game', kind }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'failed')
       router.push(`/admin/instant-win/${d.id}`)

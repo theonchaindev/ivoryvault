@@ -12,7 +12,7 @@ export default function AdminInstantWinPage() {
           and stays hidden until you switch it on. Click a game to manage it.
         </p>
       </div>
-      <InstantWinIndex />
+      <InstantWinIndex kind="ticket" label="ticket win" />
     </div>
   )
 }

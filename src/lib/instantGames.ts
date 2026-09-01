@@ -12,8 +12,9 @@ import { prisma } from '@/lib/prisma'
 // game so the live game is preserved.
 
 export interface WinnerDef { type: 'credit' | 'custom'; amount: number; name?: string; image?: string }
+export type GameKind = 'ticket' | 'instant'
 export interface Game {
-  id: string; slug: string; name: string; published: boolean
+  id: string; slug: string; name: string; kind: GameKind; published: boolean
   priceP: number; poolSize: number; image: string; endsAt: string | null
   winners: Record<number, WinnerDef>; createdAt: string
 }
@@ -32,6 +33,7 @@ async function ensure() {
       "id" TEXT PRIMARY KEY,
       "slug" TEXT UNIQUE,
       "name" TEXT NOT NULL DEFAULT 'Instant Win',
+      "kind" TEXT NOT NULL DEFAULT 'ticket',
       "published" INTEGER NOT NULL DEFAULT 0,
       "priceP" INTEGER NOT NULL DEFAULT 50,
       "poolSize" INTEGER NOT NULL DEFAULT 500,
@@ -40,6 +42,7 @@ async function ensure() {
       "prizes" TEXT NOT NULL DEFAULT '{}',
       "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'ticket'`) } catch { /* exists */ }
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TicketGamePlay" (
       "id" TEXT PRIMARY KEY,
       "userId" TEXT NOT NULL,
@@ -114,16 +117,17 @@ export function aggregatePrizes(winners: Record<number, WinnerDef>): AggPrize[] 
   return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
-function rowToGame(r: { id: string; slug: string; name: string; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; prizes: string; createdAt: string }): Game {
-  return { id: r.id, slug: r.slug, name: r.name, published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
+function rowToGame(r: { id: string; slug: string; name: string; kind: string | null; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; prizes: string; createdAt: string }): Game {
+  return { id: r.id, slug: r.slug, name: r.name, kind: r.kind === 'instant' ? 'instant' : 'ticket', published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
 }
 type GameRow = Parameters<typeof rowToGame>[0]
-const SELECT_COLS = `"id","slug","name","published","priceP","poolSize","image","endsAt","prizes","createdAt"`
+const SELECT_COLS = `"id","slug","name","kind","published","priceP","poolSize","image","endsAt","prizes","createdAt"`
 
 // ── CRUD ─────────────────────────────────────────────────────────────────
-export async function listGames(): Promise<Game[]> {
+export async function listGames(kind?: GameKind): Promise<Game[]> {
   await ensure()
-  const rows = await prisma.$queryRawUnsafe<GameRow[]>(`SELECT ${SELECT_COLS} FROM "InstantGame" ORDER BY "createdAt" ASC`)
+  const where = kind ? ` WHERE "kind" = '${kind}'` : ''
+  const rows = await prisma.$queryRawUnsafe<GameRow[]>(`SELECT ${SELECT_COLS} FROM "InstantGame"${where} ORDER BY "createdAt" ASC`)
   return rows.map(rowToGame)
 }
 export async function getGameById(id: string): Promise<Game | null> {
@@ -145,13 +149,14 @@ function slugify(name: string): string {
   return (name || 'instant-win').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'instant-win'
 }
 
-export async function createGame(name: string): Promise<Game> {
+export async function createGame(name: string, kind: GameKind = 'ticket'): Promise<Game> {
   await ensure()
   const clean = (name || '').trim() || 'New Instant Win'
   let slug = slugify(clean); let i = 2
   while (await slugExists(slug)) { slug = `${slugify(clean)}-${i++}` }
   const id = crypto.randomUUID()
-  await prisma.$executeRaw`INSERT INTO "InstantGame" ("id","slug","name","published","priceP","poolSize","image","prizes") VALUES (${id}, ${slug}, ${clean}, 0, 50, 500, '', '{}')`
+  const k = kind === 'instant' ? 'instant' : 'ticket'
+  await prisma.$executeRaw`INSERT INTO "InstantGame" ("id","slug","name","kind","published","priceP","poolSize","image","prizes") VALUES (${id}, ${slug}, ${clean}, ${k}, 0, 50, 500, '', '{}')`
   return (await getGameById(id))!
 }
 

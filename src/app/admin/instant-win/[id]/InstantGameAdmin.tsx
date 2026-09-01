@@ -26,6 +26,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const [notFound, setNotFound] = useState(false)
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
+  const [backHref, setBackHref] = useState('/admin/instant-win')
   const [published, setPublished] = useState(false)
   const [priceP, setPriceP] = useState(50)
   const [poolSize, setPoolSize] = useState(500)
@@ -54,7 +55,8 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
       const res = await fetch(base)
       if (res.status === 404) { setNotFound(true); return }
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { game: { slug: string; name: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
+      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
+      setBackHref(d.game.kind === 'instant' ? '/admin/instant' : '/admin/instant-win')
       setName(d.game.name); setSlug(d.game.slug); setPublished(d.game.published); setPriceP(d.game.priceP); setPoolSize(d.game.poolSize); setImage(d.game.image || ''); setWinners(d.game.winners || {})
       setEndsAt(d.game.endsAt ? toLocalInput(d.game.endsAt) : plusDaysLocal(30))
       setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setOrders(d.orders || [])
@@ -137,7 +139,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
     try {
       const res = await fetch(base, { method: 'DELETE' })
       if (!res.ok) throw new Error('failed')
-      router.push('/admin/instant-win')
+      router.push(backHref)
     } catch { setErr('Could not delete.') }
   }
 
@@ -149,7 +151,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
 
   return (
     <div style={{ maxWidth: '960px', color: 'var(--ink,#1b2432)' }}>
-      <Link href="/admin/instant-win" style={{ color: 'var(--ink3)', fontSize: '.8rem', textDecoration: 'none' }}>← All games</Link>
+      <Link href={backHref} style={{ color: 'var(--ink3)', fontSize: '.8rem', textDecoration: 'none' }}>← All games</Link>
       {err && <div style={{ ...card, marginTop: '1rem', borderColor: '#f3c2bd', background: '#fdf2f1', color: '#b23b2e' }}>{err}</div>}
 
       {/* Name */}
