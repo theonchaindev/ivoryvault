@@ -13,11 +13,11 @@ import { prisma } from '@/lib/prisma'
 // stored as JSON in the "prizes" column.
 
 export interface WinnerDef { type: 'credit' | 'custom'; amount: number; name?: string; image?: string }
-export interface TicketGameConfig { published: boolean; priceP: number; poolSize: number; image: string; winners: Record<number, WinnerDef> }
+export interface TicketGameConfig { published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Record<number, WinnerDef> }
 export interface AggPrize { type: 'credit' | 'custom'; amount: number; name?: string; image?: string; total: number }
 export interface TicketWin { win: boolean; type?: 'credit' | 'custom'; amount?: number; name?: string; image?: string; ticketNumber?: number }
 
-const DEFAULT_CONFIG: TicketGameConfig = { published: false, priceP: 10, poolSize: 500, image: '', winners: {} }
+const DEFAULT_CONFIG: TicketGameConfig = { published: false, priceP: 10, poolSize: 500, image: '', endsAt: null, winners: {} }
 
 let ensured = false
 async function ensure() {
@@ -32,8 +32,9 @@ async function ensure() {
       "image" TEXT NOT NULL DEFAULT '',
       "updatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
-    // Add the image column for configs created before it existed (safe on both DBs).
+    // Add columns for configs created before they existed (safe on both DBs).
     try { await prisma.$executeRawUnsafe(`ALTER TABLE "TicketGameConfig" ADD COLUMN "image" TEXT NOT NULL DEFAULT ''`) } catch { /* column already exists */ }
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "TicketGameConfig" ADD COLUMN "endsAt" TEXT`) } catch { /* column already exists */ }
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TicketGamePlay" (
       "id" TEXT PRIMARY KEY,
       "userId" TEXT NOT NULL,
@@ -116,7 +117,7 @@ export async function getTicketGameCard(): Promise<TicketGameCard | null> {
   return {
     id: 'ticket-game', slug: 'instant-tickets', title: 'Instant Win Tickets', subtitle: null,
     prizeValue: top, ticketPrice: cfg.priceP / 100, maxTickets: cfg.poolSize, ticketsSold: sold,
-    images: JSON.stringify(cfg.image ? [cfg.image] : []), drawDate: null,
+    images: JSON.stringify(cfg.image ? [cfg.image] : []), drawDate: cfg.endsAt,
     status: 'active', featured: true, closed: false, upcoming: false, href: '/instant-tickets',
   }
 }
@@ -124,19 +125,20 @@ export async function getTicketGameCard(): Promise<TicketGameCard | null> {
 export async function getConfig(): Promise<TicketGameConfig> {
   await ensure()
   try {
-    const rows = await prisma.$queryRaw<{ published: number; priceP: number; poolSize: number; prizes: string; image: string | null }[]>`
-      SELECT "published","priceP","poolSize","prizes","image" FROM "TicketGameConfig" WHERE "id" = 1`
+    const rows = await prisma.$queryRaw<{ published: number; priceP: number; poolSize: number; prizes: string; image: string | null; endsAt: string | null }[]>`
+      SELECT "published","priceP","poolSize","prizes","image","endsAt" FROM "TicketGameConfig" WHERE "id" = 1`
     if (!rows.length) return { ...DEFAULT_CONFIG }
     const r = rows[0]
-    return { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', winners: parseWinners(r.prizes) }
+    return { published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes) }
   } catch { return { ...DEFAULT_CONFIG } }
 }
 
-export async function saveConfig(cfg: { priceP: number; poolSize: number; image?: string; winners: Record<number, WinnerDef> }): Promise<void> {
+export async function saveConfig(cfg: { priceP: number; poolSize: number; image?: string; endsAt?: string | null; winners: Record<number, WinnerDef> }): Promise<void> {
   await ensure()
   const priceP = Math.max(1, Math.round(cfg.priceP))
   const poolSize = Math.max(1, Math.round(cfg.poolSize))
   const image = typeof cfg.image === 'string' ? cfg.image : ''
+  const endsAt = cfg.endsAt ? new Date(cfg.endsAt).toISOString() : null
   // Keep only winners whose ticket number falls within the pool.
   const clean: Record<number, WinnerDef> = {}
   for (const [k, v] of Object.entries(cfg.winners || {})) {
@@ -146,9 +148,9 @@ export async function saveConfig(cfg: { priceP: number; poolSize: number; image?
   const winners = JSON.stringify(clean)
   const existing = await prisma.$queryRaw<{ id: number }[]>`SELECT "id" FROM "TicketGameConfig" WHERE "id" = 1`
   if (existing.length) {
-    await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "prizes" = ${winners} WHERE "id" = 1`
+    await prisma.$executeRaw`UPDATE "TicketGameConfig" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "prizes" = ${winners} WHERE "id" = 1`
   } else {
-    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","image","prizes") VALUES (1, 0, ${priceP}, ${poolSize}, ${image}, ${winners})`
+    await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","image","endsAt","prizes") VALUES (1, 0, ${priceP}, ${poolSize}, ${image}, ${endsAt}, ${winners})`
   }
 }
 
@@ -161,6 +163,13 @@ export async function setPublished(published: boolean): Promise<void> {
   } else {
     await prisma.$executeRaw`INSERT INTO "TicketGameConfig" ("id","published","priceP","poolSize","prizes") VALUES (1, ${val}, 10, 500, '{}')`
   }
+}
+
+/** Clear every play + claim — resets "tickets sold" back to 0. */
+export async function resetPlays(): Promise<void> {
+  await ensure()
+  await prisma.$executeRawUnsafe(`DELETE FROM "TicketGameClaim"`)
+  await prisma.$executeRawUnsafe(`DELETE FROM "TicketGamePlay"`)
 }
 
 /** Total plays sold (revealed or not). */

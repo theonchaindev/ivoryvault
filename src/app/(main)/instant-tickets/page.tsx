@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getConfig, countUnrevealed, aggregatePrizes } from '@/lib/ticketGame'
+import { finalizeByOrderNumber } from '@/lib/fulfillOrder'
 import InstantTicketsClient from './InstantTicketsClient'
 
 export const dynamic = 'force-dynamic'
@@ -11,12 +12,18 @@ export const metadata = {
   description: 'Reveal instant-win tickets — every ticket could be a prize or site credit.',
 }
 
-export default async function InstantTicketsPage() {
-  const [cfg, session] = await Promise.all([getConfig(), getSession()])
+export default async function InstantTicketsPage({ searchParams }: { searchParams: Promise<{ order?: string }> }) {
+  const [cfg, session, sp] = await Promise.all([getConfig(), getSession(), searchParams])
   const isAdmin = session?.role === 'admin'
 
   // Hidden from the site until published — admins can still preview it.
   if (!cfg.published && !isAdmin) notFound()
+
+  // Returning from a card payment: reconcile the order now so the tickets are
+  // there immediately, rather than waiting on the async webhook.
+  if (sp?.order && session) {
+    try { await finalizeByOrderNumber(sp.order) } catch { /* fall through — webhook is the backstop */ }
+  }
 
   let pending = 0
   let creditAvailable = 0
@@ -36,6 +43,7 @@ export default async function InstantTicketsPage() {
       <InstantTicketsClient
         price={cfg.priceP / 100}
         image={cfg.image}
+        endsAt={cfg.endsAt}
         prizes={aggregatePrizes(cfg.winners)}
         poolSize={cfg.poolSize}
         pending={pending}

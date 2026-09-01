@@ -7,8 +7,12 @@ type WinnerType = 'credit' | 'custom'
 interface Winner { type: WinnerType; amount: number; name?: string; image?: string }
 type Winners = Record<number, Winner>
 interface CustomWin { playId: string; userId: string; amount: number; name: string | null; image: string | null; ticketNo: number; userName: string; userEmail: string; claim?: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; postcode: string; phone: string | null } }
+interface Order { orderNumber: string; status: string; amount: string; createdAt: string; paidAt: string | null; qty: number; email: string; name: string }
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
+// ISO ↔ <input type="datetime-local"> (local time, minute precision)
+const toLocalInput = (iso: string) => { const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16) }
+const plusDaysLocal = (n: number) => toLocalInput(new Date(Date.now() + n * 86400000).toISOString())
 const card: React.CSSProperties = { background: 'var(--card,#fff)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.25rem' }
 const label: React.CSSProperties = { display: 'block', fontSize: '.62rem', fontWeight: 700, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3,#6b7684)', marginBottom: '.4rem' }
 const input: React.CSSProperties = { padding: '.55rem .7rem', border: '1px solid var(--border,#e2e7ee)', borderRadius: '8px', fontSize: '.85rem', fontFamily: 'inherit', width: '100%', color: 'var(--ink,#1b2432)', background: '#fff' }
@@ -20,10 +24,17 @@ export default function TicketGameAdmin() {
   const [priceP, setPriceP] = useState(10)
   const [poolSize, setPoolSize] = useState(500)
   const [image, setImage] = useState('')
+  const [endsAt, setEndsAt] = useState('') // datetime-local value
   const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
   const [customWins, setCustomWins] = useState<CustomWin[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+  const [grantEmail, setGrantEmail] = useState('')
+  const [grantQty, setGrantQty] = useState(1)
+  const [granting, setGranting] = useState(false)
+  const [grantMsg, setGrantMsg] = useState('')
+  const [resetting, setResetting] = useState(false)
   const [saving, setSaving] = useState(false)
   const [busyPub, setBusyPub] = useState(false)
   const [msg, setMsg] = useState('')
@@ -36,9 +47,10 @@ export default function TicketGameAdmin() {
     try {
       const res = await fetch('/api/admin/ticket-game')
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; image: string; winners: Winners }; sold: number; won: number; customWins: CustomWin[] }
+      const d = await res.json() as { config: { published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
       setPublished(d.config.published); setPriceP(d.config.priceP); setPoolSize(d.config.poolSize); setImage(d.config.image || ''); setWinners(d.config.winners || {})
-      setSold(d.sold); setWon(d.won); setCustomWins(d.customWins)
+      setEndsAt(d.config.endsAt ? toLocalInput(d.config.endsAt) : plusDaysLocal(30))
+      setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setOrders(d.orders || [])
     } catch { setErr('Could not load the ticket game config.') }
     finally { setLoading(false) }
   }
@@ -70,7 +82,7 @@ export default function TicketGameAdmin() {
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, image, winners }) })
+      const res = await fetch('/api/admin/ticket-game', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -89,6 +101,29 @@ export default function TicketGameAdmin() {
       setPublished(d.config.published)
     } catch (e) { setErr(e instanceof Error ? e.message : 'Could not update.') }
     finally { setBusyPub(false) }
+  }
+
+  const grant = async () => {
+    setGranting(true); setGrantMsg('')
+    try {
+      const res = await fetch('/api/admin/ticket-game/grant', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: grantEmail.trim(), quantity: grantQty }) })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'failed')
+      setGrantMsg(`✓ Added ${d.granted} ticket(s) to ${d.email} (they now hold ${d.pending} unrevealed).`); setGrantEmail('')
+    } catch (e) { setGrantMsg(e instanceof Error ? e.message : 'Could not grant.') }
+    finally { setGranting(false) }
+  }
+
+  const resetGame = async () => {
+    if (!confirm('Reset the game to 0 tickets sold? This permanently clears all plays and prize claims. Prize setup + published status are kept.')) return
+    setResetting(true)
+    try {
+      const res = await fetch('/api/admin/ticket-game/reset', { method: 'POST' })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.error || 'failed')
+      load()
+    } catch (e) { setErr(e instanceof Error ? e.message : 'Could not reset.') }
+    finally { setResetting(false) }
   }
 
   const winnerNums = Object.keys(winners).map(Number).sort((a, b) => a - b)
@@ -147,6 +182,15 @@ export default function TicketGameAdmin() {
             <input type="number" min="1" style={{ ...input, width: '140px' }} value={poolSize} onChange={e => changePool(parseInt(e.target.value, 10))} />
             <p style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.4rem' }}>{winnerNums.length} winning ticket{winnerNums.length === 1 ? '' : 's'} · {poolSize - winnerNums.length} non-winning · {sold} sold ({won} won)</p>
           </div>
+        </div>
+        <div style={{ marginTop: '1.25rem' }}>
+          <label style={label}>Game ends</label>
+          <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <input type="datetime-local" style={{ ...input, width: '230px' }} value={endsAt} onChange={e => setEndsAt(e.target.value)} />
+            <button onClick={() => setEndsAt(plusDaysLocal(30))} style={{ background: 'none', border: '1px solid var(--border,#e2e7ee)', borderRadius: '8px', padding: '.5rem .9rem', fontSize: '.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', color: 'var(--ink)' }}>30 days from now</button>
+            {endsAt && <button onClick={() => setEndsAt('')} style={{ background: 'none', border: 'none', color: '#c0392b', fontSize: '.75rem', cursor: 'pointer', fontFamily: 'inherit' }}>No end date</button>}
+          </div>
+          <p style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.4rem' }}>Drives the countdown on the game and its tile. After this, buying is closed.</p>
         </div>
       </div>
 
@@ -239,6 +283,52 @@ export default function TicketGameAdmin() {
               </table>
             </div>
           )}
+      </div>
+
+      {/* Orders & recovery */}
+      <div style={card}>
+        <label style={label}>Orders &amp; recovery</label>
+        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .9rem' }}>Recent ticket purchases. If a member paid but a card order shows <b>paid</b> yet they didn&rsquo;t get their tickets, grant them below.</p>
+        {orders.length === 0
+          ? <p style={{ color: 'var(--ink3)', fontSize: '.85rem' }}>No ticket orders yet.</p>
+          : (
+            <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.8rem' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', color: 'var(--ink3)', fontSize: '.64rem', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                    <th style={{ padding: '.4rem .5rem' }}>When</th><th style={{ padding: '.4rem .5rem' }}>Member</th><th style={{ padding: '.4rem .5rem' }}>Qty</th><th style={{ padding: '.4rem .5rem' }}>Amount</th><th style={{ padding: '.4rem .5rem' }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map(o => (
+                    <tr key={o.orderNumber} style={{ borderTop: '1px solid var(--border,#eef1f6)' }}>
+                      <td style={{ padding: '.5rem .5rem', whiteSpace: 'nowrap' }}>{new Date(o.createdAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+                      <td style={{ padding: '.5rem .5rem' }}>{o.email || o.name || '—'}</td>
+                      <td style={{ padding: '.5rem .5rem' }}>{o.qty}</td>
+                      <td style={{ padding: '.5rem .5rem' }}>£{o.amount}</td>
+                      <td style={{ padding: '.5rem .5rem' }}><span style={{ color: o.status === 'paid' ? '#15803d' : '#b45309', fontWeight: 700 }}>{o.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap', paddingTop: '.5rem', borderTop: '1px solid var(--border,#eef1f6)' }}>
+          <span style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--ink3)' }}>Manually grant:</span>
+          <input style={{ ...input, width: '260px' }} placeholder="member email" value={grantEmail} onChange={e => setGrantEmail(e.target.value)} />
+          <input type="number" min={1} max={100} style={{ ...input, width: '80px' }} value={grantQty} onChange={e => setGrantQty(Math.max(1, parseInt(e.target.value, 10) || 1))} />
+          <button onClick={grant} disabled={granting || !grantEmail.trim()} style={{ background: 'var(--gold,#2563eb)', color: '#fff', border: 'none', borderRadius: '8px', padding: '.6rem 1.2rem', fontSize: '.72rem', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', opacity: granting || !grantEmail.trim() ? .6 : 1 }}>{granting ? '…' : 'Grant tickets'}</button>
+          {grantMsg && <span style={{ fontSize: '.8rem', color: grantMsg.startsWith('✓') ? '#15803d' : '#c0392b' }}>{grantMsg}</span>}
+        </div>
+      </div>
+
+      {/* Danger zone: reset */}
+      <div style={{ ...card, borderColor: '#f3c2bd' }}>
+        <label style={label}>Reset</label>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+          <p style={{ fontSize: '.82rem', color: 'var(--ink3)', margin: 0, maxWidth: '520px' }}>Clears all tickets sold and prize claims, back to <b>0 sold</b>. Your prize setup, image and published status are kept.</p>
+          <button onClick={resetGame} disabled={resetting} style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: '10px', padding: '.75rem 1.6rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit', opacity: resetting ? .6 : 1 }}>{resetting ? 'Resetting…' : 'Reset to 0 sold'}</button>
+        </div>
       </div>
     </div>
   )

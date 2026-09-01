@@ -6,7 +6,7 @@ import { createPlays, getConfig, countSold } from '@/lib/ticketGame'
 import { sendOrderConfirmation, TICKET_GAME_ITEM } from '@/lib/orders'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { createPaymentJob, cashflowsConfigured } from '@/lib/cashflows'
-import { createOrder } from '@/lib/cashflowsOrders'
+import { createOrder, setOrderJobRef } from '@/lib/cashflowsOrders'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +32,9 @@ export async function POST(request: NextRequest) {
     if (Object.keys(cfg.winners).length === 0) {
       return NextResponse.json({ error: 'This game is not set up yet.' }, { status: 400 })
     }
+    if (cfg.endsAt && Date.now() >= new Date(cfg.endsAt).getTime()) {
+      return NextResponse.json({ error: 'This game has ended.' }, { status: 400 })
+    }
 
     const { quantity, useCredit } = await request.json() as { quantity?: number; useCredit?: boolean }
     const qty = Math.max(1, Math.min(MAX_QTY, Math.round(Number(quantity) || 0)))
@@ -53,7 +56,6 @@ export async function POST(request: NextRequest) {
     const buyerLast = nameParts.slice(1).join(' ')
 
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.ivoryvaultcompetitions.co.uk'
-    const successUrl = `${origin}/instant-tickets?paid=1`
 
     // Site credit
     let creditUsed = 0
@@ -70,7 +72,7 @@ export async function POST(request: NextRequest) {
             data: { userId, title: `£${deduct.toFixed(2)} site credit used`, body: `Your site credit covered ${qty} Instant Win ticket${qty === 1 ? '' : 's'}.`, icon: 'info' },
           }).catch(() => {})
           after(() => sendOrderConfirmation(userId, [{ id: TICKET_GAME_ITEM, qty }], 0))
-          return NextResponse.json({ url: `${successUrl}&free=1` })
+          return NextResponse.json({ url: `${origin}/instant-tickets?paid=1&free=1` })
         }
       }
     }
@@ -85,18 +87,23 @@ export async function POST(request: NextRequest) {
 
     await createOrder({ orderNumber, userId, items: [{ id: TICKET_GAME_ITEM, qty }], creditUsed, amount })
 
-    const { actionUrl } = await createPaymentJob({
+    const { actionUrl, paymentJobReference } = await createPaymentJob({
       amount,
       currency: 'GBP',
       orderNumber,
       email: buyerEmail || undefined,
       firstName: buyerFirst,
       lastName: buyerLast || undefined,
-      returnUrlSuccess: successUrl,
+      // Return to the game with the order number so it can reconcile + show the
+      // tickets immediately (rather than waiting on the async webhook).
+      returnUrlSuccess: `${origin}/instant-tickets?order=${orderNumber}`,
       returnUrlFailed: `${origin}/instant-tickets?cf=failed`,
       returnUrlCancelled: `${origin}/instant-tickets?cf=cancelled`,
       webhookUrl: `${origin}/api/payments/cashflows/webhook`,
     })
+
+    // Persist the job ref so the return page can look up the authoritative status.
+    await setOrderJobRef(orderNumber, paymentJobReference)
 
     return NextResponse.json({ url: actionUrl })
   } catch (error) {

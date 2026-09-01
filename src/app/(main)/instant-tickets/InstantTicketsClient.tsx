@@ -1,15 +1,17 @@
 'use client'
 
 import TicketReveal, { type TicketResult } from '@/components/TicketReveal'
+import CountdownTimer from '@/components/CountdownTimer'
 
 interface Tier { type: 'credit' | 'custom'; amount: number; total: number; name?: string; image?: string }
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 
 export default function InstantTicketsClient({
-  price, image, prizes, poolSize, pending, signedIn, creditAvailable,
+  price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable,
 }: {
   price: number
   image: string
+  endsAt: string | null
   prizes: Tier[]
   poolSize: number
   pending: number
@@ -44,6 +46,12 @@ export default function InstantTicketsClient({
 
   return (
     <>
+      {endsAt && (
+        <div style={{ maxWidth: '900px', margin: '0 auto 1.75rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.5rem' }}>
+          <span style={{ fontSize: '.62rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink3)' }}>Game ends in</span>
+          <CountdownTimer drawDate={endsAt} variant="strip" />
+        </div>
+      )}
       <TicketReveal
         price={price}
         maxQty={25}
