@@ -5,6 +5,7 @@ import { CLOSED_WINDOW_MS, isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { effectiveNow, isCompHidden } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
 import { getPublishedGameCards } from '@/lib/instantGames'
+import { getListingOrder, sortByListingOrder } from '@/lib/listing'
 
 async function getCompetitions() {
   // Closed standard comps linger for 16h after their draw date, then drop off.
@@ -42,15 +43,9 @@ export default async function CompetitionsPage() {
     closed: isCompClosed(c, now),
     upcoming: isCompUpcoming(c, now),
   }))
-  // Order: live (enter now) → enter soon → coming soon → closed.
-  // Within each group, the soonest draw date first (comps ending soon lead).
-  const rank = (c: typeof serialized[number]) =>
-    c.closed ? 4 : c.status === 'coming_soon' ? 3 : c.upcoming ? 2 : 1
-  const drawTs = (c: typeof serialized[number]) => c.drawDate ? new Date(c.drawDate).getTime() : Infinity
-  serialized.sort((a, b) =>
-    rank(a) - rank(b) || drawTs(a) - drawTs(b) || Number(b.featured) - Number(a.featured))
-  // Prepend a tile for each published instant-win game.
-  const gameCards = await getPublishedGameCards()
-  const list = [...gameCards, ...serialized]
+  // Everything (comps + ticket/instant games) in one list, ordered by the saved
+  // manual order first, then earliest finishing first.
+  const [gameCards, order] = await Promise.all([getPublishedGameCards(), getListingOrder()])
+  const list = sortByListingOrder([...gameCards, ...serialized], order, now)
   return <CompetitionsClient competitions={list} />
 }

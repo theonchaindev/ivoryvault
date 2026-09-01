@@ -2,6 +2,10 @@ import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import AdminCompetitionsActions from './AdminCompetitionsActions'
+import ReorderList, { type ReorderItem } from './ReorderList'
+import { getPublishedGameCards } from '@/lib/instantGames'
+import { getListingOrder, sortByListingOrder } from '@/lib/listing'
+import { effectiveNow, isCompHidden } from '@/lib/outage'
 
 async function getCompetitions() {
   try {
@@ -16,6 +20,15 @@ async function getCompetitions() {
 
 export default async function AdminCompetitionsPage() {
   const competitions = await getCompetitions()
+
+  // Build the unified, orderable list of everything shown publicly:
+  // active/coming-soon competitions + published ticket/instant games.
+  const [gameCards, order] = await Promise.all([getPublishedGameCards(), getListingOrder()])
+  const compItems: ReorderItem[] = competitions
+    .filter(c => !isCompHidden(c.slug) && (c.status === 'active' || c.status === 'coming_soon'))
+    .map(c => ({ id: c.id, title: c.title, drawDate: c.drawDate?.toISOString() ?? null, kind: 'comp', status: c.status }))
+  const gameItems: ReorderItem[] = gameCards.map(g => ({ id: g.id, title: g.title, drawDate: g.drawDate, kind: 'game', status: 'active' }))
+  const orderItems = sortByListingOrder([...gameItems, ...compItems], order, effectiveNow())
 
   return (
     <div>
@@ -32,6 +45,8 @@ export default async function AdminCompetitionsPage() {
           + New Competition
         </Link>
       </div>
+
+      <ReorderList items={orderItems} />
 
       <div style={{ backgroundColor: 'white', border: '1px solid var(--border)' }}>
         {competitions.length > 0 ? (

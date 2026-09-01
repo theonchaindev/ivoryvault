@@ -9,6 +9,7 @@ import { effectiveNow, isCompHidden } from '@/lib/outage'
 import { ENTER_WINDOW_MS } from '@/lib/compState'
 import CompetitionCard from '@/components/CompetitionCard'
 import { getPublishedGameCards } from '@/lib/instantGames'
+import { getListingOrder, sortByListingOrder } from '@/lib/listing'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
 // import StatsCounter from '@/components/StatsCounter' // hidden for now
@@ -73,10 +74,11 @@ export default async function Home() {
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
   })
-  const gameCards = await getPublishedGameCards()
-  const serializedComps = comps.map(serialize)
-  const withGames = [...gameCards, ...serializedComps]
-  const swiperComps = withGames                  // horizontal swiper — all comps
+  const [gameCards, order] = await Promise.all([getPublishedGameCards(), getListingOrder()])
+  // Everything (comps + ticket/instant games) in one list: saved manual order
+  // first, then earliest finishing first.
+  const withGames = sortByListingOrder([...gameCards, ...comps.map(serialize)], order, effectiveNow())
+  const swiperComps = withGames                  // horizontal swiper — all
   const gridComps = withGames.slice(0, 4)        // 2x2 grid — first 4
 
   return (
