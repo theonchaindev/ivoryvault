@@ -26,7 +26,7 @@ export default function InstantWinIndex() {
   useEffect(() => { load() }, [])
 
   const create = async () => {
-    const name = prompt('Name your new instant win game (e.g. October Instant Win)')
+    const name = prompt('Name your new ticket win game (e.g. October Ticket Win)')
     if (name === null) return
     setCreating(true); setErr('')
     try {
