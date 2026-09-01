@@ -9,6 +9,7 @@ interface Competition {
   prizeValue: number; ticketPrice: number; maxTickets: number
   ticketsSold: number; images: string; drawDate?: string | null
   status: string; featured: boolean; closed?: boolean; upcoming?: boolean
+  href?: string
 }
 
 export default function CompetitionsClient({ competitions }: { competitions: Competition[] }) {

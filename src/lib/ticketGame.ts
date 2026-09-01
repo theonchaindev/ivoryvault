@@ -100,6 +100,27 @@ export function aggregatePrizes(winners: Record<number, WinnerDef>): AggPrize[] 
   return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
+export interface TicketGameCard {
+  id: string; slug: string; title: string; subtitle: string | null
+  prizeValue: number; ticketPrice: number; maxTickets: number
+  ticketsSold: number; images: string; drawDate: string | null
+  status: string; featured: boolean; closed: boolean; upcoming: boolean; href: string
+}
+
+/** A competition-grid tile for the ticket game — only when published. */
+export async function getTicketGameCard(): Promise<TicketGameCard | null> {
+  const cfg = await getConfig()
+  if (!cfg.published) return null
+  const sold = await countSold()
+  const top = aggregatePrizes(cfg.winners).reduce((m, p) => Math.max(m, p.amount), 0)
+  return {
+    id: 'ticket-game', slug: 'instant-tickets', title: 'Instant Win Tickets', subtitle: null,
+    prizeValue: top, ticketPrice: cfg.priceP / 100, maxTickets: cfg.poolSize, ticketsSold: sold,
+    images: JSON.stringify(cfg.image ? [cfg.image] : []), drawDate: null,
+    status: 'active', featured: true, closed: false, upcoming: false, href: '/instant-tickets',
+  }
+}
+
 export async function getConfig(): Promise<TicketGameConfig> {
   await ensure()
   try {

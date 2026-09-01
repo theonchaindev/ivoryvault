@@ -13,6 +13,7 @@ interface Comp {
   prizeValue: number; ticketPrice: number; maxTickets: number
   ticketsSold: number; images: string; drawDate?: string | null
   status: string; featured: boolean; closed?: boolean; upcoming?: boolean
+  href?: string
 }
 
 export default function CompetitionCard({ competition: c, index = 0 }: { competition: Comp; index?: number }) {
@@ -104,7 +105,7 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
       animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 }}
     >
-      <Link href={`/competitions/${c.slug}`} className="cc__link">
+      <Link href={c.href || `/competitions/${c.slug}`} className="cc__link">
 
         {/* Image */}
         <div className="cc__img-wrap">

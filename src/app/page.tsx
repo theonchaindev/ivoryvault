@@ -8,6 +8,7 @@ import SiteAlert from '@/components/SiteAlert'
 import { effectiveNow } from '@/lib/outage'
 import { ENTER_WINDOW_MS } from '@/lib/compState'
 import CompetitionCard from '@/components/CompetitionCard'
+import { getTicketGameCard } from '@/lib/ticketGame'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
 // import StatsCounter from '@/components/StatsCounter' // hidden for now
@@ -72,8 +73,11 @@ export default async function Home() {
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
   })
-  const swiperComps = comps.map(serialize)        // horizontal swiper — all comps
-  const gridComps = comps.slice(0, 4).map(serialize) // 2x2 grid — first 4
+  const ticketCard = await getTicketGameCard()
+  const serializedComps = comps.map(serialize)
+  const withTicket = ticketCard ? [ticketCard, ...serializedComps] : serializedComps
+  const swiperComps = withTicket                  // horizontal swiper — all comps
+  const gridComps = withTicket.slice(0, 4)        // 2x2 grid — first 4
 
   return (
     <>
