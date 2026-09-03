@@ -297,6 +297,23 @@ export async function listCustomWinsForAdmin(gameId: string): Promise<Array<Tick
   return rows.map(r => ({ playId: r.id, gameId, gameName: '', type: 'custom' as const, amount: Number(r.prizeAmount), name: r.prizeName, image: r.prizeImage, ticketNo: Number(r.ticketNo), createdAt: String(r.createdAt), claim: claimByPlay.get(r.id), userName: byUser.get(r.userId)?.name || 'Unknown', userEmail: byUser.get(r.userId)?.email || '' }))
 }
 
+/** All winners of a game (credit + custom), for the Send Winner Email tool. */
+export async function listGameWinners(gameId: string): Promise<{ ticketNumber: number; userId: string; name: string; email: string; prize: string }[]> {
+  await ensure()
+  const rows = await prisma.$queryRaw<{ userId: string; prizeType: string; prizeAmount: number; prizeName: string | null; ticketNo: number }[]>`
+    SELECT "userId","prizeType","prizeAmount","prizeName","ticketNo" FROM "TicketGamePlay" WHERE "gameId" = ${gameId} AND "revealed" = 1 AND "prizeType" IS NOT NULL ORDER BY "ticketNo" ASC`
+  if (!rows.length) return []
+  const userIds = [...new Set(rows.map(r => r.userId))]
+  const users = await prisma.user.findMany({ where: { id: { in: userIds } }, select: { id: true, name: true, email: true } })
+  const byUser = new Map(users.map(u => [u.id, u]))
+  const fmt = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
+  return rows.map(r => ({
+    ticketNumber: Number(r.ticketNo), userId: r.userId,
+    name: byUser.get(r.userId)?.name || '(no name)', email: byUser.get(r.userId)?.email || '',
+    prize: r.prizeType === 'custom' ? (r.prizeName || 'Prize') : `${fmt(Number(r.prizeAmount))} site credit`,
+  }))
+}
+
 // ── public tiles ───────────────────────────────────────────────────────────
 export interface GameCard { id: string; slug: string; title: string; subtitle: null; prizeValue: number; ticketPrice: number; maxTickets: number; ticketsSold: number; images: string; drawDate: string | null; status: string; featured: boolean; closed: boolean; upcoming: boolean; href: string }
 export async function getPublishedGameCards(): Promise<GameCard[]> {

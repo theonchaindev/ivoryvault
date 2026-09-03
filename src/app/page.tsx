@@ -97,7 +97,7 @@ export default async function Home() {
           <AnimatedSection>
             <div className="section-head">
               <div>
-                <p className="section-head__label">Live Now — {comps.length} Active</p>
+                <p className="section-head__label">Live Now — {withGames.length} Active</p>
                 <h2 className="section-head__title">Open Competitions</h2>
               </div>
               <Link href="/competitions" className="section-head__link">View all →</Link>

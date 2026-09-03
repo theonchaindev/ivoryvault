@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export interface TicketResult {
   win: boolean
@@ -50,10 +50,12 @@ export default function TicketReveal({
   const [busy, setBusy] = useState(false)
   const [revealing, setRevealing] = useState(false)
   const [useCredit, setUseCredit] = useState(false)
+  const [showReorder, setShowReorder] = useState(false)
+  const [reorderDismissed, setReorderDismissed] = useState(false)
   const [err, setErr] = useState('')
 
   const start = async () => {
-    setErr(''); setBusy(true)
+    setErr(''); setBusy(true); setShowReorder(false); setReorderDismissed(false)
     try {
       if (realMode) {
         if (onCheckout) await onCheckout(qty, useCredit) // usually redirects away
@@ -120,6 +122,16 @@ export default function TicketReveal({
   const revealedCount = slots.filter(s => s.revealed).length
   const wins = slots.filter(s => s.revealed && s.result?.win).length
   const total = qty * price
+
+  // Once every ticket is revealed (and any win popup is closed), prompt to reorder.
+  useEffect(() => {
+    if (phase === 'play' && slots.length > 0 && revealedCount === slots.length && !popup && !reorderDismissed) {
+      const t = setTimeout(() => setShowReorder(true), 650)
+      return () => clearTimeout(t)
+    }
+  }, [phase, slots.length, revealedCount, popup, reorderDismissed])
+
+  const reorder = () => { setShowReorder(false); setReorderDismissed(false); setSlots([]); setBalance(0); setPhase('choose') }
 
   const stub = (n: number, back = false) => (
     <div className={`tk-stub${back ? ' tk-stub--back' : ''}`}>
@@ -252,6 +264,22 @@ export default function TicketReveal({
               {revealedCount < slots.length && <button className="tk__go" onClick={revealAll} disabled={revealing}>{revealing ? 'Revealing…' : 'Reveal all'}</button>}
               <button className="tk__btn tk__btn--ghost tk__btn-full" onClick={() => setPhase('choose')}>New tickets</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showReorder && !popup && (
+        <div className="tk-pop-overlay" onClick={() => { setShowReorder(false); setReorderDismissed(true) }}>
+          <div className="tk-pop" onClick={e => e.stopPropagation()}>
+            <div className="tk-pop-glow" aria-hidden />
+            <div className="tk-pop-eyebrow">That&rsquo;s them all revealed</div>
+            <div className="tk-pop-media"><span className="tk-pop-emoji">🎟️</span></div>
+            <div className="tk-pop-name">Fancy another go?</div>
+            {wins > 0
+              ? <div className="tk-pop-sub">You won on {wins} of {slots.length}. Reorder and reveal some more.</div>
+              : <div className="tk-pop-sub">Reorder for another chance to win — prizes drop all the time.</div>}
+            <button className="tk-pop-close" onClick={reorder}>Reorder tickets</button>
+            <button className="tk-pop-later" onClick={() => { setShowReorder(false); setReorderDismissed(true) }}>Not now</button>
           </div>
         </div>
       )}
@@ -407,6 +435,8 @@ export default function TicketReveal({
         .tk-pop-sub{ position:relative; color:rgba(255,255,255,.68); font-size:.85rem; line-height:1.4; margin:.5rem auto 0; max-width:26ch; }
         .tk-pop-close{ position:relative; margin-top:1.5rem; width:100%; background:linear-gradient(180deg,#e6c85e,${GOLD}); color:#241c05; border:none; border-radius:11px; padding:.85rem 1.8rem; font-size:.72rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; cursor:pointer; font-family:inherit; box-shadow:0 8px 20px rgba(217,182,74,.3); transition:transform .15s ease, box-shadow .15s ease; }
         .tk-pop-close:hover{ transform:translateY(-1px); box-shadow:0 12px 26px rgba(217,182,74,.4); }
+        .tk-pop-later{ display:block; width:100%; margin-top:.6rem; background:none; border:none; color:rgba(255,255,255,.6); font-size:.78rem; cursor:pointer; font-family:inherit; }
+        .tk-pop-later:hover{ color:#fff; }
         .tk-pop-list{ position:relative; list-style:none; margin:1.1rem 0 0; padding:0; display:flex; flex-direction:column; gap:.55rem; max-height:46vh; overflow-y:auto; }
         .tk-pop-row{ display:flex; align-items:center; gap:.75rem; text-align:left; background:rgba(255,255,255,.05); border:1px solid rgba(217,182,74,.22); border-radius:12px; padding:.55rem .7rem; }
         .tk-pop-thumb{ flex-shrink:0; width:42px; height:42px; border-radius:9px; display:flex; align-items:center; justify-content:center; background:linear-gradient(160deg,rgba(255,255,255,.1),rgba(255,255,255,.02)); border:1px solid rgba(217,182,74,.3); overflow:hidden; }

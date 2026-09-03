@@ -45,6 +45,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
   const [result, setResult] = useState<{ win: boolean; amount: number; kind: 'credit' | 'cash' } | null>(null)
   const [highlight, setHighlight] = useState(-1)
   const [error, setError] = useState('')
+  const [showReorder, setShowReorder] = useState(false)
 
   const cx = 150, cy = 150, r = 146
   const winIdx = SEG_DATA.map((s, i) => (s.win ? i : -1)).filter(i => i >= 0)
@@ -71,9 +72,12 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
       setTimeout(() => {
         setResult({ win: data.win, amount: data.amount, kind: data.kind === 'cash' ? 'cash' : 'credit' })
         setHighlight(data.win ? target : -1)
-        setSpins(data.spinsLeft ?? Math.max(0, spins - 1))
+        const left = data.spinsLeft ?? Math.max(0, spins - 1)
+        setSpins(left)
         if (data.status) setStatus(data.status)
         setSpinning(false)
+        // Out of spins → prompt to reorder.
+        if (left < 1) setTimeout(() => setShowReorder(true), 1100)
       }, 4400)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -182,6 +186,20 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         </div>
       )}
 
+      {/* Reorder prompt after the wheel is spun */}
+      {showReorder && (
+        <div className="ir-pop-overlay" onClick={() => setShowReorder(false)}>
+          <div className="ir-pop" onClick={e => e.stopPropagation()}>
+            <span className="ir-pop-emoji">🎡</span>
+            <p className="ir-pop-eyebrow">Out of spins</p>
+            <p className="ir-pop-title">Fancy another go?</p>
+            <p className="ir-pop-sub">Reorder for another chance to win — prizes drop all the time.</p>
+            <Link href={`/competitions/${slug}`} className="ir-pop-btn">Reorder spins</Link>
+            <button className="ir-pop-later" onClick={() => setShowReorder(false)}>Not now</button>
+          </div>
+        </div>
+      )}
+
       {/* Prize breakdown intentionally hidden from customers — pool logic still runs server-side. */}
 
       <style>{`
@@ -192,6 +210,18 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
         .ir__error { color: #c0392b; font-size: .8125rem; margin-top: .75rem; }
         .ir__reveal-btn { display: inline-block; background: var(--gold); color: #fff; border: none; cursor: pointer; font-family: inherit; font-size: .8125rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; padding: 1rem 2.25rem; border-radius: var(--r-btn); text-decoration: none; box-shadow: 0 10px 28px rgba(37,99,235,.3); transition: background .2s, transform .15s; }
         .ir__reveal-btn:hover { background: var(--gold-d); transform: translateY(-2px); }
+
+        .ir-pop-overlay { position: fixed; inset: 0; z-index: 3000; background: rgba(8,10,16,.72); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 1.5rem; animation: irf .2s ease; }
+        @keyframes irf { from { opacity: 0 } to { opacity: 1 } }
+        .ir-pop { position: relative; background: radial-gradient(130% 90% at 50% -10%,#242a16 0%,#14120c 60%,#0e0d08 100%); border: 1px solid rgba(217,182,74,.55); border-radius: 20px; padding: 2.25rem 1.9rem 1.75rem; max-width: 340px; width: 100%; text-align: center; color: #fff; box-shadow: 0 30px 80px rgba(0,0,0,.55); animation: irp .38s cubic-bezier(.22,1,.36,1); }
+        @keyframes irp { from { opacity: 0; transform: scale(.92) translateY(8px) } to { opacity: 1; transform: none } }
+        .ir-pop-emoji { font-size: 3rem; line-height: 1; }
+        .ir-pop-eyebrow { font-size: .6rem; font-weight: 800; letter-spacing: .22em; text-transform: uppercase; color: #d9b64a; margin-top: .6rem; }
+        .ir-pop-title { font-family: var(--font-cormorant,serif); font-size: 1.9rem; line-height: 1.1; margin-top: .25rem; }
+        .ir-pop-sub { color: rgba(255,255,255,.68); font-size: .85rem; line-height: 1.4; margin: .5rem auto 1.25rem; max-width: 26ch; }
+        .ir-pop-btn { display: block; width: 100%; background: linear-gradient(180deg,#e6c85e,#d9b64a); color: #241c05; border: none; border-radius: 11px; padding: .85rem 1.8rem; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; cursor: pointer; text-decoration: none; box-shadow: 0 8px 20px rgba(217,182,74,.3); }
+        .ir-pop-later { display: block; width: 100%; margin-top: .6rem; background: none; border: none; color: rgba(255,255,255,.6); font-size: .78rem; cursor: pointer; font-family: inherit; }
+        .ir-pop-later:hover { color: #fff; }
 
         /* Wheel card */
         .iw2-card { position: relative; margin: 1.75rem auto 0; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem 1.5rem 3rem; box-shadow: var(--shadow-md); }

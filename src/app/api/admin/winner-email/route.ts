@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { sendWinnerEmail } from '@/lib/email'
+import { listGameWinners } from '@/lib/instantGames'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,6 +20,14 @@ function fail(err: unknown) {
 export async function GET(req: NextRequest) {
   try {
     await requireAdmin()
+
+    // Instant/ticket game: return its actual winners (each won prize).
+    const gameId = req.nextUrl.searchParams.get('gameId')
+    if (gameId) {
+      const winners = await listGameWinners(gameId)
+      return NextResponse.json({ entrants: winners })
+    }
+
     const competitionId = req.nextUrl.searchParams.get('competitionId')
     if (!competitionId) return NextResponse.json({ entrants: [] })
 

@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import WinnerEmailForm from './WinnerEmailForm'
+import { listGames, countWon } from '@/lib/instantGames'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,6 +9,8 @@ export default async function WinnerEmailPage() {
     orderBy: { createdAt: 'desc' },
     select: { id: true, title: true, ticketsSold: true },
   })
+  const gameRows = await listGames()
+  const games = await Promise.all(gameRows.map(async g => ({ id: g.id, title: g.name, kind: g.kind, won: await countWon(g.id) })))
 
   return (
     <div>
@@ -16,11 +19,11 @@ export default async function WinnerEmailPage() {
           Send Winner Email
         </h1>
         <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem', maxWidth: '620px' }}>
-          Pick the competition, choose the winning entry (name &amp; ticket number), confirm the recipient
-          email, then send. This sends a one-off congratulations email manually — nothing is automated.
+          Pick the competition <b>or instant/ticket-win game</b>, choose the winner (name &amp; ticket number),
+          confirm the recipient email, then send. This sends a one-off congratulations email manually — nothing is automated.
         </p>
       </div>
-      <WinnerEmailForm competitions={competitions} />
+      <WinnerEmailForm competitions={competitions} games={games} />
     </div>
   )
 }
