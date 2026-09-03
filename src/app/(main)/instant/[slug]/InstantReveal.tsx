@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'motion/react'
 import { formatPrize, type PrizeStatus } from '@/lib/instant'
+import RepeatOrderPopup from '@/components/RepeatOrderPopup'
 
 interface Props {
   competitionId: string
@@ -188,16 +189,7 @@ export default function InstantReveal({ competitionId, slug, title, spinsLeft: i
 
       {/* Reorder prompt after the wheel is spun */}
       {showReorder && (
-        <div className="ir-pop-overlay" onClick={() => setShowReorder(false)}>
-          <div className="ir-pop" onClick={e => e.stopPropagation()}>
-            <span className="ir-pop-emoji">🎡</span>
-            <p className="ir-pop-eyebrow">Out of spins</p>
-            <p className="ir-pop-title">Fancy another go?</p>
-            <p className="ir-pop-sub">Reorder for another chance to win — prizes drop all the time.</p>
-            <Link href={`/competitions/${slug}`} className="ir-pop-btn">Reorder spins</Link>
-            <button className="ir-pop-later" onClick={() => setShowReorder(false)}>Not now</button>
-          </div>
-        </div>
+        <RepeatOrderPopup onRepeat={() => { window.location.href = `/competitions/${slug}` }} onClose={() => setShowReorder(false)} />
       )}
 
       {/* Prize breakdown intentionally hidden from customers — pool logic still runs server-side. */}

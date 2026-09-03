@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import RepeatOrderPopup from '@/components/RepeatOrderPopup'
 
 export interface TicketResult {
   win: boolean
@@ -269,19 +270,7 @@ export default function TicketReveal({
       )}
 
       {showReorder && !popup && (
-        <div className="tk-pop-overlay" onClick={() => { setShowReorder(false); setReorderDismissed(true) }}>
-          <div className="tk-pop" onClick={e => e.stopPropagation()}>
-            <div className="tk-pop-glow" aria-hidden />
-            <div className="tk-pop-eyebrow">That&rsquo;s them all revealed</div>
-            <div className="tk-pop-media"><span className="tk-pop-emoji">🎟️</span></div>
-            <div className="tk-pop-name">Fancy another go?</div>
-            {wins > 0
-              ? <div className="tk-pop-sub">You won on {wins} of {slots.length}. Reorder and reveal some more.</div>
-              : <div className="tk-pop-sub">Reorder for another chance to win — prizes drop all the time.</div>}
-            <button className="tk-pop-close" onClick={reorder}>Reorder tickets</button>
-            <button className="tk-pop-later" onClick={() => { setShowReorder(false); setReorderDismissed(true) }}>Not now</button>
-          </div>
-        </div>
+        <RepeatOrderPopup onRepeat={reorder} onClose={() => { setShowReorder(false); setReorderDismissed(true) }} />
       )}
 
       {popup && (
