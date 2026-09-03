@@ -32,7 +32,7 @@ export default function BasketPage() {
       .catch(() => setLoggedIn(false))
   }, [])
 
-  const referralDiscount = refCode ? Math.round(total * 10) / 100 : 0
+  const referralDiscount = refCode ? Math.round(total * 20) / 100 : 0
   const discountedTotal = Math.max(0, Math.round((total - referralDiscount) * 100) / 100)
   const applied = applyCredit(discountedTotal, loggedIn && useCredit ? credit : 0)
 
@@ -184,7 +184,7 @@ export default function BasketPage() {
               {loggedIn && (
                 refCode ? (
                   <div className="bk__summary-row" style={{ color: '#16a34a' }}>
-                    <span>Referral <b>({refCode})</b> · 10% off</span>
+                    <span>Referral <b>({refCode})</b> · 20% off</span>
                     <span>−{formatCurrency(referralDiscount)} <button onClick={() => { setRefCode(''); setRefInput('') }} style={{ background: 'none', border: 'none', color: 'var(--ink3)', cursor: 'pointer', fontSize: '.7rem', textDecoration: 'underline' }}>remove</button></span>
                   </div>
                 ) : (

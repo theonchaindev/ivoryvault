@@ -13,9 +13,9 @@ export default function ReferAFriend({ code, referredCount }: { code: string; re
   return (
     <div style={{ background: 'linear-gradient(135deg,#1b2432,#0f1622)', border: '1px solid rgba(217,182,74,.4)', borderRadius: '16px', padding: '1.5rem 1.6rem', marginBottom: '1rem', color: '#fff' }}>
       <p style={{ fontSize: '.62rem', fontWeight: 800, letterSpacing: '.16em', textTransform: 'uppercase', color: '#d9b64a', marginBottom: '.4rem' }}>Refer a friend</p>
-      <p style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.4rem', fontWeight: 600, lineHeight: 1.25, marginBottom: '.5rem' }}>Give 10% off, get 10% credit</p>
+      <p style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.4rem', fontWeight: 600, lineHeight: 1.25, marginBottom: '.5rem' }}>Give 20% off, get 20% credit</p>
       <p style={{ fontSize: '.85rem', color: 'rgba(255,255,255,.7)', lineHeight: 1.6, marginBottom: '1.1rem' }}>
-        Share your code. When a friend uses it, they get <strong style={{ color: '#fff' }}>10% off their first order</strong> and you earn <strong style={{ color: '#fff' }}>10% of it back in site credit</strong>.
+        Share your code. When a friend uses it, they get <strong style={{ color: '#fff' }}>20% off their first order</strong> and you earn <strong style={{ color: '#fff' }}>20% of it back in site credit</strong>.
       </p>
 
       <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.75rem' }}>

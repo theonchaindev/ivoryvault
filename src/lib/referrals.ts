@@ -2,12 +2,12 @@ import crypto from 'node:crypto'
 import { prisma } from '@/lib/prisma'
 
 // Referral programme (first-order only):
-//   • Referred person gets 10% off their first order.
-//   • Referrer gets 10% of that first order's value as site credit (once).
+//   • Referred person gets 20% off their first order.
+//   • Referrer gets 20% of that first order's value as site credit (once).
 // Uses Prisma tagged-template raw queries so placeholders work on BOTH
 // SQLite (local) and Postgres (prod). Booleans stored as INTEGER 0/1.
 
-export const REFERRAL_RATE = 0.10
+export const REFERRAL_RATE = 0.20
 
 let ensured = false
 async function ensure() {
