@@ -19,7 +19,7 @@ export default function ReferAFriend({ code, referredCount }: { code: string; re
       </p>
 
       <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.75rem' }}>
-        <span style={{ fontFamily: 'monospace', fontSize: '1.15rem', fontWeight: 800, letterSpacing: '.08em', background: 'rgba(217,182,74,.14)', border: '1px solid rgba(217,182,74,.5)', color: '#f0dfa6', padding: '.55rem 1rem', borderRadius: '10px' }}>{code}</span>
+        <span style={{ fontFamily: 'monospace', fontSize: '1.15rem', fontWeight: 800, letterSpacing: '.08em', background: '#f6efd9', border: '1px solid #d9b64a', color: '#1b2432', padding: '.55rem 1rem', borderRadius: '10px' }}>{code}</span>
         <button onClick={() => copy(code, 'code')} style={btn}>{copied === 'code' ? 'Copied ✓' : 'Copy code'}</button>
         <button onClick={() => copy(link, 'link')} style={{ ...btn, background: '#d9b64a', color: '#1b2432', border: 'none' }}>{copied === 'link' ? 'Copied ✓' : 'Copy share link'}</button>
       </div>
