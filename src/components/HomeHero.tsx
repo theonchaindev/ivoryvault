@@ -194,6 +194,16 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
           .hh__inner { grid-template-columns: 1fr; padding: 2.5rem 1.5rem 3rem; gap: 0; }
           .hh__card-wrap { display: none; }
         }
+        /* Phones: shorten the hero so competitions are visible without scrolling */
+        @media (max-width: 640px) {
+          .hh { padding-top: 8px; }
+          .hh__inner { padding: 1.1rem 1.25rem 1.6rem; }
+          .hh__left { gap: .95rem; }
+          .hh__headline { font-size: 2.1rem; }
+          .hh__sub { font-size: .9rem; line-height: 1.5; }
+          .hh__trust { gap: .9rem; }
+          .hh__cta { padding: .85rem 1.9rem; }
+        }
 
         /* Left */
         .hh__left { display: flex; flex-direction: column; gap: 1.5rem; }
