@@ -9,6 +9,7 @@ type WinnerType = 'credit' | 'custom'
 interface Winner { type: WinnerType; amount: number; name?: string; image?: string }
 type Winners = Record<number, Winner>
 interface CustomWin { playId: string; userId: string; amount: number; name: string | null; image: string | null; ticketNo: number; userName: string; userEmail: string; claim?: { fullName: string; addressLine1: string; addressLine2: string | null; city: string; postcode: string; phone: string | null } }
+interface PrizeWin { ticketNumber: number; name: string; email: string; prize: string }
 interface Order { orderNumber: string; status: string; amount: string; createdAt: string; paidAt: string | null; qty: number; email: string; name: string }
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
@@ -36,6 +37,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
   const [customWins, setCustomWins] = useState<CustomWin[]>([])
+  const [prizeWins, setPrizeWins] = useState<PrizeWin[]>([])
   const [orders, setOrders] = useState<Order[]>([])
   const [grantEmail, setGrantEmail] = useState('')
   const [grantQty, setGrantQty] = useState(1)
@@ -55,11 +57,11 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
       const res = await fetch(base)
       if (res.status === 404) { setNotFound(true); return }
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; orders?: Order[] }
+      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; winners?: PrizeWin[]; orders?: Order[] }
       setBackHref(d.game.kind === 'instant' ? '/admin/instant' : '/admin/instant-win')
       setName(d.game.name); setSlug(d.game.slug); setPublished(d.game.published); setPriceP(d.game.priceP); setPoolSize(d.game.poolSize); setImage(d.game.image || ''); setWinners(d.game.winners || {})
       setEndsAt(d.game.endsAt ? toLocalInput(d.game.endsAt) : plusDaysLocal(30))
-      setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setOrders(d.orders || [])
+      setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setPrizeWins(d.winners || []); setOrders(d.orders || [])
     } catch { setErr('Could not load this game.') }
     finally { setLoading(false) }
   }
@@ -276,6 +278,34 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
           {msg && <span style={{ color: '#15803d', fontSize: '.85rem' }}>{msg}</span>}
           <a href={`/instant-win/${slug}`} target="_blank" rel="noreferrer" style={{ marginLeft: 'auto', color: 'var(--gold,#2563eb)', fontSize: '.82rem', fontWeight: 700, textDecoration: 'none' }}>▶ Preview game</a>
         </div>
+      </div>
+
+      {/* All prizes won */}
+      <div style={card}>
+        <label style={label}>Prizes won</label>
+        <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .9rem' }}>Every winning ticket revealed so far — site credit and custom prizes. {won} of {sold} sold have won.</p>
+        {prizeWins.length === 0
+          ? <p style={{ color: 'var(--ink3)', fontSize: '.85rem' }}>No prizes have been won yet.</p>
+          : (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.82rem' }}>
+                <thead>
+                  <tr style={{ textAlign: 'left', color: 'var(--ink3)', fontSize: '.66rem', letterSpacing: '.08em', textTransform: 'uppercase' }}>
+                    <th style={{ padding: '.5rem .5rem' }}>Ticket</th><th style={{ padding: '.5rem .5rem' }}>Member</th><th style={{ padding: '.5rem .5rem' }}>Prize won</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prizeWins.map(w => (
+                    <tr key={w.ticketNumber} style={{ borderTop: '1px solid var(--border,#eef1f6)' }}>
+                      <td style={{ padding: '.55rem .5rem', fontVariantNumeric: 'tabular-nums' }}>Nº {String(w.ticketNumber).padStart(4, '0')}</td>
+                      <td style={{ padding: '.55rem .5rem' }}>{w.name}<br /><span style={{ color: 'var(--ink3)', fontSize: '.72rem' }}>{w.email}</span></td>
+                      <td style={{ padding: '.55rem .5rem', fontWeight: 600 }}>{w.prize}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
       </div>
 
       {/* Custom prize fulfilment */}

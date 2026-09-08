@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getGameById, updateGame, setGamePublished, deleteGame, countSold, countWon, listCustomWinsForAdmin, type WinnerDef } from '@/lib/instantGames'
+import { getGameById, updateGame, setGamePublished, deleteGame, countSold, countWon, listCustomWinsForAdmin, listGameWinners, type WinnerDef } from '@/lib/instantGames'
 import { listRecentOrders } from '@/lib/cashflowsOrders'
 import { igItem } from '@/lib/instantGames'
 
@@ -34,8 +34,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const { id } = await params
     const game = await getGameById(id)
     if (!game) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    const [sold, won, customWins, orders] = await Promise.all([countSold(id), countWon(id), listCustomWinsForAdmin(id), gameOrders(id)])
-    return NextResponse.json({ game, sold, won, customWins, orders })
+    const [sold, won, customWins, winners, orders] = await Promise.all([countSold(id), countWon(id), listCustomWinsForAdmin(id), listGameWinners(id), gameOrders(id)])
+    return NextResponse.json({ game, sold, won, customWins, winners, orders })
   } catch (e) { return fail(e) }
 }
 
