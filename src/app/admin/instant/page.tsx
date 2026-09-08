@@ -35,25 +35,24 @@ export default async function AdminInstantPage() {
             {spinGames.map(c => {
               const img = firstImg(c.images)
               return (
-                <Link key={c.id} href={`/admin/competitions/${c.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--card,#fff)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
-                    <div style={{ width: '64px', height: '48px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(160deg,#f6f3ea,#efe9da)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {img
-                        // eslint-disable-next-line @next/next/no-img-element
-                        ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: '1.3rem' }}>🎡</span>}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-                        <strong style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.15rem' }}>{c.title}</strong>
-                        <span style={{ fontSize: '.55rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '.2rem .5rem', borderRadius: '999px', background: '#eef2ff', color: '#4338ca' }}>Spin game</span>
-                        <span style={{ fontSize: '.6rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '.2rem .5rem', borderRadius: '999px', background: c.status === 'active' ? '#dcfce7' : '#f1f5f9', color: c.status === 'active' ? '#15803d' : '#64748b' }}>{c.status === 'active' ? 'Live' : c.status}</span>
-                      </div>
-                      <div style={{ fontSize: '.78rem', color: 'var(--ink3)', marginTop: '.2rem' }}>{money(c.ticketPrice)}/spin · {c.ticketsSold} of {c.maxTickets} sold</div>
-                    </div>
-                    <span style={{ color: 'var(--gold,#2563eb)', fontSize: '.8rem', fontWeight: 700 }}>Manage →</span>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'var(--card,#fff)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+                  <div style={{ width: '64px', height: '48px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0, background: 'linear-gradient(160deg,#f6f3ea,#efe9da)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {img
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ fontSize: '1.3rem' }}>🎡</span>}
                   </div>
-                </Link>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                      <strong style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.15rem' }}>{c.title}</strong>
+                      <span style={{ fontSize: '.55rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '.2rem .5rem', borderRadius: '999px', background: '#eef2ff', color: '#4338ca' }}>Spin game</span>
+                      <span style={{ fontSize: '.6rem', fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', padding: '.2rem .5rem', borderRadius: '999px', background: c.status === 'active' ? '#dcfce7' : '#f1f5f9', color: c.status === 'active' ? '#15803d' : '#64748b' }}>{c.status === 'active' ? 'Live' : c.status}</span>
+                    </div>
+                    <div style={{ fontSize: '.78rem', color: 'var(--ink3)', marginTop: '.2rem' }}>{money(c.ticketPrice)}/spin · {c.ticketsSold} of {c.maxTickets} sold</div>
+                  </div>
+                  <Link href={`/admin/competitions/${c.id}/prizes`} style={{ color: 'var(--gold,#2563eb)', fontSize: '.8rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Prizes won</Link>
+                  <Link href={`/admin/competitions/${c.id}`} style={{ color: 'var(--ink3)', fontSize: '.8rem', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap' }}>Manage →</Link>
+                </div>
               )
             })}
           </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatPrize } from '@/lib/instant'
 
 interface Comp { id: string; title: string }
@@ -15,7 +15,7 @@ const th: React.CSSProperties = { textAlign: 'left', padding: '.5rem .75rem', fo
 const td: React.CSSProperties = { padding: '.5rem .75rem', fontSize: '.82rem', color: 'var(--ink2)', borderBottom: '1px solid var(--border)' }
 const chip = (bg: string, c: string): React.CSSProperties => ({ display: 'inline-block', padding: '.15rem .5rem', borderRadius: '5px', fontSize: '.68rem', fontWeight: 700, background: bg, color: c })
 
-export default function InstantWinsPanel({ competitions }: { competitions: Comp[] }) {
+export default function InstantWinsPanel({ competitions, initialCompId }: { competitions: Comp[]; initialCompId?: string }) {
   const [compId, setCompId] = useState('')
   const [data, setData] = useState<Data | null>(null)
   const [loading, setLoading] = useState(false)
@@ -60,18 +60,22 @@ export default function InstantWinsPanel({ competitions }: { competitions: Comp[
     finally { setBusy(false) }
   }
 
+  useEffect(() => { if (initialCompId) load(initialCompId) }, [initialCompId]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const eligible = data?.entries.filter(e => e.prizeAmount === 0) ?? []
   const remainingTiers = data?.pool.filter(p => p.left > 0) ?? []
 
   return (
     <div>
-      <div style={{ ...card, marginBottom: '1.5rem' }}>
-        <span style={label}>Instant-win competition</span>
-        <select style={input} value={compId} onChange={e => load(e.target.value)}>
-          <option value="">Select an instant-win game…</option>
-          {competitions.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-        </select>
-      </div>
+      {!initialCompId && (
+        <div style={{ ...card, marginBottom: '1.5rem' }}>
+          <span style={label}>Instant-win competition</span>
+          <select style={input} value={compId} onChange={e => load(e.target.value)}>
+            <option value="">Select an instant-win game…</option>
+            {competitions.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+          </select>
+        </div>
+      )}
 
       {loading && <p style={{ color: 'var(--ink3)' }}>Loading…</p>}
       {err && !data && <p style={{ color: '#c0392b' }}>{err}</p>}
