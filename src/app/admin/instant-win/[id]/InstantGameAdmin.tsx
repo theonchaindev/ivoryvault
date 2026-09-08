@@ -28,6 +28,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [backHref, setBackHref] = useState('/admin/instant-win')
+  const [tab, setTab] = useState<'setup' | 'prizes' | 'orders'>('setup')
   const [published, setPublished] = useState(false)
   const [priceP, setPriceP] = useState(50)
   const [poolSize, setPoolSize] = useState(500)
@@ -178,6 +179,14 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
         </button>
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '.5rem', margin: '.25rem 0 1.25rem', borderBottom: '1px solid var(--border,#e2e7ee)' }}>
+        {([['setup', 'Setup'], ['prizes', `Prizes won${won ? ` (${won})` : ''}`], ['orders', 'Orders']] as const).map(([k, lbl]) => (
+          <button key={k} onClick={() => setTab(k)} style={{ background: 'none', border: 'none', borderBottom: tab === k ? '2px solid var(--gold,#2563eb)' : '2px solid transparent', color: tab === k ? 'var(--ink)' : 'var(--ink3)', fontWeight: tab === k ? 800 : 600, fontSize: '.82rem', padding: '.6rem .4rem', marginBottom: '-1px', cursor: 'pointer', fontFamily: 'inherit' }}>{lbl}</button>
+        ))}
+      </div>
+
+      {tab === 'setup' && (<>
       {/* Settings */}
       <div style={card}>
         <div style={{ marginBottom: '1.25rem' }}>
@@ -280,6 +289,9 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
         </div>
       </div>
 
+      </>)}
+
+      {tab === 'prizes' && (<>
       {/* All prizes won */}
       <div style={card}>
         <label style={label}>Prizes won</label>
@@ -340,7 +352,10 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
           )}
       </div>
 
+      </>)}
+
       {/* Orders & recovery */}
+      {tab === 'orders' && (
       <div style={card}>
         <label style={label}>Orders &amp; recovery</label>
         <p style={{ fontSize: '.78rem', color: 'var(--ink3)', margin: '0 0 .9rem' }}>Recent ticket purchases for this game. If a member paid but a card order shows <b>paid</b> yet they didn&rsquo;t get their tickets, grant them below.</p>
@@ -377,7 +392,10 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
         </div>
       </div>
 
+      )}
+
       {/* Danger zone */}
+      {tab === 'setup' && (
       <div style={{ ...card, borderColor: '#f3c2bd' }}>
         <label style={label}>Reset &amp; delete</label>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
@@ -389,6 +407,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
           <button onClick={deleteGame} style={{ background: 'none', color: '#c0392b', border: '1px solid #c0392b', borderRadius: '10px', padding: '.7rem 1.4rem', fontSize: '.72rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', cursor: 'pointer', fontFamily: 'inherit' }}>Delete game</button>
         </div>
       </div>
+      )}
     </div>
   )
 }
