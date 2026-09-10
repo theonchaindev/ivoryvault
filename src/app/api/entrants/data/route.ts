@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { verifyEntrantsToken } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { listGames, listGameEntrants } from '@/lib/instantGames'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,11 +19,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const competitions = await prisma.competition.findMany({
+  const comps = await prisma.competition.findMany({
     where: { status: 'active' },
     orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     select: { id: true, title: true, type: true, ticketsSold: true, status: true },
   })
+  // Ticket/instant games (a separate store) shown as entries too — published only.
+  const games = (await listGames()).filter(g => g.published)
+    .map(g => ({ id: `game:${g.id}`, title: g.name, type: g.kind, ticketsSold: 0, status: 'active' }))
+  const competitions = [...comps, ...games]
 
   const compId = request.nextUrl.searchParams.get('competitionId')
   if (!compId) return NextResponse.json({ competitions })
@@ -38,7 +43,10 @@ export async function GET(request: NextRequest) {
     else byUser.set(userId, { name, email, entries: count, first: when })
   }
 
-  if (comp.type === 'instant') {
+  if (compId.startsWith('game:')) {
+    const ge = await listGameEntrants(compId.slice(5))
+    ge.forEach(e => add(e.userId, e.name, e.email, e.entries, e.first))
+  } else if (comp.type === 'instant') {
     const spins = await prisma.instantSpin.findMany({
       where: { competitionId: compId },
       select: { userId: true, createdAt: true, user: { select: { name: true, email: true } } },

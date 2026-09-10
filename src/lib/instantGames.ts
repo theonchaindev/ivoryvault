@@ -314,6 +314,17 @@ export async function listGameWinners(gameId: string): Promise<{ ticketNumber: n
   }))
 }
 
+/** Entrants of a game (grouped by user, each play = one entry) — for the entrants viewer. */
+export async function listGameEntrants(gameId: string): Promise<{ userId: string; name: string; email: string; entries: number; first: Date }[]> {
+  await ensure()
+  const rows = await prisma.$queryRaw<{ userId: string; entries: number | bigint; first: string | Date }[]>`
+    SELECT "userId", COUNT(*) AS entries, MIN("createdAt") AS first FROM "TicketGamePlay" WHERE "gameId" = ${gameId} GROUP BY "userId"`
+  if (!rows.length) return []
+  const users = await prisma.user.findMany({ where: { id: { in: rows.map(r => r.userId) } }, select: { id: true, name: true, email: true } })
+  const byUser = new Map(users.map(u => [u.id, u]))
+  return rows.map(r => ({ userId: r.userId, name: byUser.get(r.userId)?.name || '(no name)', email: byUser.get(r.userId)?.email || '', entries: Number(r.entries), first: new Date(r.first as string) }))
+}
+
 // ── public tiles ───────────────────────────────────────────────────────────
 export interface GameCard { id: string; slug: string; title: string; subtitle: null; prizeValue: number; ticketPrice: number; maxTickets: number; ticketsSold: number; images: string; drawDate: string | null; status: string; featured: boolean; closed: boolean; upcoming: boolean; href: string }
 export async function getPublishedGameCards(): Promise<GameCard[]> {
