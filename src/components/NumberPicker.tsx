@@ -113,7 +113,7 @@ export default function NumberPicker({
         .np, .np *{ box-sizing: border-box; }
         .np{ max-width: 760px; width: 100%; margin: 0 auto; color: var(--ink); }
         .np__hero{ width: 100%; margin: 0 auto 1.5rem; border-radius: 16px; overflow: hidden; background: linear-gradient(160deg,#f6f3ea,#efe9da); border: 1px solid var(--border,#e4e7ee); box-shadow: 0 10px 30px rgba(27,36,50,.08); }
-        .np__hero-img{ display: block; width: 100%; max-height: 340px; object-fit: cover; object-position: center; }
+        .np__hero-img{ display: block; width: 100%; height: auto; max-height: 70vh; object-fit: contain; object-position: center; }
         .np__head{ text-align: center; margin-bottom: 1.25rem; }
         .np__title{ font-family: var(--font-cormorant,serif); font-size: clamp(1.6rem,6vw,2rem); font-weight: 600; margin: 0; }
         .np__sub{ color: var(--ink3); font-size: .92rem; margin: .4rem 0 0; }
