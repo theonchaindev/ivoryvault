@@ -66,17 +66,13 @@ export default function InstantGameClient({
 
   return (
     <>
-      {endsAt && (
-        <div style={{ maxWidth: '900px', margin: '0 auto 1.75rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.5rem' }}>
-          <span style={{ fontSize: '.62rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink3)' }}>Game ends in</span>
-          <CountdownTimer drawDate={endsAt} variant="strip" />
-        </div>
-      )}
       {pickNumbers && pending === 0 ? (
         <NumberPicker
           gameId={gameId}
           title={title}
           price={price}
+          image={image}
+          endsAt={endsAt}
           poolSize={poolSize}
           taken={taken}
           signedIn={signedIn}
@@ -85,6 +81,13 @@ export default function InstantGameClient({
           onCheckout={onPickCheckout}
         />
       ) : (
+        <>
+        {endsAt && (
+          <div style={{ maxWidth: '900px', margin: '0 auto 1.75rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.5rem' }}>
+            <span style={{ fontSize: '.62rem', fontWeight: 800, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--ink3)' }}>Game ends in</span>
+            <CountdownTimer drawDate={endsAt} variant="strip" />
+          </div>
+        )}
         <TicketReveal
           price={price}
           maxQty={25}
@@ -97,6 +100,7 @@ export default function InstantGameClient({
           creditAvailable={creditAvailable}
           loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
         />
+        </>
       )}
 
       {shown.length > 0 && (

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { getTimeRemaining } from '@/lib/utils'
 import { PAYMENTS_PAUSED, effectiveNow } from '@/lib/outage'
 
-type Variant = 'dark' | 'light' | 'strip' | 'hero'
+type Variant = 'dark' | 'light' | 'strip' | 'hero' | 'pill'
 
 export default function CountdownTimer({
   drawDate,
@@ -66,6 +66,29 @@ export default function CountdownTimer({
               {String(u.v).padStart(2, '0')}
             </span>
             <span style={{ fontSize: '.42rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.6)', marginTop: '3px' }}>
+              {u.l}
+            </span>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  /* ── Pill variant (light backgrounds — rounded cards, accent numbers) ── */
+  if (variant === 'pill') {
+    return (
+      <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+        {units.map(u => (
+          <div key={u.l} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            background: 'var(--card,#fff)', border: '1px solid var(--border,#e4e7ee)',
+            borderRadius: '12px', padding: '.5rem .7rem', minWidth: '54px',
+            boxShadow: '0 2px 8px rgba(27,36,50,.05)',
+          }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.6rem', fontWeight: 700, color: 'var(--gold,#2563eb)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              {String(u.v).padStart(2, '0')}
+            </span>
+            <span style={{ fontSize: '.5rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--ink3)', marginTop: '4px' }}>
               {u.l}
             </span>
           </div>

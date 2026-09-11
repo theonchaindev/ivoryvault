@@ -1,12 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import CountdownTimer from '@/components/CountdownTimer'
 
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 const CAP = 2000
 
 export default function NumberPicker({
   gameId, title, price, poolSize, taken, signedIn, creditAvailable, loginHref, onCheckout,
+  image = '', endsAt = null,
 }: {
   gameId: string
   title: string
@@ -17,6 +19,8 @@ export default function NumberPicker({
   creditAvailable: number
   loginHref: string
   onCheckout: (numbers: number[], useCredit: boolean) => Promise<void>
+  image?: string
+  endsAt?: string | null
 }) {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [useCredit, setUseCredit] = useState(false)
@@ -41,9 +45,21 @@ export default function NumberPicker({
 
   return (
     <div className="np">
+      {image && (
+        <div className="np__hero">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="np__hero-img" src={image} alt={title} />
+        </div>
+      )}
       <div className="np__head">
         <h2 className="np__title">{title}</h2>
         <p className="np__sub">Pick your lucky numbers — tap a ticket to select it. {money(price)} each.</p>
+        {endsAt && (
+          <div className="np__timer">
+            <span className="np__timer-lbl">Game ends in</span>
+            <CountdownTimer drawDate={endsAt} variant="pill" />
+          </div>
+        )}
       </div>
 
       <div className="np__legend">
@@ -96,9 +112,13 @@ export default function NumberPicker({
       <style>{`
         .np, .np *{ box-sizing: border-box; }
         .np{ max-width: 760px; width: 100%; margin: 0 auto; color: var(--ink); }
+        .np__hero{ width: 100%; margin: 0 auto 1.5rem; border-radius: 16px; overflow: hidden; background: linear-gradient(160deg,#f6f3ea,#efe9da); border: 1px solid var(--border,#e4e7ee); box-shadow: 0 10px 30px rgba(27,36,50,.08); }
+        .np__hero-img{ display: block; width: 100%; max-height: 340px; object-fit: cover; object-position: center; }
         .np__head{ text-align: center; margin-bottom: 1.25rem; }
         .np__title{ font-family: var(--font-cormorant,serif); font-size: clamp(1.6rem,6vw,2rem); font-weight: 600; margin: 0; }
         .np__sub{ color: var(--ink3); font-size: .92rem; margin: .4rem 0 0; }
+        .np__timer{ display: flex; flex-direction: column; align-items: center; gap: .5rem; margin-top: 1.1rem; }
+        .np__timer-lbl{ font-size: .62rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; color: var(--ink3); }
         .np__legend{ display: flex; justify-content: center; gap: 1.25rem; margin-bottom: 1rem; font-size: .72rem; color: var(--ink3); flex-wrap: wrap; }
         .np__legend span{ display: inline-flex; align-items: center; gap: .4rem; }
         .np__sw{ width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
