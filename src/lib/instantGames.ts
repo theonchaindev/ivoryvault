@@ -16,14 +16,17 @@ export type GameKind = 'ticket' | 'instant'
 export interface Game {
   id: string; slug: string; name: string; kind: GameKind; published: boolean
   priceP: number; poolSize: number; image: string; endsAt: string | null
-  winners: Record<number, WinnerDef>; createdAt: string
+  pickNumbers: boolean; winners: Record<number, WinnerDef>; createdAt: string
 }
 export interface AggPrize { type: 'credit' | 'custom'; amount: number; name?: string; image?: string; total: number }
 export interface TicketWin { win: boolean; type?: 'credit' | 'custom'; amount?: number; name?: string; image?: string; ticketNumber?: number }
 
 export const IG_ITEM_PREFIX = '__ig__'
 export const igItem = (gameId: string) => `${IG_ITEM_PREFIX}${gameId}`
-export const gameIdFromItem = (item: string) => (item.startsWith(IG_ITEM_PREFIX) ? item.slice(IG_ITEM_PREFIX.length) : null)
+// Pick-your-own-numbers order line: __ig__<gameId>#<n1,n2,...>
+export const igItemNumbers = (gameId: string, numbers: number[]) => `${IG_ITEM_PREFIX}${gameId}#${numbers.join(',')}`
+export const gameIdFromItem = (item: string) => { if (!item.startsWith(IG_ITEM_PREFIX)) return null; return item.slice(IG_ITEM_PREFIX.length).split('#')[0] }
+export const numbersFromItem = (item: string): number[] => { const i = item.indexOf('#'); if (i < 0) return []; return item.slice(i + 1).split(',').map(n => parseInt(n, 10)).filter(n => Number.isFinite(n)) }
 
 let ensured = false
 async function ensure() {
@@ -43,6 +46,7 @@ async function ensure() {
       "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     )`)
     try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'ticket'`) } catch { /* exists */ }
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "pickNumbers" INTEGER NOT NULL DEFAULT 0`) } catch { /* exists */ }
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TicketGamePlay" (
       "id" TEXT PRIMARY KEY,
       "userId" TEXT NOT NULL,
@@ -117,11 +121,11 @@ export function aggregatePrizes(winners: Record<number, WinnerDef>): AggPrize[] 
   return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
-function rowToGame(r: { id: string; slug: string; name: string; kind: string | null; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; prizes: string; createdAt: string }): Game {
-  return { id: r.id, slug: r.slug, name: r.name, kind: r.kind === 'instant' ? 'instant' : 'ticket', published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
+function rowToGame(r: { id: string; slug: string; name: string; kind: string | null; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; pickNumbers: number | null; prizes: string; createdAt: string }): Game {
+  return { id: r.id, slug: r.slug, name: r.name, kind: r.kind === 'instant' ? 'instant' : 'ticket', published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, pickNumbers: Number(r.pickNumbers) > 0, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
 }
 type GameRow = Parameters<typeof rowToGame>[0]
-const SELECT_COLS = `"id","slug","name","kind","published","priceP","poolSize","image","endsAt","prizes","createdAt"`
+const SELECT_COLS = `"id","slug","name","kind","published","priceP","poolSize","image","endsAt","pickNumbers","prizes","createdAt"`
 
 // ── CRUD ─────────────────────────────────────────────────────────────────
 export async function listGames(kind?: GameKind): Promise<Game[]> {
@@ -160,21 +164,53 @@ export async function createGame(name: string, kind: GameKind = 'ticket'): Promi
   return (await getGameById(id))!
 }
 
-export async function updateGame(id: string, d: { name?: string; priceP: number; poolSize: number; image?: string; endsAt?: string | null; winners: Record<number, WinnerDef> }): Promise<void> {
+export async function updateGame(id: string, d: { name?: string; priceP: number; poolSize: number; image?: string; endsAt?: string | null; pickNumbers?: boolean; winners: Record<number, WinnerDef> }): Promise<void> {
   await ensure()
   const priceP = Math.max(1, Math.round(d.priceP))
   const poolSize = Math.max(1, Math.round(d.poolSize))
   const image = typeof d.image === 'string' ? d.image : ''
   const endsAt = d.endsAt ? new Date(d.endsAt).toISOString() : null
+  const pick = d.pickNumbers ? 1 : 0
   const name = (d.name || '').trim()
   const clean: Record<number, WinnerDef> = {}
   for (const [k, v] of Object.entries(d.winners || {})) { const n = parseInt(k, 10); const w = cleanWinner(v); if (Number.isFinite(n) && n >= 1 && n <= poolSize && w) clean[n] = w }
   const winners = JSON.stringify(clean)
   if (name) {
-    await prisma.$executeRaw`UPDATE "InstantGame" SET "name" = ${name}, "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "prizes" = ${winners} WHERE "id" = ${id}`
+    await prisma.$executeRaw`UPDATE "InstantGame" SET "name" = ${name}, "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "prizes" = ${winners} WHERE "id" = ${id}`
   } else {
-    await prisma.$executeRaw`UPDATE "InstantGame" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "prizes" = ${winners} WHERE "id" = ${id}`
+    await prisma.$executeRaw`UPDATE "InstantGame" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "prizes" = ${winners} WHERE "id" = ${id}`
   }
+}
+
+/** Ticket numbers already taken for a game (for the number-picker). */
+export async function takenNumbers(gameId: string): Promise<number[]> {
+  await ensure()
+  try {
+    const rows = await prisma.$queryRaw<{ ticketNo: number }[]>`SELECT "ticketNo" FROM "TicketGamePlay" WHERE "gameId" = ${gameId}`
+    return rows.map(r => Number(r.ticketNo))
+  } catch { return [] }
+}
+
+/** Mint plays for specific chosen ticket numbers, skipping any already taken. Returns the numbers granted. */
+export async function createPlaysForNumbers(gameId: string, userId: string, numbers: number[]): Promise<number[]> {
+  await ensure()
+  if (!gameId || !userId || !numbers?.length) return []
+  const game = await getGameById(gameId)
+  if (!game) return []
+  const want = [...new Set(numbers.map(n => Math.round(Number(n))).filter(n => Number.isFinite(n) && n >= 1 && n <= game.poolSize))]
+  if (!want.length) return []
+  const taken = new Set(await takenNumbers(gameId))
+  const granted: number[] = []
+  for (const n of want) {
+    if (taken.has(n)) continue
+    // Re-check right before insert to narrow the race window.
+    const exists = await prisma.$queryRaw<{ x: number }[]>`SELECT 1 AS x FROM "TicketGamePlay" WHERE "gameId" = ${gameId} AND "ticketNo" = ${n}`
+    if (exists.length) continue
+    const id = crypto.randomUUID()
+    await prisma.$executeRaw`INSERT INTO "TicketGamePlay" ("id","gameId","userId","ticketNo","revealed") VALUES (${id}, ${gameId}, ${userId}, ${n}, 0)`
+    granted.push(n); taken.add(n)
+  }
+  return granted
 }
 
 export async function setGamePublished(id: string, published: boolean): Promise<void> {

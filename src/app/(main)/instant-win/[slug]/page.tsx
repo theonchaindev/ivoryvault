@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { getGameBySlug, countUnrevealed, aggregatePrizes } from '@/lib/instantGames'
+import { getGameBySlug, countUnrevealed, aggregatePrizes, takenNumbers } from '@/lib/instantGames'
 import { finalizeByOrderNumber } from '@/lib/fulfillOrder'
 import InstantGameClient from './InstantGameClient'
 
@@ -32,6 +32,7 @@ export default async function InstantWinPage({ params, searchParams }: { params:
     const u = await prisma.user.findUnique({ where: { id: session.userId }, select: { siteCredit: true } })
     creditAvailable = u?.siteCredit ?? 0
   }
+  const taken = game.pickNumbers && pending === 0 ? await takenNumbers(game.id) : []
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', padding: '3rem 1.25rem 5rem' }}>
@@ -52,6 +53,8 @@ export default async function InstantWinPage({ params, searchParams }: { params:
         signedIn={!!session}
         creditAvailable={creditAvailable}
         loginFrom={`/instant-win/${game.slug}`}
+        pickNumbers={game.pickNumbers}
+        taken={taken}
       />
     </div>
   )

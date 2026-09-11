@@ -2,12 +2,14 @@
 
 import TicketReveal, { type TicketResult } from '@/components/TicketReveal'
 import CountdownTimer from '@/components/CountdownTimer'
+import NumberPicker from '@/components/NumberPicker'
 
 interface Tier { type: 'credit' | 'custom'; amount: number; total: number; name?: string; image?: string }
 const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
 
 export default function InstantGameClient({
   gameId, title, price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable, loginFrom,
+  pickNumbers = false, taken = [],
 }: {
   gameId: string
   title: string
@@ -20,11 +22,26 @@ export default function InstantGameClient({
   signedIn: boolean
   creditAvailable: number
   loginFrom: string
+  pickNumbers?: boolean
+  taken?: number[]
 }) {
   const onCheckout = async (qty: number, useCredit: boolean) => {
     const res = await fetch('/api/instant-win/checkout', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ gameId, quantity: qty, useCredit }),
+    })
+    const d = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      if (d.needsLogin) { window.location.href = `/login?from=${encodeURIComponent(loginFrom)}`; return }
+      throw new Error(d.error || 'Could not start checkout.')
+    }
+    if (d.url) window.location.href = d.url
+  }
+
+  const onPickCheckout = async (numbers: number[], useCredit: boolean) => {
+    const res = await fetch('/api/instant-win/checkout', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId, numbers, useCredit }),
     })
     const d = await res.json().catch(() => ({}))
     if (!res.ok) {
@@ -55,18 +72,32 @@ export default function InstantGameClient({
           <CountdownTimer drawDate={endsAt} variant="strip" />
         </div>
       )}
-      <TicketReveal
-        price={price}
-        maxQty={25}
-        title={title}
-        heroImage={image}
-        onCheckout={onCheckout}
-        onRevealNext={onRevealNext}
-        pending={pending}
-        signedIn={signedIn}
-        creditAvailable={creditAvailable}
-        loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
-      />
+      {pickNumbers && pending === 0 ? (
+        <NumberPicker
+          gameId={gameId}
+          title={title}
+          price={price}
+          poolSize={poolSize}
+          taken={taken}
+          signedIn={signedIn}
+          creditAvailable={creditAvailable}
+          loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
+          onCheckout={onPickCheckout}
+        />
+      ) : (
+        <TicketReveal
+          price={price}
+          maxQty={25}
+          title={title}
+          heroImage={image}
+          onCheckout={onCheckout}
+          onRevealNext={onRevealNext}
+          pending={pending}
+          signedIn={signedIn}
+          creditAvailable={creditAvailable}
+          loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
+        />
+      )}
 
       {shown.length > 0 && (
         <div style={{ maxWidth: '900px', margin: '4.5rem auto 0' }}>

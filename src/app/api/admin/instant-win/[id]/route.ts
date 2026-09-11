@@ -43,10 +43,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await requireAdmin()
     const { id } = await params
-    const b = await request.json() as { name?: string; priceP?: number; poolSize?: number; image?: string; endsAt?: string | null; winners?: Record<number, WinnerDef> }
+    const b = await request.json() as { name?: string; priceP?: number; poolSize?: number; image?: string; endsAt?: string | null; pickNumbers?: boolean; winners?: Record<number, WinnerDef> }
     await updateGame(id, {
       name: b.name, priceP: Number(b.priceP) || 50, poolSize: Number(b.poolSize) || 500,
       image: typeof b.image === 'string' ? b.image : '', endsAt: b.endsAt ?? null,
+      pickNumbers: !!b.pickNumbers,
       winners: (b.winners && typeof b.winners === 'object') ? b.winners : {},
     })
     const game = await getGameById(id)

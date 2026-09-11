@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { syncEarnedSpins } from '@/lib/spins'
 import { sendPurchaseConfirmation } from '@/lib/email'
-import { createPlays as createGamePlays, gameIdFromItem, getGameBySlug, IG_ITEM_PREFIX } from '@/lib/instantGames'
+import { createPlays as createGamePlays, createPlaysForNumbers, gameIdFromItem, numbersFromItem, getGameBySlug, IG_ITEM_PREFIX } from '@/lib/instantGames'
 
 /** Legacy sentinel — pre-multi-game ticket-game orders. Maps to the migrated game. */
 export const TICKET_GAME_ITEM = '__ticketgame__'
@@ -10,10 +10,12 @@ export const TICKET_GAME_ITEM = '__ticketgame__'
 export async function recordPurchase(userId: string, competitionId: string, qty: number, paymentRef: string) {
   if (!userId || !competitionId || !qty) return
 
-  // Instant Win game: mint N unrevealed plays for that game (isolated from competitions)
+  // Instant Win game: mint plays for that game (isolated from competitions).
+  // A "#<numbers>" suffix means the player chose specific ticket numbers.
   if (competitionId.startsWith(IG_ITEM_PREFIX)) {
     const gid = gameIdFromItem(competitionId)
-    if (gid) await createGamePlays(gid, userId, qty)
+    const nums = numbersFromItem(competitionId)
+    if (gid) { if (nums.length) await createPlaysForNumbers(gid, userId, nums); else await createGamePlays(gid, userId, qty) }
     return
   }
   // Legacy ticket-game order → the migrated game.
