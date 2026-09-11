@@ -54,6 +54,7 @@ export default async function InstantWinPage({ params, searchParams }: { params:
         creditAvailable={creditAvailable}
         loginFrom={`/instant-win/${game.slug}`}
         pickNumbers={game.pickNumbers}
+        showWorth={game.showWorth}
         taken={taken}
       />
     </div>

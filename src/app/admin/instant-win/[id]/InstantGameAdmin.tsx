@@ -35,6 +35,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const [image, setImage] = useState('')
   const [endsAt, setEndsAt] = useState('')
   const [pickNumbers, setPickNumbers] = useState(false)
+  const [showWorth, setShowWorth] = useState(true)
   const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
@@ -59,9 +60,10 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
       const res = await fetch(base)
       if (res.status === 404) { setNotFound(true); return }
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; pickNumbers?: boolean; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; winners?: PrizeWin[]; orders?: Order[] }
+      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; pickNumbers?: boolean; showWorth?: boolean; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; winners?: PrizeWin[]; orders?: Order[] }
       setBackHref(d.game.kind === 'instant' ? '/admin/instant' : '/admin/instant-win')
       setPickNumbers(!!d.game.pickNumbers)
+      setShowWorth(d.game.showWorth !== false)
       setName(d.game.name); setSlug(d.game.slug); setPublished(d.game.published); setPriceP(d.game.priceP); setPoolSize(d.game.poolSize); setImage(d.game.image || ''); setWinners(d.game.winners || {})
       setEndsAt(d.game.endsAt ? toLocalInput(d.game.endsAt) : plusDaysLocal(30))
       setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setPrizeWins(d.winners || []); setOrders(d.orders || [])
@@ -95,7 +97,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, pickNumbers, winners }) })
+      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, pickNumbers, showWorth, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -236,6 +238,13 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
             <span>
               <span style={{ fontWeight: 700, fontSize: '.9rem' }}>Let players pick their own numbers</span>
               <span style={{ display: 'block', fontSize: '.78rem', color: 'var(--ink3)', marginTop: '.15rem' }}>Show the whole grid of ticket numbers and let players choose which box(es) to buy, instead of being auto-assigned.</span>
+            </span>
+          </label>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '.6rem', cursor: 'pointer', marginTop: '1rem' }}>
+            <input type="checkbox" checked={showWorth} onChange={e => setShowWorth(e.target.checked)} style={{ width: '18px', height: '18px', marginTop: '2px', accentColor: 'var(--gold,#2563eb)', flexShrink: 0 }} />
+            <span>
+              <span style={{ fontWeight: 700, fontSize: '.9rem' }}>Show the worth of prizes</span>
+              <span style={{ display: 'block', fontSize: '.78rem', color: 'var(--ink3)', marginTop: '.15rem' }}>Display each item’s value (“Worth £X”) in the prize list on the game page. Turn off to hide the values.</span>
             </span>
           </label>
         </div>

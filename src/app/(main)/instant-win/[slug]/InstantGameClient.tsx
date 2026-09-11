@@ -9,7 +9,7 @@ const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `
 
 export default function InstantGameClient({
   gameId, title, price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable, loginFrom,
-  pickNumbers = false, taken = [],
+  pickNumbers = false, showWorth = true, taken = [],
 }: {
   gameId: string
   title: string
@@ -23,6 +23,7 @@ export default function InstantGameClient({
   creditAvailable: number
   loginFrom: string
   pickNumbers?: boolean
+  showWorth?: boolean
   taken?: number[]
 }) {
   const onCheckout = async (qty: number, useCredit: boolean) => {
@@ -124,7 +125,7 @@ export default function InstantGameClient({
                 </div>
                 <div>
                   <div style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.1rem', lineHeight: 1.15 }}>{p.type === 'credit' ? `${money(p.amount)} site credit` : (p.name || 'Prize')}</div>
-                  <div style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.15rem' }}>{p.type === 'credit' ? 'Added to your account' : (p.amount > 0 ? `Worth ${money(p.amount)}` : 'Instant prize')}</div>
+                  <div style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.15rem' }}>{p.type === 'credit' ? 'Added to your account' : (showWorth && p.amount > 0 ? `Worth ${money(p.amount)}` : 'Instant prize')}</div>
                 </div>
               </div>
             ))}

@@ -16,7 +16,7 @@ export type GameKind = 'ticket' | 'instant'
 export interface Game {
   id: string; slug: string; name: string; kind: GameKind; published: boolean
   priceP: number; poolSize: number; image: string; endsAt: string | null
-  pickNumbers: boolean; winners: Record<number, WinnerDef>; createdAt: string
+  pickNumbers: boolean; showWorth: boolean; winners: Record<number, WinnerDef>; createdAt: string
 }
 export interface AggPrize { type: 'credit' | 'custom'; amount: number; name?: string; image?: string; total: number }
 export interface TicketWin { win: boolean; type?: 'credit' | 'custom'; amount?: number; name?: string; image?: string; ticketNumber?: number }
@@ -47,6 +47,7 @@ async function ensure() {
     )`)
     try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'ticket'`) } catch { /* exists */ }
     try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "pickNumbers" INTEGER NOT NULL DEFAULT 0`) } catch { /* exists */ }
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "InstantGame" ADD COLUMN "showWorth" INTEGER NOT NULL DEFAULT 1`) } catch { /* exists */ }
     await prisma.$executeRawUnsafe(`CREATE TABLE IF NOT EXISTS "TicketGamePlay" (
       "id" TEXT PRIMARY KEY,
       "userId" TEXT NOT NULL,
@@ -121,11 +122,11 @@ export function aggregatePrizes(winners: Record<number, WinnerDef>): AggPrize[] 
   return [...map.values()].sort((a, b) => b.amount - a.amount)
 }
 
-function rowToGame(r: { id: string; slug: string; name: string; kind: string | null; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; pickNumbers: number | null; prizes: string; createdAt: string }): Game {
-  return { id: r.id, slug: r.slug, name: r.name, kind: r.kind === 'instant' ? 'instant' : 'ticket', published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, pickNumbers: Number(r.pickNumbers) > 0, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
+function rowToGame(r: { id: string; slug: string; name: string; kind: string | null; published: number; priceP: number; poolSize: number; image: string | null; endsAt: string | null; pickNumbers: number | null; showWorth: number | null; prizes: string; createdAt: string }): Game {
+  return { id: r.id, slug: r.slug, name: r.name, kind: r.kind === 'instant' ? 'instant' : 'ticket', published: Number(r.published) > 0, priceP: Number(r.priceP), poolSize: Number(r.poolSize), image: r.image || '', endsAt: r.endsAt || null, pickNumbers: Number(r.pickNumbers) > 0, showWorth: r.showWorth == null ? true : Number(r.showWorth) > 0, winners: parseWinners(r.prizes), createdAt: String(r.createdAt) }
 }
 type GameRow = Parameters<typeof rowToGame>[0]
-const SELECT_COLS = `"id","slug","name","kind","published","priceP","poolSize","image","endsAt","pickNumbers","prizes","createdAt"`
+const SELECT_COLS = `"id","slug","name","kind","published","priceP","poolSize","image","endsAt","pickNumbers","showWorth","prizes","createdAt"`
 
 // ── CRUD ─────────────────────────────────────────────────────────────────
 export async function listGames(kind?: GameKind): Promise<Game[]> {
@@ -164,21 +165,22 @@ export async function createGame(name: string, kind: GameKind = 'ticket'): Promi
   return (await getGameById(id))!
 }
 
-export async function updateGame(id: string, d: { name?: string; priceP: number; poolSize: number; image?: string; endsAt?: string | null; pickNumbers?: boolean; winners: Record<number, WinnerDef> }): Promise<void> {
+export async function updateGame(id: string, d: { name?: string; priceP: number; poolSize: number; image?: string; endsAt?: string | null; pickNumbers?: boolean; showWorth?: boolean; winners: Record<number, WinnerDef> }): Promise<void> {
   await ensure()
   const priceP = Math.max(1, Math.round(d.priceP))
   const poolSize = Math.max(1, Math.round(d.poolSize))
   const image = typeof d.image === 'string' ? d.image : ''
   const endsAt = d.endsAt ? new Date(d.endsAt).toISOString() : null
   const pick = d.pickNumbers ? 1 : 0
+  const worth = d.showWorth === false ? 0 : 1
   const name = (d.name || '').trim()
   const clean: Record<number, WinnerDef> = {}
   for (const [k, v] of Object.entries(d.winners || {})) { const n = parseInt(k, 10); const w = cleanWinner(v); if (Number.isFinite(n) && n >= 1 && n <= poolSize && w) clean[n] = w }
   const winners = JSON.stringify(clean)
   if (name) {
-    await prisma.$executeRaw`UPDATE "InstantGame" SET "name" = ${name}, "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "prizes" = ${winners} WHERE "id" = ${id}`
+    await prisma.$executeRaw`UPDATE "InstantGame" SET "name" = ${name}, "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "showWorth" = ${worth}, "prizes" = ${winners} WHERE "id" = ${id}`
   } else {
-    await prisma.$executeRaw`UPDATE "InstantGame" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "prizes" = ${winners} WHERE "id" = ${id}`
+    await prisma.$executeRaw`UPDATE "InstantGame" SET "priceP" = ${priceP}, "poolSize" = ${poolSize}, "image" = ${image}, "endsAt" = ${endsAt}, "pickNumbers" = ${pick}, "showWorth" = ${worth}, "prizes" = ${winners} WHERE "id" = ${id}`
   }
 }
 
