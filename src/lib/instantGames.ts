@@ -363,6 +363,29 @@ export async function listGameEntrants(gameId: string): Promise<{ userId: string
   return rows.map(r => ({ userId: r.userId, name: byUser.get(r.userId)?.name || '(no name)', email: byUser.get(r.userId)?.email || '', entries: Number(r.entries), first: new Date(r.first as string) }))
 }
 
+/** Every ticket-game purchase, aggregated per user + game, for the admin Orders page. */
+export async function listGameOrders(): Promise<{ id: string; userId: string; gameId: string; title: string; kind: GameKind; name: string; email: string; entries: number; value: number; first: Date }[]> {
+  await ensure()
+  const rows = await prisma.$queryRaw<{ gameId: string; userId: string; entries: number | bigint; first: string | Date }[]>`
+    SELECT "gameId", "userId", COUNT(*) AS entries, MIN("createdAt") AS first FROM "TicketGamePlay" WHERE "gameId" IS NOT NULL GROUP BY "gameId", "userId"`
+  if (!rows.length) return []
+  const games = await listGames()
+  const gById = new Map(games.map(g => [g.id, g]))
+  const users = await prisma.user.findMany({ where: { id: { in: [...new Set(rows.map(r => r.userId))] } }, select: { id: true, name: true, email: true } })
+  const uById = new Map(users.map(u => [u.id, u]))
+  return rows.map(r => {
+    const g = gById.get(r.gameId)
+    const entries = Number(r.entries)
+    return {
+      id: `ig-${r.gameId}:${r.userId}`, userId: r.userId, gameId: r.gameId,
+      title: g?.name || 'Instant Win', kind: g?.kind || 'ticket',
+      name: uById.get(r.userId)?.name || '(no name)', email: uById.get(r.userId)?.email || '',
+      entries, value: ((g?.priceP || 0) / 100) * entries,
+      first: new Date(r.first as string),
+    }
+  })
+}
+
 // ── public tiles ───────────────────────────────────────────────────────────
 export interface GameCard { id: string; slug: string; title: string; subtitle: null; prizeValue: number; ticketPrice: number; maxTickets: number; ticketsSold: number; images: string; drawDate: string | null; status: string; featured: boolean; closed: boolean; upcoming: boolean; href: string }
 export async function getPublishedGameCards(): Promise<GameCard[]> {

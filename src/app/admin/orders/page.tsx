@@ -1,14 +1,15 @@
 import { prisma } from '@/lib/prisma'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { listGameOrders } from '@/lib/instantGames'
 
 interface OrderRow {
   id: string; name: string; email: string; title: string
-  quantity: number; value: number; ref: string; date: Date; kind: 'ticket' | 'spin'
+  quantity: number; value: number; ref: string; date: Date; kind: 'ticket' | 'spin' | 'instant'
 }
 
 async function getOrders(): Promise<OrderRow[]> {
   try {
-    const [tickets, spins] = await Promise.all([
+    const [tickets, spins, gameOrders] = await Promise.all([
       prisma.ticket.findMany({
         orderBy: { purchasedAt: 'desc' },
         include: { user: { select: { name: true, email: true } }, competition: { select: { title: true, ticketPrice: true } } },
@@ -20,6 +21,7 @@ async function getOrders(): Promise<OrderRow[]> {
           competition: { select: { title: true, ticketPrice: true } },
         },
       }),
+      listGameOrders().catch(() => []),
     ])
 
     const ticketRows: OrderRow[] = tickets.map(t => ({
@@ -46,7 +48,12 @@ async function getOrders(): Promise<OrderRow[]> {
       }
     })
 
-    return [...ticketRows, ...Array.from(spinMap.values())].sort((a, b) => b.date.getTime() - a.date.getTime())
+    const gameRows: OrderRow[] = gameOrders.map(o => ({
+      id: o.id, name: o.name, email: o.email, title: o.title,
+      quantity: o.entries, value: o.value, ref: 'Instant win', date: o.first, kind: 'instant',
+    }))
+
+    return [...ticketRows, ...Array.from(spinMap.values()), ...gameRows].sort((a, b) => b.date.getTime() - a.date.getTime())
   } catch {
     return []
   }
@@ -64,7 +71,7 @@ export default async function AdminOrdersPage() {
             Orders
           </h1>
           <p style={{ color: 'var(--ink3)', fontSize: '0.875rem', marginTop: '0.25rem' }}>
-            {orders.length} orders · {formatCurrency(totalRevenue)} total revenue (incl. instant spins)
+            {orders.length} orders · {formatCurrency(totalRevenue)} total revenue (incl. instant spins & instant wins)
           </p>
         </div>
       </div>
@@ -91,6 +98,7 @@ export default async function AdminOrdersPage() {
                   <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink2)' }}>
                     {order.title}
                     {order.kind === 'spin' && <span style={{ marginLeft: '.5rem', fontSize: '.6rem', letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '999px', padding: '1px 6px' }}>Spins</span>}
+                    {order.kind === 'instant' && <span style={{ marginLeft: '.5rem', fontSize: '.6rem', letterSpacing: '.06em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid var(--gold)', borderRadius: '999px', padding: '1px 6px' }}>Instant win</span>}
                   </td>
                   <td style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', fontSize: '0.875rem', color: 'var(--ink)', fontWeight: 500 }}>
                     {order.quantity}
