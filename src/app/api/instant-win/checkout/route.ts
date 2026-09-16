@@ -7,6 +7,7 @@ import { sendOrderConfirmation } from '@/lib/orders'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { createPaymentJob, cashflowsConfigured } from '@/lib/cashflows'
 import { createOrder, setOrderJobRef } from '@/lib/cashflowsOrders'
+import { resolveBundleFree } from '@/lib/offers'
 
 export const dynamic = 'force-dynamic'
 const MAX_QTY = 25
@@ -42,7 +43,13 @@ export async function POST(request: NextRequest) {
     if (remaining <= 0) return NextResponse.json({ error: 'All tickets have been sold.' }, { status: 400 })
     if (qty > remaining) return NextResponse.json({ error: `Only ${remaining} ticket${remaining === 1 ? '' : 's'} left.` }, { status: 400 })
 
-    const lineId = game.pickNumbers ? igItemNumbers(game.id, chosen) : igItem(game.id)
+    // Bundle offer: extra free entries on the same game (charged for paid qty only).
+    // For pick-your-own games the free entries are auto-assigned available numbers.
+    const free = Math.max(0, Math.min(await resolveBundleFree('game', game.id, qty), remaining - qty))
+    const orderItems: { id: string; qty: number }[] = game.pickNumbers
+      ? [{ id: igItemNumbers(game.id, chosen), qty: chosen.length }, ...(free > 0 ? [{ id: igItem(game.id), qty: free }] : [])]
+      : [{ id: igItem(game.id), qty: qty + free }]
+
     const userId = session.userId
     const orderTotal = Math.round((game.priceP / 100) * qty * 100) / 100
     const buyer = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true, siteCredit: true } })
@@ -61,9 +68,9 @@ export async function POST(request: NextRequest) {
         if (creditUsed > 0 && applied.toPay <= 0) {
           const deduct = Math.min(creditUsed, balance)
           await prisma.user.update({ where: { id: userId }, data: { siteCredit: { decrement: deduct } } })
-          if (game.pickNumbers) await createPlaysForNumbers(game.id, userId, chosen); else await createPlays(game.id, userId, qty)
-          await prisma.notification.create({ data: { userId, title: `£${deduct.toFixed(2)} site credit used`, body: `Your site credit covered ${qty} ${game.name} ticket${qty === 1 ? '' : 's'}.`, icon: 'info' } }).catch(() => {})
-          after(() => sendOrderConfirmation(userId, [{ id: lineId, qty }], 0))
+          if (game.pickNumbers) { await createPlaysForNumbers(game.id, userId, chosen); if (free > 0) await createPlays(game.id, userId, free) } else { await createPlays(game.id, userId, qty + free) }
+          await prisma.notification.create({ data: { userId, title: `£${deduct.toFixed(2)} site credit used`, body: `Your site credit covered ${qty} ${game.name} ticket${qty === 1 ? '' : 's'}${free > 0 ? ` + ${free} free` : ''}.`, icon: 'info' } }).catch(() => {})
+          after(() => sendOrderConfirmation(userId, orderItems, 0))
           return NextResponse.json({ url: `${origin}/instant-win/${game.slug}?paid=1&free=1` })
         }
       }
@@ -74,7 +81,7 @@ export async function POST(request: NextRequest) {
     const toPay = applyCredit(orderTotal, creditUsed).toPay
     const amount = toPay.toFixed(2)
     const orderNumber = `IVW-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-    await createOrder({ orderNumber, userId, items: [{ id: lineId, qty }], creditUsed, amount })
+    await createOrder({ orderNumber, userId, items: orderItems, creditUsed, amount })
 
     const { actionUrl, paymentJobReference } = await createPaymentJob({
       amount, currency: 'GBP', orderNumber, email: buyerEmail || undefined, firstName: buyerFirst, lastName: buyerLast || undefined,

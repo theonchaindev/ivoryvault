@@ -9,6 +9,8 @@ import { effectiveNow, isCompHidden } from '@/lib/outage'
 import { ENTER_WINDOW_MS } from '@/lib/compState'
 import CompetitionCard from '@/components/CompetitionCard'
 import { getPublishedGameCards } from '@/lib/instantGames'
+import { getActivePercentOffer } from '@/lib/offers'
+import OfferPopup from '@/components/OfferPopup'
 import { getListingOrder, sortByListingOrder } from '@/lib/listing'
 import HomeHero from '@/components/HomeHero'
 import HowItWorks from '@/components/HowItWorks'
@@ -74,7 +76,7 @@ export default async function Home() {
     subtitle: c.subtitle ?? null,
     drawDate: c.drawDate?.toISOString() ?? null,
   })
-  const [gameCards, order] = await Promise.all([getPublishedGameCards(), getListingOrder()])
+  const [gameCards, order, percentOffer] = await Promise.all([getPublishedGameCards(), getListingOrder(), getActivePercentOffer().catch(() => null)])
   // Everything (comps + ticket/instant games) in one list: saved manual order
   // first, then earliest finishing first.
   const withGames = sortByListingOrder([...gameCards, ...comps.map(serialize)], order, effectiveNow())
@@ -84,6 +86,7 @@ export default async function Home() {
   return (
     <>
       <SiteAlert />
+      {percentOffer && <OfferPopup offer={{ id: percentOffer.id, percentOff: percentOffer.percentOff, scope: percentOffer.scope, targetTitle: percentOffer.targetTitle }} />}
       <Navbar />
 
       {/* Crystal Comps-style carousel hero */}

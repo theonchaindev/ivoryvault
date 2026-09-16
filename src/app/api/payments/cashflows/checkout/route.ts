@@ -9,6 +9,7 @@ import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { createPaymentJob, cashflowsConfigured } from '@/lib/cashflows'
 import { createOrder } from '@/lib/cashflowsOrders'
 import { REFERRAL_RATE, validateReferral, setReferredBy, rewardReferrer } from '@/lib/referrals'
+import { resolveBundleFree } from '@/lib/offers'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,7 +75,10 @@ export async function POST(request: NextRequest) {
       if (line.quantity > remaining) {
         return NextResponse.json({ error: `Only ${remaining} tickets left for ${comp.title}` }, { status: 400 })
       }
-      metaItems.push({ id: comp.id, qty: line.quantity })
+      // Bundle offer: grant free entries on the same comp (charged for paid qty only).
+      const freeRaw = await resolveBundleFree('raffle', comp.id, line.quantity)
+      const free = Math.max(0, Math.min(freeRaw, remaining - line.quantity))
+      metaItems.push({ id: comp.id, qty: line.quantity + free })
       orderTotal += comp.ticketPrice * line.quantity
     }
 
