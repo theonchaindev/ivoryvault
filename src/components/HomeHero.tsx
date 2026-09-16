@@ -41,7 +41,6 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
   if (!comps.length) return null
 
   const c = comps[idx]
-  const pct = Math.min(100, Math.round((c.ticketsSold / c.maxTickets) * 100))
 
   const enterX = direction.current === 1 ? 60 : -60
   const exitX = direction.current === 1 ? -60 : 60
@@ -90,18 +89,7 @@ export default function HomeHero({ comps }: { comps: HeroComp[] }) {
                 <div className="hh__card-body">
                   <h3 className="hh__card-title">{c.title}</h3>
 
-                  <div className="hh__card-sold-row">
-                    <span>{c.ticketsSold.toLocaleString()} sold</span>
-                    <span className="hh__card-remaining">{(c.maxTickets - c.ticketsSold).toLocaleString()} left</span>
-                  </div>
-                  <div className="hh__card-track">
-                    <motion.div
-                      className="hh__card-fill"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${pct}%` }}
-                      transition={{ duration: 0.9, ease, delay: 0.1 }}
-                    />
-                  </div>
+                  {/* Tickets-sold progress hidden on cards — shown on the competition page. */}
 
                   <div className="hh__card-foot">
                     <span className="hh__card-price">{formatCurrency(c.ticketPrice)}<span className="hh__card-per"> / entry</span></span>

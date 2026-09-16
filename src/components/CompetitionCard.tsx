@@ -22,7 +22,6 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
   const imgs = (() => { try { return JSON.parse(c.images) as string[] } catch { return [] } })()
   const img = imgs[0]
   const pct = Math.min(100, Math.round((c.ticketsSold / c.maxTickets) * 100))
-  const remaining = c.maxTickets - c.ticketsSold
   const hot = pct >= 80
   const comingSoon = c.status === 'coming_soon'
   const isAdmin = useIsAdmin()
@@ -127,19 +126,7 @@ export default function CompetitionCard({ competition: c, index = 0 }: { competi
         <div className="cc__body">
           <h3 className="cc__title">{c.title}</h3>
 
-          <div className="cc__sold-row">
-            <span>{c.ticketsSold.toLocaleString()} sold</span>
-            <span className="cc__sold-remaining">{remaining.toLocaleString()} left</span>
-          </div>
-
-          <div className="cc__track">
-            <motion.div
-              className={`cc__fill${hot ? ' cc__fill--hot' : ''}`}
-              initial={{ width: 0 }}
-              animate={inView ? { width: `${pct}%` } : { width: 0 }}
-              transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: index * 0.06 + 0.2 }}
-            />
-          </div>
+          {/* Tickets-sold progress hidden on cards — shown on the competition page. */}
 
           <div className="cc__foot">
             <div className="cc__price-wrap">
