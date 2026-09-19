@@ -8,6 +8,7 @@ import FreePostalEntryModal from './FreePostalEntryModal'
 import { formatDate } from '@/lib/utils'
 import { PAYMENTS_PAUSED } from '@/lib/outage'
 import { useIsAdmin } from '@/lib/useIsAdmin'
+import BundlePopup from '@/components/BundlePopup'
 
 interface Competition {
   id: string; slug: string; title: string; subtitle?: string | null
@@ -42,6 +43,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
 
   return (
     <div className={"cdp"}>
+      {bundle && <BundlePopup buyQty={bundle.buyQty} freeQty={bundle.freeQty} storageKey={competition.id} />}
       <div className="cdp__inner">
 
         {/* ── LEFT: image column ── */}

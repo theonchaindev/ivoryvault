@@ -24,6 +24,7 @@ export default function BasketPage() {
   const [refCode, setRefCode] = useState('')      // applied code
   const [refErr, setRefErr] = useState('')
   const [refBusy, setRefBusy] = useState(false)
+  const [bundles, setBundles] = useState<Record<string, { buyQty: number; freeQty: number }>>({})
 
   useEffect(() => {
     fetch('/api/auth/me')
@@ -31,6 +32,23 @@ export default function BasketPage() {
       .then(d => { if (d?.user) { setLoggedIn(true); setCredit(d.user.siteCredit || 0); setIsAdmin(d.user.role === 'admin') } else setLoggedIn(false) })
       .catch(() => setLoggedIn(false))
   }, [])
+
+  // Fetch any active bundle offers for the comps in the basket, to show free entries.
+  const itemIds = items.map(i => i.competitionId).join(',')
+  useEffect(() => {
+    const ids = itemIds ? itemIds.split(',') : []
+    if (!ids.length) { setBundles({}); return }
+    fetch('/api/offers/bundles', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids }) })
+      .then(r => r.ok ? r.json() : { bundles: {} })
+      .then(d => setBundles(d.bundles || {}))
+      .catch(() => setBundles({}))
+  }, [itemIds])
+
+  const freeFor = (compId: string, qty: number) => {
+    const b = bundles[compId]
+    return b && b.buyQty > 0 && qty >= b.buyQty ? b.freeQty : 0
+  }
+  const totalFree = items.reduce((s, i) => s + freeFor(i.competitionId, i.quantity), 0)
 
   const referralDiscount = refCode ? Math.round(total * 20) / 100 : 0
   const discountedTotal = Math.max(0, Math.round((total - referralDiscount) * 100) / 100)
@@ -134,6 +152,18 @@ export default function BasketPage() {
                       <Link href={`/competitions/${item.slug}`} className="bk__item-title">{item.title}</Link>
                       <p className="bk__item-price">{formatCurrency(item.ticketPrice)} <span>per ticket</span></p>
 
+                      {bundles[item.competitionId] && (
+                        freeFor(item.competitionId, item.quantity) > 0 ? (
+                          <p style={{ display: 'inline-flex', alignItems: 'center', gap: '.35rem', background: 'linear-gradient(90deg,#fbf3dc,#f6e9c2)', border: '1px solid #e8d29a', color: '#7a5a14', borderRadius: '8px', padding: '.3rem .55rem', fontSize: '.72rem', fontWeight: 700, margin: '.1rem 0 .4rem' }}>
+                            🎁 {item.quantity} paid + {freeFor(item.competitionId, item.quantity)} free = {item.quantity + freeFor(item.competitionId, item.quantity)} entries
+                          </p>
+                        ) : (
+                          <p style={{ fontSize: '.7rem', color: 'var(--ink3)', margin: '.1rem 0 .4rem' }}>
+                            Add {bundles[item.competitionId].buyQty - item.quantity} more to get {bundles[item.competitionId].freeQty} free
+                          </p>
+                        )
+                      )}
+
                       <div className="bk__item-controls">
                         <div className="bk__stepper">
                           <button onClick={() => updateQty(item.competitionId, item.quantity - 1)} disabled={item.quantity <= 1} aria-label="Decrease">−</button>
@@ -175,6 +205,18 @@ export default function BasketPage() {
                 <span>Tickets</span>
                 <span>{count}</span>
               </div>
+              {totalFree > 0 && (
+                <div className="bk__summary-row" style={{ color: '#7a5a14', fontWeight: 700 }}>
+                  <span>🎁 Free entries</span>
+                  <span>+{totalFree}</span>
+                </div>
+              )}
+              {totalFree > 0 && (
+                <div className="bk__summary-row" style={{ fontWeight: 700 }}>
+                  <span>Total entries</span>
+                  <span>{count + totalFree}</span>
+                </div>
+              )}
               <div className="bk__summary-row">
                 <span>Subtotal</span>
                 <span>{formatCurrency(total)}</span>
