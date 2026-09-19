@@ -38,7 +38,7 @@ export default function BundlePopup({ buyQty, freeQty, storageKey }: { buyQty: n
           <div className="ivbp__hero ivbp__gold"><span className="ivbp__n ivbp__num">{freeQty}</span><span className="ivbp__free">FREE</span></div>
           <div className="ivbp__row">
             <span className="ivbp__ln" />
-            <span className="ivbp__qual ivbp__gold">ENTRIES</span>
+            <span className="ivbp__qual ivbp__gold">{freeQty === 1 ? 'ENTRY' : 'ENTRIES'}</span>
             <span className="ivbp__ln ivbp__ln--r" />
           </div>
           <button className="ivbp__cta" onClick={close}>Shop This Competition</button>
