@@ -21,7 +21,7 @@ export default function OfferPopup({ offer }: { offer: OfferPopupData | null }) 
     let dismissed = false
     try { dismissed = sessionStorage.getItem(`ivv-offer-${offer.id}`) === '1' } catch { /* ignore */ }
     if (!dismissed) {
-      const t = setTimeout(() => setOpen(true), 700)
+      const t = setTimeout(() => setOpen(true), 1800)
       return () => clearTimeout(t)
     }
   }, [offer])
@@ -40,7 +40,7 @@ export default function OfferPopup({ offer }: { offer: OfferPopupData | null }) 
           <button className="ivop__x" onClick={close} aria-label="Close">✕</button>
           <div className="ivop__word ivop__gold">IVORY VAULT</div>
           <div className="ivop__got ivop__gold">YOU’VE GOT</div>
-          <div className="ivop__pct ivop__gold">{offer.percentOff}%<span className="ivop__spark" /></div>
+          <div className="ivop__pct ivop__gold">{offer.percentOff}%</div>
           <div className="ivop__offrow">
             <span className="ivop__ln" />
             <span className="ivop__off ivop__gold">OFF</span>
@@ -77,11 +77,6 @@ export default function OfferPopup({ offer }: { offer: OfferPopupData | null }) 
         .ivop__got{ font-family:var(--font-cormorant,serif); font-weight:700; font-size:clamp(2.2rem,9vw,2.9rem); line-height:1; }
         .ivop__pct{ position:relative; display:inline-block; font-family:var(--font-cormorant,serif); font-weight:700;
           font-size:clamp(5rem,22vw,7.2rem); line-height:.92; margin:.3rem 0 .1rem; }
-        .ivop__spark{ position:absolute; top:6%; right:-6%; width:42px; height:42px; }
-        .ivop__spark::before,.ivop__spark::after{ content:''; position:absolute; inset:0; margin:auto; background:#fff8df;
-          box-shadow:0 0 14px 4px rgba(247,224,140,.85); }
-        .ivop__spark::before{ width:100%; height:7%; border-radius:50%; }
-        .ivop__spark::after{ width:7%; height:100%; border-radius:50%; }
         .ivop__offrow{ display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:.1rem; }
         .ivop__ln{ height:1.5px; width:52px; background:linear-gradient(90deg,transparent,#c9a24b); }
         .ivop__ln--r{ background:linear-gradient(90deg,#c9a24b,transparent); }
