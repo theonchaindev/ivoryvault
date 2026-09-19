@@ -122,6 +122,22 @@ export async function resolveBundleFree(targetType: TargetType, targetId: string
   return chosen ? chosen.freeQty : 0
 }
 
+/**
+ * The active bundle offer that applies to this target (comp-specific wins over
+ * site-wide), for showing "buy X get Y free" on the competition page. Returns
+ * the offer's buy/free numbers, or null if none is live.
+ */
+export async function getBundleFor(targetType: TargetType, targetId: string): Promise<{ buyQty: number; freeQty: number } | null> {
+  await ensure()
+  if (!targetId) return null
+  const rows = await prisma.$queryRawUnsafe<Row[]>(`SELECT ${COLS} FROM "Offer" WHERE "kind" = 'bundle' AND "active" = 1`)
+  const offers = rows.map(toOffer).filter(o => o.buyQty > 0 && o.freeQty > 0)
+  const comp = offers.find(o => o.scope === 'comp' && o.targetType === targetType && o.targetId === targetId)
+  const site = offers.find(o => o.scope === 'site')
+  const chosen = comp || site
+  return chosen ? { buyQty: chosen.buyQty, freeQty: chosen.freeQty } : null
+}
+
 /** The active percent offer to surface on the homepage popup (most recent). */
 export async function getActivePercentOffer(): Promise<Offer | null> {
   await ensure()

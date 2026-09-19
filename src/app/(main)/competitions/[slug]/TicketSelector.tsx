@@ -16,12 +16,13 @@ interface Props {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   hideTrigger?: boolean
+  bundle?: { buyQty: number; freeQty: number } | null
 }
 
 const spring = { type: 'spring', stiffness: 400, damping: 28 } as const
 const ease = [0.22, 1, 0.36, 1] as const
 
-export default function TicketSelector({ competition, open: controlledOpen, onOpenChange, hideTrigger = false }: Props) {
+export default function TicketSelector({ competition, open: controlledOpen, onOpenChange, hideTrigger = false, bundle = null }: Props) {
   const router = useRouter()
   const isAdmin = useIsAdmin()
   const { addItem } = useCart()
@@ -34,6 +35,9 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
   const remaining = competition.maxTickets - competition.ticketsSold
   const maxSelect = Math.max(1, remaining) // capped only by tickets remaining
   const total = competition.ticketPrice * quantity
+  // Bundle offer: free entries kick in once qty reaches the buy threshold (one bundle per order).
+  const freeEntries = bundle && quantity >= bundle.buyQty ? bundle.freeQty : 0
+  const totalEntries = quantity + freeEntries
 
   const setQty = (n: number) => setQuantity(Math.min(maxSelect, Math.max(1, n)))
 
@@ -128,6 +132,14 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
         <span className="ts__price-val">{formatCurrency(competition.ticketPrice)}</span>
       </div>
 
+      {/* Bundle offer badge */}
+      {bundle && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', background: 'linear-gradient(90deg,#fbf3dc,#f6e9c2)', border: '1px solid #e8d29a', color: '#7a5a14', borderRadius: '10px', padding: '.6rem .8rem', fontSize: '.8rem', fontWeight: 700, marginBottom: '.9rem' }}>
+          <span>🎁</span>
+          <span>Buy {bundle.buyQty}, get {bundle.freeQty} free — free entries added at checkout</span>
+        </div>
+      )}
+
       {/* Quick pick buttons */}
       <div className="ts__quick-section">
         <p className="ts__section-label">Quick Pick</p>
@@ -202,6 +214,19 @@ export default function TicketSelector({ competition, open: controlledOpen, onOp
           </motion.span>
         </AnimatePresence>
       </div>
+
+      {/* Bundle entries reflection */}
+      {bundle && (
+        freeEntries > 0 ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', background: 'linear-gradient(90deg,#fbf3dc,#f6e9c2)', border: '1px solid #e8d29a', color: '#7a5a14', borderRadius: '10px', padding: '.55rem .8rem', fontSize: '.78rem', fontWeight: 700, marginBottom: '.7rem' }}>
+            🎁 Bundle unlocked — you’ll receive {totalEntries} entries ({quantity} paid + {freeEntries} free)
+          </div>
+        ) : (
+          <p style={{ fontSize: '.72rem', color: 'var(--ink3)', margin: '0 0 .7rem' }}>
+            Add {bundle.buyQty - quantity} more to unlock {bundle.freeQty} free {bundle.freeQty === 1 ? 'entry' : 'entries'}.
+          </p>
+        )
+      )}
 
       {PAYMENTS_PAUSED && isAdmin && (
         <p style={{ background: '#f3e8ff', color: '#6b21a8', fontSize: '.7rem', fontWeight: 600, padding: '.5rem .7rem', borderRadius: '8px', marginBottom: '.6rem', textAlign: 'center' }}>

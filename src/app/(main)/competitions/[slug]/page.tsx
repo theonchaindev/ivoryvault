@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth'
 import { isCompClosed, isCompUpcoming } from '@/lib/compState'
 import { effectiveNow, isCompHidden } from '@/lib/outage'
 import CompetitionDetail from './CompetitionDetail'
+import { getBundleFor } from '@/lib/offers'
 
 export const dynamic = 'force-dynamic'
 
@@ -85,12 +86,15 @@ export default async function CompetitionPage({ params }: PageProps) {
     },
   }
 
+  const bundle = await getBundleFor('raffle', competition.id).catch(() => null)
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }} />
       <CompetitionDetail
         isInstant={isInstant}
         instantSpins={instantSpins}
+        bundle={bundle}
         competition={{
           id: competition.id,
           slug: competition.slug,

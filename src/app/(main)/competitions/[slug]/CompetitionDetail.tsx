@@ -18,7 +18,7 @@ interface Competition {
 
 const ease = [0.22, 1, 0.36, 1] as const
 
-export default function CompetitionDetail({ competition, isInstant = false, instantSpins = 0 }: { competition: Competition; isInstant?: boolean; instantSpins?: number }) {
+export default function CompetitionDetail({ competition, isInstant = false, instantSpins = 0, bundle = null }: { competition: Competition; isInstant?: boolean; instantSpins?: number; bundle?: { buyQty: number; freeQty: number } | null }) {
   const [activeImg, setActiveImg] = useState(0)
   const remaining = competition.maxTickets - competition.ticketsSold
   const pct = Math.round((competition.ticketsSold / competition.maxTickets) * 100)
@@ -161,6 +161,7 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
             open={sheetOpen}
             onOpenChange={setSheetOpen}
             hideTrigger={topEnterVisible}
+            bundle={bundle}
             competition={{
               id: competition.id,
               slug: competition.slug,
