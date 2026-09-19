@@ -18,6 +18,12 @@ export const PAYMENTS_PAUSED = false
 export const HIDDEN_COMPETITION_SLUGS = ['instant-cash-spin']
 export const isCompHidden = (slug: string) => HIDDEN_COMPETITION_SLUGS.includes(slug)
 
+// "Unlisted" competitions: hidden from the public listings (homepage + all
+// competitions page) but the direct URL still works normally. Use for test /
+// demo comps you want to share by link only. Keep the comp's status Active.
+export const UNLISTED_COMPETITION_SLUGS = ['test-offers']
+export const isCompUnlisted = (slug: string) => UNLISTED_COMPETITION_SLUGS.includes(slug)
+
 // The instant the clocks were frozen (used as "now" everywhere while paused).
 export const PAUSED_AT = '2026-08-16T09:20:00Z'
 

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import SiteAlert from '@/components/SiteAlert'
-import { effectiveNow, isCompHidden } from '@/lib/outage'
+import { effectiveNow, isCompHidden, isCompUnlisted } from '@/lib/outage'
 import { ENTER_WINDOW_MS } from '@/lib/compState'
 import CompetitionCard from '@/components/CompetitionCard'
 import { getPublishedGameCards } from '@/lib/instantGames'
@@ -46,7 +46,7 @@ async function getData() {
         },
       }),
     ])
-    return { comps: comps.filter(c => !isCompHidden(c.slug)), winners }
+    return { comps: comps.filter(c => !isCompHidden(c.slug) && !isCompUnlisted(c.slug)), winners }
   } catch {
     return { comps: [], winners: [] }
   }

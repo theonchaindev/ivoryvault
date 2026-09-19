@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { prisma } from '@/lib/prisma'
 import { CLOSED_WINDOW_MS, isCompClosed, isCompUpcoming } from '@/lib/compState'
-import { effectiveNow, isCompHidden } from '@/lib/outage'
+import { effectiveNow, isCompHidden, isCompUnlisted } from '@/lib/outage'
 import CompetitionsClient from './CompetitionsClient'
 import { getPublishedGameCards } from '@/lib/instantGames'
 import { getListingOrder, sortByListingOrder } from '@/lib/listing'
@@ -24,7 +24,7 @@ async function getCompetitions() {
       },
       orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }, { createdAt: 'desc' }],
     })
-    return rows.filter(c => !isCompHidden(c.slug))
+    return rows.filter(c => !isCompHidden(c.slug) && !isCompUnlisted(c.slug))
   } catch { return [] }
 }
 
