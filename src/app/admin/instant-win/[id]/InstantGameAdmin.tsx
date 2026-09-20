@@ -36,6 +36,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const [endsAt, setEndsAt] = useState('')
   const [pickNumbers, setPickNumbers] = useState(false)
   const [showWorth, setShowWorth] = useState(true)
+  const [description, setDescription] = useState('')
   const [winners, setWinners] = useState<Winners>({})
   const [sold, setSold] = useState(0)
   const [won, setWon] = useState(0)
@@ -60,10 +61,11 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
       const res = await fetch(base)
       if (res.status === 404) { setNotFound(true); return }
       if (!res.ok) throw new Error('load failed')
-      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; pickNumbers?: boolean; showWorth?: boolean; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; winners?: PrizeWin[]; orders?: Order[] }
+      const d = await res.json() as { game: { slug: string; name: string; kind?: string; published: boolean; priceP: number; poolSize: number; image: string; endsAt: string | null; pickNumbers?: boolean; showWorth?: boolean; description?: string; winners: Winners }; sold: number; won: number; customWins: CustomWin[]; winners?: PrizeWin[]; orders?: Order[] }
       setBackHref(d.game.kind === 'instant' ? '/admin/instant' : '/admin/instant-win')
       setPickNumbers(!!d.game.pickNumbers)
       setShowWorth(d.game.showWorth !== false)
+      setDescription(d.game.description || '')
       setName(d.game.name); setSlug(d.game.slug); setPublished(d.game.published); setPriceP(d.game.priceP); setPoolSize(d.game.poolSize); setImage(d.game.image || ''); setWinners(d.game.winners || {})
       setEndsAt(d.game.endsAt ? toLocalInput(d.game.endsAt) : plusDaysLocal(30))
       setSold(d.sold); setWon(d.won); setCustomWins(d.customWins); setPrizeWins(d.winners || []); setOrders(d.orders || [])
@@ -97,7 +99,7 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
   const save = async () => {
     setSaving(true); setErr(''); setMsg('')
     try {
-      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, pickNumbers, showWorth, winners }) })
+      const res = await fetch(base, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, priceP, poolSize, image, endsAt: endsAt ? new Date(endsAt).toISOString() : null, pickNumbers, showWorth, description, winners }) })
       const d = await res.json()
       if (!res.ok) throw new Error(d.error || 'save failed')
       setMsg('Saved.'); setTimeout(() => setMsg(''), 2500); load()
@@ -165,6 +167,18 @@ export default function InstantGameAdmin({ gameId }: { gameId: string }) {
       <div style={{ ...card, marginTop: '1rem' }}>
         <label style={label}>Game name</label>
         <input style={{ ...input, maxWidth: '420px', fontSize: '1rem' }} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. October Instant Win" />
+      </div>
+
+      {/* Description */}
+      <div style={{ ...card, marginTop: '1rem' }}>
+        <label style={label}>Description</label>
+        <textarea
+          style={{ ...input, width: '100%', minHeight: '96px', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5 }}
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="Describe the prizes, how it works, or any details players should know. Shown on the game page."
+        />
+        <p style={{ fontSize: '.72rem', color: 'var(--ink3)', marginTop: '.4rem' }}>Appears on the game page under the ticket area. Leave blank to hide it.</p>
       </div>
 
       {/* Publish switch */}

@@ -9,7 +9,7 @@ const money = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `
 
 export default function InstantGameClient({
   gameId, title, price, image, endsAt, prizes, poolSize, pending, signedIn, creditAvailable, loginFrom,
-  pickNumbers = false, showWorth = true, taken = [],
+  pickNumbers = false, showWorth = true, description = '', taken = [],
 }: {
   gameId: string
   title: string
@@ -24,6 +24,7 @@ export default function InstantGameClient({
   loginFrom: string
   pickNumbers?: boolean
   showWorth?: boolean
+  description?: string
   taken?: number[]
 }) {
   const onCheckout = async (qty: number, useCredit: boolean) => {
@@ -102,6 +103,13 @@ export default function InstantGameClient({
           loginHref={`/login?from=${encodeURIComponent(loginFrom)}`}
         />
         </>
+      )}
+
+      {description.trim() && (
+        <div style={{ maxWidth: '760px', margin: '3rem auto 0', background: 'var(--card,#fff)', border: '1px solid var(--border)', borderRadius: '14px', padding: '1.5rem 1.75rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.5rem', fontWeight: 600, margin: '0 0 .6rem' }}>About this game</h2>
+          <p style={{ color: 'var(--ink2,var(--ink))', fontSize: '.92rem', lineHeight: 1.65, margin: 0, whiteSpace: 'pre-wrap' }}>{description}</p>
+        </div>
       )}
 
       {shown.length > 0 && (
