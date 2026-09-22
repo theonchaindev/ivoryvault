@@ -28,6 +28,8 @@ export default function AdminEmailsPage() {
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState('')
   const [q, setQ] = useState('')
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -38,6 +40,15 @@ export default function AdminEmailsPage() {
       .finally(() => setLoading(false))
   }
   useEffect(load, [])
+
+  const sync = () => {
+    setSyncing(true); setSyncMsg(''); setErr('')
+    fetch('/api/admin/emails', { method: 'POST' })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error('Sync failed')))
+      .then(d => { setSyncMsg(`Imported ${d.added} email${d.added === 1 ? '' : 's'} from Resend (scanned ${d.scanned}).`); load() })
+      .catch(e => setErr(e.message))
+      .finally(() => setSyncing(false))
+  }
 
   const filtered = q.trim()
     ? emails.filter(e => `${e.toAddr} ${e.subject} ${e.kind}`.toLowerCase().includes(q.toLowerCase()))
@@ -52,8 +63,12 @@ export default function AdminEmailsPage() {
             Every email the site has sent through Resend — order confirmations, winner emails, referrals and more. Newest first.
           </p>
         </div>
-        <button onClick={load} style={{ background: 'var(--gold,#2563eb)', color: '#fff', border: 'none', borderRadius: '9px', padding: '.6rem 1.1rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Refresh</button>
+        <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <button onClick={sync} disabled={syncing} style={{ background: '#fff', color: 'var(--ink)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '9px', padding: '.6rem 1.1rem', fontSize: '.78rem', fontWeight: 700, cursor: syncing ? 'default' : 'pointer', opacity: syncing ? .6 : 1, whiteSpace: 'nowrap' }}>{syncing ? 'Syncing…' : '⟳ Sync from Resend'}</button>
+          <button onClick={load} style={{ background: 'var(--gold,#2563eb)', color: '#fff', border: 'none', borderRadius: '9px', padding: '.6rem 1.1rem', fontSize: '.78rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Refresh</button>
+        </div>
       </div>
+      {syncMsg && <p style={{ color: '#15803d', fontSize: '.8rem', margin: '0 0 1rem' }}>{syncMsg}</p>}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         <input
