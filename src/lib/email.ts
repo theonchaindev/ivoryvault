@@ -1,4 +1,5 @@
 import { Resend } from 'resend'
+import { logEmail } from '@/lib/emailLog'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 
@@ -19,9 +20,10 @@ const BLUE_LT = '#4a86e8'
 const GOLD = '#c2a24e'
 
 /** Low-level send. Never throws — logs and returns so it can't break a request flow. */
-async function send(opts: { to: string | string[]; subject: string; html: string; replyTo?: string }) {
+async function send(opts: { to: string | string[]; subject: string; html: string; replyTo?: string; kind?: string }) {
   if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping send:', opts.subject)
+    await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'skipped', error: 'RESEND_API_KEY not set' })
     return { skipped: true }
   }
   try {
@@ -33,9 +35,16 @@ async function send(opts: { to: string | string[]; subject: string; html: string
       ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
     })
     if (res.error) console.error('[email] send error:', res.error)
+    await logEmail({
+      to: opts.to, subject: opts.subject, kind: opts.kind,
+      status: res.error ? 'error' : 'sent',
+      resendId: res.data?.id || null,
+      error: res.error ? (res.error.message || String(res.error)) : null,
+    })
     return res
   } catch (err) {
     console.error('[email] send threw:', err)
+    await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'error', error: err instanceof Error ? err.message : String(err) })
     return { error: err }
   }
 }

@@ -8,6 +8,7 @@ const navItems = [
   { href: '/admin/competitions', label: 'Competitions', icon: '◈' },
   { href: '/admin/users', label: 'Members', icon: '◕' },
   { href: '/admin/orders', label: 'Orders', icon: '◉' },
+  { href: '/admin/emails', label: 'Emails', icon: '📧' },
   { href: '/admin/offers', label: 'Offers', icon: '％' },
   { href: '/admin/winners', label: 'Winners', icon: '★' },
   { href: '/admin/winner-email', label: 'Winner Email', icon: '✦' },
