@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { uploadImage } from '@/lib/uploadImage'
+import ImageCropper from '@/components/ImageCropper'
 
 interface MediaImage { url: string; publicId: string; size: number; createdAt: string }
 
@@ -30,6 +31,7 @@ export default function EditCompetitionPage() {
   const [sortOrder, setSortOrder] = useState('0')
 
   const [images, setImages] = useState<string[]>([])
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const [urlInput, setUrlInput] = useState('')
   const [showLibrary, setShowLibrary] = useState(false)
   const [library, setLibrary] = useState<MediaImage[]>([])
@@ -176,7 +178,7 @@ export default function EditCompetitionPage() {
             </div>
           </div>
 
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = '' }} />
 
           {showLibrary && (
             <div className="nc-library">
@@ -310,6 +312,14 @@ export default function EditCompetitionPage() {
         .nc-error { padding: .875rem 1rem; background: #fdf0f2; border: 1px solid rgba(184,104,122,.25); color: #8a4a56; font-size: .875rem; }
         .nc-actions { display: flex; gap: 1rem; padding-top: .5rem; }
       `}</style>
+
+      {cropFile && (
+        <ImageCropper
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onDone={f => { setCropFile(null); uploadFile(f) }}
+        />
+      )}
     </div>
   )
 }

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { uploadImage } from '@/lib/uploadImage'
 import CompetitionPreview from './CompetitionPreview'
+import ImageCropper from '@/components/ImageCropper'
 
 interface MediaImage { url: string; publicId: string; size: number; createdAt: string }
 
@@ -26,6 +27,7 @@ export default function NewCompetitionPage() {
   const [instantPrizes, setInstantPrizes] = useState('[\n  { "amount": 100, "total": 2 },\n  { "amount": 50, "total": 4 },\n  { "amount": 25, "total": 8 },\n  { "amount": 10, "total": 20 },\n  { "amount": 5, "total": 40 },\n  { "amount": 1, "total": 100 }\n]')
 
   const [images, setImages] = useState<string[]>([])
+  const [cropFile, setCropFile] = useState<File | null>(null)
   const [urlInput, setUrlInput] = useState('')
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -155,7 +157,7 @@ export default function NewCompetitionPage() {
             </div>
           </div>
 
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadFile(f); e.target.value = '' }} />
+          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setCropFile(f); e.target.value = '' }} />
 
           {showLibrary && (
             <div className="nc-library">
@@ -318,6 +320,14 @@ export default function NewCompetitionPage() {
         .nc-error { padding: .875rem 1rem; background: #fdf0f2; border: 1px solid rgba(184,104,122,.25); color: #8a4a56; font-size: .875rem; }
         .nc-actions { display: flex; gap: 1rem; padding-top: .5rem; }
       `}</style>
+
+      {cropFile && (
+        <ImageCropper
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onDone={f => { setCropFile(null); uploadFile(f) }}
+        />
+      )}
     </div>
   )
 }
