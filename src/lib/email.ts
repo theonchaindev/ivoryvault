@@ -20,33 +20,49 @@ const BLUE_LT = '#4a86e8'
 const GOLD = '#c2a24e'
 
 /** Low-level send. Never throws — logs and returns so it can't break a request flow. */
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
+// Resend occasionally returns a transient gateway error ("Unable to fetch data.
+// The request could not be resolved.") that succeeds on an immediate retry.
+// Permanent problems (bad address / validation) shouldn't be retried.
+const isPermanent = (msg: string) => /invalid|validation|not a valid|does not|must be|blocked|suppress|unsubscrib/i.test(msg)
+const MAX_ATTEMPTS = 3
+
 async function send(opts: { to: string | string[]; subject: string; html: string; replyTo?: string; kind?: string }) {
   if (!resend) {
     console.warn('[email] RESEND_API_KEY not set — skipping send:', opts.subject)
     await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'skipped', error: 'RESEND_API_KEY not set' })
     return { skipped: true }
   }
-  try {
-    const res = await resend.emails.send({
-      from: EMAIL_FROM,
-      to: opts.to,
-      subject: opts.subject,
-      html: opts.html,
-      ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
-    })
-    if (res.error) console.error('[email] send error:', res.error)
-    await logEmail({
-      to: opts.to, subject: opts.subject, kind: opts.kind,
-      status: res.error ? 'error' : 'sent',
-      resendId: res.data?.id || null,
-      error: res.error ? (res.error.message || String(res.error)) : null,
-    })
-    return res
-  } catch (err) {
-    console.error('[email] send threw:', err)
-    await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'error', error: err instanceof Error ? err.message : String(err) })
-    return { error: err }
+
+  let lastErr: unknown = null
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await resend.emails.send({
+        from: EMAIL_FROM,
+        to: opts.to,
+        subject: opts.subject,
+        html: opts.html,
+        ...(opts.replyTo ? { replyTo: opts.replyTo } : {}),
+      })
+      if (!res.error) {
+        // Log once, on the successful attempt.
+        await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'sent', resendId: res.data?.id || null })
+        return res
+      }
+      lastErr = res.error
+      const msg = res.error.message || String(res.error)
+      console.error(`[email] send error (attempt ${attempt}/${MAX_ATTEMPTS}):`, msg)
+      if (isPermanent(msg)) break
+    } catch (err) {
+      lastErr = err
+      console.error(`[email] send threw (attempt ${attempt}/${MAX_ATTEMPTS}):`, err)
+    }
+    if (attempt < MAX_ATTEMPTS) await sleep(500 * attempt) // 500ms, then 1000ms
   }
+
+  const emsg = lastErr instanceof Error ? lastErr.message : (typeof lastErr === 'object' && lastErr && 'message' in lastErr ? String((lastErr as { message: unknown }).message) : String(lastErr))
+  await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'error', error: emsg })
+  return { error: lastErr }
 }
 
 function badgeCell(icon: string, label: string, first = false) {
