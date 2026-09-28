@@ -332,7 +332,7 @@ export default function TicketReveal({
         .tk__stage{ display:flex; flex-direction:column; gap:1.1rem; }
         .tk__stage-ticket{ position:relative; aspect-ratio:24/10; filter:drop-shadow(0 18px 34px rgba(0,0,0,.18)); }
         .tk__stage-ticket .tk-face{ position:absolute; inset:0; }
-        .tk__stage-hero{ display:block; width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:16px; box-shadow:0 18px 34px rgba(0,0,0,.18); }
+        .tk__stage-hero{ display:block; width:100%; max-width:320px; margin:0 auto; aspect-ratio:1/1; object-fit:cover; border-radius:16px; box-shadow:0 18px 34px rgba(0,0,0,.18); }
         .tk__stage-cap{ color:var(--ink3); font-size:.9rem; line-height:1.5; margin:0; }
 
         .tk__buy{ background:var(--card,#fff); border:1px solid var(--border); border-radius:16px; padding:1.6rem 1.5rem; box-shadow:0 12px 40px rgba(0,0,0,.07); }
