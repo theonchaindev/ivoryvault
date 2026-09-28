@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 
 interface SentEmail {
   id: string; toAddr: string; subject: string; kind: string
-  status: string; resendId: string | null; error: string | null; createdAt: string
+  status: string; resendId: string | null; error: string | null
+  createdAt: string; resentAt: string | null; canResend: boolean
 }
 
 const fmt = (iso: string) => {
@@ -30,6 +31,7 @@ export default function AdminEmailsPage() {
   const [q, setQ] = useState('')
   const [syncing, setSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
+  const [resendingId, setResendingId] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -48,6 +50,16 @@ export default function AdminEmailsPage() {
       .then(d => { setSyncMsg(`Imported ${d.added} email${d.added === 1 ? '' : 's'} from Resend (scanned ${d.scanned}).`); load() })
       .catch(e => setErr(e.message))
       .finally(() => setSyncing(false))
+  }
+
+  const resend = (id: string) => {
+    if (resendingId) return
+    setResendingId(id); setErr('')
+    fetch('/api/admin/emails/resend', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) })
+      .then(async r => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.error || 'Resend failed'); return d })
+      .then(() => load())
+      .catch(e => setErr(e.message))
+      .finally(() => setResendingId(''))
   }
 
   const filtered = q.trim()
@@ -91,11 +103,11 @@ export default function AdminEmailsPage() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '620px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '720px' }}>
               <thead>
                 <tr>
-                  {['Recipient', 'Subject', 'Status', 'Sent'].map(h => (
-                    <th key={h} style={{ textAlign: 'left', padding: '.85rem 1.25rem', fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>{h}</th>
+                  {['Recipient', 'Subject', 'Status', 'Sent', ''].map((h, i) => (
+                    <th key={i} style={{ textAlign: 'left', padding: '.85rem 1.25rem', fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink3)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -107,8 +119,22 @@ export default function AdminEmailsPage() {
                       {e.subject || '—'}
                       {e.error && <div style={{ fontSize: '.68rem', color: '#b91c1c', marginTop: '.2rem' }}>{e.error}</div>}
                     </td>
-                    <td style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--border)' }}>{statusPill(e.status)}</td>
+                    <td style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
+                      {statusPill(e.status)}
+                      {e.resentAt && <span title={`Re-sent ${fmt(e.resentAt)}`} style={{ display: 'inline-block', marginLeft: '.4rem', fontSize: '.6rem', fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', padding: '.2rem .5rem', borderRadius: '999px', background: '#eef2ff', color: '#4338ca', whiteSpace: 'nowrap' }}>↻ Resent</span>}
+                    </td>
                     <td style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--border)', fontSize: '.78rem', color: 'var(--ink3)', whiteSpace: 'nowrap' }}>{fmt(e.createdAt)}</td>
+                    <td style={{ padding: '.85rem 1.25rem', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      {e.canResend ? (
+                        <button
+                          onClick={() => resend(e.id)}
+                          disabled={!!resendingId}
+                          style={{ background: '#fff', color: 'var(--ink)', border: '1px solid var(--border,#e2e7ee)', borderRadius: '8px', padding: '.4rem .7rem', fontSize: '.72rem', fontWeight: 700, cursor: resendingId ? 'default' : 'pointer', opacity: resendingId && resendingId !== e.id ? .5 : 1, whiteSpace: 'nowrap' }}
+                        >{resendingId === e.id ? 'Sending…' : (e.resentAt ? 'Resend again' : 'Resend')}</button>
+                      ) : (
+                        <span style={{ fontSize: '.68rem', color: 'var(--ink3)' }} title="No stored content to re-send (sent before content logging was added)">—</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

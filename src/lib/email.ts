@@ -46,7 +46,7 @@ async function send(opts: { to: string | string[]; subject: string; html: string
       })
       if (!res.error) {
         // Log once, on the successful attempt.
-        await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'sent', resendId: res.data?.id || null })
+        await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'sent', resendId: res.data?.id || null, html: opts.html })
         return res
       }
       lastErr = res.error
@@ -61,8 +61,43 @@ async function send(opts: { to: string | string[]; subject: string; html: string
   }
 
   const emsg = lastErr instanceof Error ? lastErr.message : (typeof lastErr === 'object' && lastErr && 'message' in lastErr ? String((lastErr as { message: unknown }).message) : String(lastErr))
-  await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'error', error: emsg })
+  await logEmail({ to: opts.to, subject: opts.subject, kind: opts.kind, status: 'error', error: emsg, html: opts.html })
   return { error: lastErr }
+}
+
+/**
+ * Manually re-send a previously-logged email (admin "Resend" button). Uses the
+ * stored html if we have it, otherwise fetches the original from Resend by id.
+ * Records a fresh send row and marks the original as resent.
+ */
+export async function resendLoggedEmail(id: string): Promise<{ ok: boolean; error?: string }> {
+  const { getSentEmailForResend, markResent } = await import('@/lib/emailLog')
+  const row = await getSentEmailForResend(id)
+  if (!row) return { ok: false, error: 'Email not found.' }
+
+  let html = row.html
+  let to = row.toAddr
+  let subject = row.subject
+  if (!html && row.resendId && resend) {
+    try {
+      const got = await resend.emails.get(row.resendId)
+      if (got.data) {
+        html = got.data.html || html
+        subject = got.data.subject || subject
+        if (Array.isArray(got.data.to) && got.data.to.length) to = got.data.to.join(', ')
+      }
+    } catch { /* fall through */ }
+  }
+  if (!html) return { ok: false, error: 'No stored content to re-send for this email.' }
+
+  const recipients = to.split(',').map(s => s.trim()).filter(Boolean)
+  const res = await send({ to: recipients.length > 1 ? recipients : (recipients[0] || to), subject, html, kind: (row.kind ? row.kind + ':' : '') + 'resend' })
+  if ('error' in res && res.error) {
+    const msg = res.error instanceof Error ? res.error.message : String(res.error)
+    return { ok: false, error: msg }
+  }
+  await markResent(id)
+  return { ok: true }
 }
 
 function badgeCell(icon: string, label: string, first = false) {
