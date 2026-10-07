@@ -32,6 +32,12 @@ export default function AdminCompetitionsActions({ competitionId }: Props) {
       >
         Edit
       </Link>
+      <Link
+        href={`/admin/competitions/${competitionId}/entries`}
+        style={{ fontSize: '0.8rem', color: 'var(--ink2)', textDecoration: 'none' }}
+      >
+        Entries
+      </Link>
       <button
         onClick={handleDelete}
         style={{ fontSize: '0.8rem', color: 'var(--ink3)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}

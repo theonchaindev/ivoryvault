@@ -116,6 +116,7 @@ export default function EditCompetitionPage() {
       <div className="nc-header">
         <Link href="/admin/competitions" className="nc-back">← Back</Link>
         <h1 className="nc-title">Edit Competition</h1>
+        <Link href={`/admin/competitions/${id}/entries`} className="btn-ghost" style={{ marginLeft: 'auto', fontSize: '.8rem', textDecoration: 'none' }}>View entries →</Link>
       </div>
 
       <form onSubmit={handleSubmit} className="nc-form">
