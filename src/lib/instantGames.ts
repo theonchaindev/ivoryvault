@@ -354,6 +354,30 @@ export async function listGameWinners(gameId: string): Promise<{ ticketNumber: n
   }))
 }
 
+/** Recent winning reveals across ALL ticket/instant games — for the admin notifications feed. */
+export async function listRecentGameWins(limit = 100): Promise<{ gameId: string; gameName: string; kind: GameKind; userId: string; name: string; email: string; prize: string; amount: number; ticketNo: number; createdAt: string }[]> {
+  await ensure()
+  const n = Math.min(500, Math.max(1, Math.round(limit)))
+  const rows = await prisma.$queryRawUnsafe<{ gameId: string; userId: string; prizeType: string; prizeAmount: number; prizeName: string | null; ticketNo: number; createdAt: Date }[]>(
+    `SELECT "gameId","userId","prizeType","prizeAmount","prizeName","ticketNo","createdAt" FROM "TicketGamePlay" WHERE "revealed" = 1 AND "prizeType" IS NOT NULL ORDER BY "createdAt" DESC LIMIT ${n}`,
+  )
+  if (!rows.length) return []
+  const games = await listGames()
+  const gById = new Map(games.map(g => [g.id, g]))
+  const users = await prisma.user.findMany({ where: { id: { in: [...new Set(rows.map(r => r.userId))] } }, select: { id: true, name: true, email: true } })
+  const uById = new Map(users.map(u => [u.id, u]))
+  const fmt = (v: number) => (v >= 1 ? `£${v % 1 === 0 ? v : v.toFixed(2)}` : `${Math.round(v * 100)}p`)
+  return rows.map(r => {
+    const g = gById.get(r.gameId)
+    return {
+      gameId: r.gameId, gameName: g?.name || 'Instant Win', kind: g?.kind || 'ticket',
+      userId: r.userId, name: uById.get(r.userId)?.name || '(no name)', email: uById.get(r.userId)?.email || '',
+      prize: r.prizeType === 'custom' ? (r.prizeName || 'Prize') : `${fmt(Number(r.prizeAmount))} site credit`,
+      amount: Number(r.prizeAmount) || 0, ticketNo: Number(r.ticketNo), createdAt: new Date(r.createdAt).toISOString(),
+    }
+  })
+}
+
 /** Entrants of a game (grouped by user, each play = one entry) — for the entrants viewer. */
 export async function listGameEntrants(gameId: string): Promise<{ userId: string; name: string; email: string; entries: number; first: Date }[]> {
   await ensure()

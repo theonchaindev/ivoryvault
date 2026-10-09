@@ -2,11 +2,13 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: '▦' },
   { href: '/admin/competitions', label: 'Competitions', icon: '◈' },
   { href: '/admin/users', label: 'Members', icon: '◕' },
+  { href: '/admin/notifications', label: 'Notifications', icon: '🔔' },
   { href: '/admin/orders', label: 'Orders', icon: '◉' },
   { href: '/admin/emails', label: 'Emails', icon: '📧' },
   { href: '/admin/offers', label: 'Offers', icon: '％' },
@@ -21,6 +23,21 @@ const navItems = [
 
 export default function AdminNav() {
   const pathname = usePathname()
+  const [newWins, setNewWins] = useState(0)
+
+  // Badge: count wins newer than the last time the Notifications page was opened.
+  useEffect(() => {
+    fetch('/api/admin/notifications')
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { items?: { when: string }[] } | null) => {
+        if (!d?.items) return
+        let seen = ''
+        try { seen = localStorage.getItem('ivv-admin-wins-seen') || '' } catch { /* ignore */ }
+        setNewWins(seen ? d.items.filter(i => i.when > seen).length : d.items.length)
+      })
+      .catch(() => {})
+    // refresh the badge when returning to the Notifications page
+  }, [pathname])
 
   return (
     <>
@@ -39,6 +56,9 @@ export default function AdminNav() {
               <Link key={item.href} href={item.href} className={`admin-nav-link${active ? ' active' : ''}`}>
                 <span className="admin-nav-link__icon">{item.icon}</span>
                 {item.label}
+                {item.href === '/admin/notifications' && newWins > 0 && (
+                  <span style={{ marginLeft: 'auto', background: '#dc2626', color: '#fff', fontSize: '.62rem', fontWeight: 800, borderRadius: '999px', padding: '.1rem .4rem', minWidth: '18px', textAlign: 'center' }}>{newWins > 99 ? '99+' : newWins}</span>
+                )}
               </Link>
             )
           })}
