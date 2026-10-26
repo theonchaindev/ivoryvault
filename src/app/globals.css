@@ -349,7 +349,7 @@ a { color: inherit; }
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   padding: .35rem .25rem;
 }
-.ct-strip__num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -.01em; }
+.ct-strip__num { font-size: 1.5rem; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
 .ct-strip__lbl { font-size: .5rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.7); margin-top: 4px; }
 
 /* ═══════════════════════════════════════════════

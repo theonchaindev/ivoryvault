@@ -62,7 +62,7 @@ export default function CountdownTimer({
             borderRadius: '10px',
             padding: '.625rem .875rem', minWidth: '58px',
           }}>
-            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.875rem', fontWeight: 700, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
               {String(u.v).padStart(2, '0')}
             </span>
             <span style={{ fontSize: '.42rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,.6)', marginTop: '3px' }}>
@@ -106,7 +106,7 @@ export default function CountdownTimer({
         <span style={{ fontSize: '.5rem', letterSpacing: '.14em', textTransform: 'uppercase', color: light ? 'rgba(255,255,255,.55)' : 'var(--ink3)', marginRight: '.125rem' }}>Closes in</span>
         {units.map((u, i) => (
           <span key={u.l} style={{ display: 'flex', alignItems: 'baseline', gap: '1px' }}>
-            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.125rem', fontWeight: 600, color: light ? '#fff' : 'var(--ink)', lineHeight: 1 }}>
+            <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '1.125rem', fontWeight: 600, color: light ? '#fff' : 'var(--ink)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
               {String(u.v).padStart(2, '0')}
             </span>
             <span style={{ fontSize: '.5rem', color: light ? 'rgba(255,255,255,.5)' : 'var(--ink3)', textTransform: 'uppercase', letterSpacing: '.06em' }}>
@@ -127,10 +127,10 @@ export default function CountdownTimer({
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           background: light ? 'rgba(255,255,255,.12)' : 'var(--ink)',
           border: `1px solid ${light ? 'rgba(255,255,255,.2)' : 'rgba(255,255,255,.08)'}`,
-          padding: '.75rem 1rem', flex: 1, minWidth: 0,
+          padding: '.75rem .25rem', flex: 1, minWidth: 0,
           borderRadius: '10px',
         }}>
-          <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '2rem', fontWeight: 600, color: '#fff', lineHeight: 1 }}>
+          <span style={{ fontFamily: 'var(--font-cormorant,serif)', fontSize: '2rem', fontWeight: 600, color: '#fff', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
             {String(u.v).padStart(2, '0')}
           </span>
           <span style={{ fontSize: '.45rem', letterSpacing: '.14em', textTransform: 'uppercase', color: light ? 'rgba(255,255,255,.5)' : 'rgba(255,255,255,.55)', marginTop: '4px' }}>

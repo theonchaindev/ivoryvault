@@ -216,10 +216,14 @@ export default function CompetitionDetail({ competition, isInstant = false, inst
         .cdp__inner {
           max-width: 1280px; margin: 0 auto;
           padding: 0 clamp(1.5rem,3vw,3rem);
-          display: grid; grid-template-columns: 1fr 1fr;
+          display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
           gap: clamp(2rem,4vw,4rem); align-items: start;
         }
-        @media (max-width: 860px) { .cdp__inner { grid-template-columns: 1fr; } }
+        /* minmax(0,…) + min-width:0 keep columns at the screen width — a plain 1fr
+           track grows to fit its widest content, which pushed the page wider than
+           the phone and made it rescale as the countdown ticked. */
+        .cdp__images, .cdp__right { min-width: 0; }
+        @media (max-width: 860px) { .cdp__inner { grid-template-columns: minmax(0,1fr); } }
 
         /* Left: images */
         .cdp__images { display: flex; flex-direction: column; gap: 1rem; position: sticky; top: 84px; }
